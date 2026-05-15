@@ -6,7 +6,8 @@ import Pasos from './Pasos'
 import './Hero.css'
 import './Beneficios.css'
 import './Directorio.css'
-import './Pasos.css'    
+import './Pasos.css'  
+import HerramientasIA from './HerramientasIA'  
 
 function LandingPage() {
   return (
@@ -16,6 +17,7 @@ function LandingPage() {
       <Beneficios />  
       <Directorio />  
       <Pasos />
+      <HerramientasIA />
     </div>
   )
 }

@@ -1,22 +1,23 @@
 import './Beneficios.css'
+import { Camera, MessageCircle, Shield, Megaphone } from 'lucide-react'
 function Beneficios() {
   const beneficios = [
-    {
-      icon: '📸',
-      titulo: 'Catálogo con IA',
-      desc: 'Crea tus productos con catálogo IA, regístralos en minutos.'
-    },
-    {
-      icon: '💬',
-      titulo: 'Ventas por WhatsApp',
-      desc: 'Ventas por WhatsApp y directo con tu catálogo, gestiona tus ventas fácil.'
-    },
-    {
-      icon: '🛡️',
-      titulo: 'Inclusión Financiera',
-      desc: 'Inclusión Financiera para tu negocio, piensa en grande y gana más.'
-    }
-  ]
+  {
+    icon: <Camera size={20} color="#00B894" strokeWidth={1.5} />,
+    titulo: 'Catálogo con IA',
+    desc: 'Crea tus productos con catálogo IA, regístralos en minutos.'
+  },
+  {
+    icon: <MessageCircle size={20} color="#00B894" strokeWidth={1.5} />,
+    titulo: 'Ventas por WhatsApp',
+    desc: 'Ventas por WhatsApp y directo con tu catálogo, gestiona tus ventas en tu empresa.'
+  },
+  {
+    icon: <Shield size={20} color="#00B894" strokeWidth={1.5} />,
+    titulo: 'Inclusión Financiera',
+    desc: 'Inclusión Financiera para tu negocio, piensa en grande y gana más.'
+  }
+]
 
   return (
     <section className="benefits">
