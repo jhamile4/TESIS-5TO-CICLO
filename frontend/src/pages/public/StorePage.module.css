@@ -1,0 +1,155 @@
+.pagina {
+  min-height: 100vh;
+  background: var(--bg);
+  padding-top: 64px;
+}
+
+/* ── Header ───────────────────────────────────── */
+.header {
+  background: var(--white);
+  padding: 40px 80px;
+  display: flex;
+  align-items: flex-start;
+  gap: 28px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+}
+
+.logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.logoPlaceholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--bg);
+  color: var(--primary);
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid #E5E7EB;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.badge {
+  display: inline-block;
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  align-self: flex-start;
+}
+
+.nombre {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.descripcion {
+  font-size: 15px;
+  color: var(--text-light);
+  max-width: 600px;
+  line-height: 1.6;
+}
+
+.ubicacion {
+  font-size: 14px;
+  color: var(--text-light);
+}
+
+/* ── Catálogo ─────────────────────────────────── */
+.catalogo {
+  padding: 40px 80px;
+}
+
+.catalogoTitulo {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 24px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.sinProductos {
+  text-align: center;
+  color: var(--text-light);
+  font-size: 16px;
+  margin-top: 40px;
+}
+
+/* ── Estados carga / error ────────────────────── */
+.estado {
+  min-height: 100vh;
+  padding-top: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  color: var(--text-light);
+  font-size: 16px;
+}
+
+.btnVolver {
+  height: 42px;
+  padding: 0 24px;
+  background: var(--primary);
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.btnVolver:hover {
+  background: #1d4ed8;
+}
+
+/* ── Responsive ───────────────────────────────── */
+@media (max-width: 768px) {
+  .header {
+    padding: 32px 24px;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .badge {
+    align-self: center;
+  }
+
+  .catalogo {
+    padding: 32px 24px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,503 @@
+.main {
+  padding-top: 64px;
+}
+
+/* ── Hero ─────────────────────────────────────── */
+.hero {
+  background: var(--white);
+  padding: 96px 24px 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.heroTitulo {
+  font-size: 46px;
+  font-weight: 700;
+  color: var(--text);
+  max-width: 720px;
+  line-height: 1.15;
+  letter-spacing: -1px;
+}
+
+.heroSubtitulo {
+  font-size: 18px;
+  color: var(--text-light);
+  max-width: 580px;
+  margin-top: 20px;
+  line-height: 1.6;
+}
+
+.heroBtns {
+  display: flex;
+  gap: 16px;
+  margin-top: 36px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.heroChips {
+  display: flex;
+  gap: 20px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.chip {
+  font-size: 13px;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+/* ── Botones reutilizables ─────────────────────── */
+.btnPrimario {
+  height: 48px;
+  padding: 0 28px;
+  background: var(--primary);
+  color: var(--white);
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btnPrimario:hover {
+  background: var(--primary-dark);
+}
+
+.btnOutline {
+  height: 48px;
+  padding: 0 28px;
+  background: transparent;
+  color: var(--primary);
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 2px solid var(--primary);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.btnOutline:hover {
+  background: var(--primary);
+  color: var(--white);
+}
+
+/* ── Títulos de sección ───────────────────────── */
+.seccionEtiqueta {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--primary);
+  margin-bottom: 32px;
+}
+
+.seccionTitulo {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.seccionSub {
+  font-size: 16px;
+  color: var(--text-light);
+  text-align: center;
+  max-width: 580px;
+  line-height: 1.6;
+  margin-bottom: 48px;
+}
+
+.seccionTituloBlanco {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--white);
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.seccionSubBlanco {
+  font-size: 16px;
+  color: rgba(255,255,255,0.8);
+  text-align: center;
+  max-width: 560px;
+  line-height: 1.6;
+  margin-bottom: 48px;
+}
+
+/* ── Beneficios ───────────────────────────────── */
+.beneficios {
+  background: var(--bg);
+  padding: 80px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.beneficiosGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 900px;
+  width: 100%;
+}
+
+.beneficioCard {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.beneficioIcono {
+  font-size: 32px;
+}
+
+.beneficioTitulo {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.beneficioDesc {
+  font-size: 14px;
+  color: var(--text-light);
+  line-height: 1.6;
+}
+
+/* ── Stats ────────────────────────────────────── */
+.stats {
+  background: var(--primary);
+  padding: 64px 24px;
+  display: flex;
+  justify-content: center;
+  gap: 80px;
+  flex-wrap: wrap;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.statValor {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* ── Descubre negocios ────────────────────────── */
+.descubre {
+  background: var(--white);
+  padding: 80px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* ── Cómo funciona ────────────────────────────── */
+.comoFunciona {
+  background: var(--bg);
+  padding: 80px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pasosGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  max-width: 900px;
+  width: 100%;
+}
+
+.pasoCard {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pasoNum {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1;
+}
+
+.pasoTitulo {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.pasoDesc {
+  font-size: 14px;
+  color: var(--text-light);
+  line-height: 1.6;
+}
+
+/* ── Herramientas IA ──────────────────────────── */
+.herramientas {
+  background: var(--dark);
+  padding: 80px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.herramientasGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  max-width: 1100px;
+  width: 100%;
+}
+
+.herramientaCard {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius);
+  padding: 28px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.herramientaIcono {
+  font-size: 28px;
+}
+
+.herramientaTitulo {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.herramientaDesc {
+  font-size: 13px;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.6;
+}
+
+/* ── Planes ───────────────────────────────────── */
+.planes {
+  background: var(--white);
+  padding: 80px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.planesGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  max-width: 1100px;
+  width: 100%;
+}
+
+.planCard {
+  border: 1.5px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+}
+
+.planDestacado {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(13,148,135,0.12);
+}
+
+.planBadge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary);
+  color: var(--white);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.planNombre {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.planPrecio {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1;
+}
+
+.planMes {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-light);
+}
+
+.planDesc {
+  font-size: 13px;
+  color: var(--text-light);
+  line-height: 1.5;
+}
+
+.planItems {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  margin-bottom: 8px;
+}
+
+.planItem {
+  font-size: 13px;
+  color: var(--text);
+}
+
+/* ── Testimonios ──────────────────────────────── */
+.testimonios {
+  background: var(--bg);
+  padding: 80px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.testimoniosGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 960px;
+  width: 100%;
+}
+
+.testimonioCard {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.testimonioTexto {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.7;
+  font-style: italic;
+  flex: 1;
+}
+
+.testimonioAutor {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.testimonioNombre {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.testimonioNegocio {
+  font-size: 12px;
+  color: var(--primary);
+}
+
+/* ── Footer ───────────────────────────────────── */
+.footer {
+  background: #1F2937;
+  color: var(--white);
+  padding: 40px 24px;
+  text-align: center;
+  font-size: 14px;
+  opacity: 0.95;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.footerLogo {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.footerLinks {
+  display: flex;
+  gap: 24px;
+  opacity: 0.6;
+  font-size: 13px;
+  cursor: default;
+}
+
+/* ── Responsive ───────────────────────────────── */
+@media (max-width: 1024px) {
+  .herramientasGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .planesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .heroTitulo {
+    font-size: 30px;
+  }
+
+  .beneficiosGrid,
+  .pasosGrid,
+  .testimoniosGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .herramientasGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .planesGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats {
+    gap: 40px;
+  }
+}

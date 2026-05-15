@@ -1,0 +1,161 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  height: 64px;
+  background: var(--white);
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 60px;
+  gap: 24px;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+}
+
+/* Links centrales */
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex: 1;
+  justify-content: center;
+}
+
+.link {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+
+.link:hover {
+  color: var(--primary);
+}
+
+/* Acciones lado derecho */
+.acciones {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.linkBtn {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--primary);
+  border: 1.5px solid var(--primary);
+  padding: 6px 16px;
+  border-radius: 6px;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s;
+}
+
+.linkBtn:hover {
+  background: var(--primary);
+  color: var(--white);
+}
+
+.linkBtnPrimary {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--white);
+  background: var(--primary);
+  padding: 6px 16px;
+  border-radius: 6px;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+
+.linkBtnPrimary:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.linkBtnPrimary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Estado logueado */
+.usuario {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatarBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--white);
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nombre {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.cerrarBtn {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-light);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+
+.cerrarBtn:hover {
+  color: #EF4444;
+}
+
+@media (max-width: 900px) {
+  .navLinks {
+    display: none;
+  }
+
+  .navbar {
+    padding: 0 24px;
+  }
+}
+
+@media (max-width: 600px) {
+  .linkBtnPrimary {
+    display: none;
+  }
+
+  .nombre {
+    display: none;
+  }
+
+  .cerrarBtn {
+    display: none;
+  }
+}

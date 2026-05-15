@@ -1,0 +1,21 @@
+# ── Dependencias ──────────────────────────────────
+node_modules/
+
+# ── Variables de entorno (nunca subir al repo) ────
+.env
+*.env
+
+# ── Build del frontend (se genera con npm run build) ──
+frontend/dist/
+
+# ── Logs ──────────────────────────────────────────
+*.log
+npm-debug.log*
+
+# ── Sistema operativo ─────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Editor ────────────────────────────────────────
+.vscode/
+.idea/
