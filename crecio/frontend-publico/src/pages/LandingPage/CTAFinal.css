@@ -1,0 +1,188 @@
+.cta-section {
+  background: var(--gray-6);
+  padding: 80px 2rem;
+}
+
+.cta-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  align-items: start;
+}
+
+.cta-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--green);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 1rem;
+}
+
+.cta-title {
+  font-size: 42px;
+  font-weight: 800;
+  color: var(--dark);
+  line-height: 1.15;
+  margin-bottom: 1.25rem;
+}
+
+.cta-title em {
+  color: var(--green);
+  font-style: normal;
+}
+
+.cta-desc {
+  font-size: 15px;
+  color: var(--gray-2);
+  line-height: 1.7;
+  margin-bottom: 2rem;
+  max-width: 480px;
+}
+
+.cta-stats {
+  display: flex;
+  gap: 2.5rem;
+  margin-bottom: 2rem;
+}
+
+.cta-stat-num {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--green);
+  line-height: 1;
+}
+
+.cta-stat-label {
+  font-size: 12px;
+  color: var(--gray-3);
+  margin-top: 4px;
+}
+
+.cta-features {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cta-feature {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--gray-2);
+  font-weight: 500;
+}
+
+/* FORM CARD */
+.cta-form-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 36px;
+  border: 1px solid var(--gray-5);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+}
+
+.cta-form-card h3 {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--dark);
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.cta-form-card > p {
+  font-size: 13px;
+  color: var(--gray-3);
+  text-align: center;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.cta-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cta-form input {
+  width: 100%;
+  padding: 13px 16px;
+  border: 1.5px solid var(--gray-5);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: var(--font);
+  color: var(--dark);
+  outline: none;
+  transition: border-color 0.2s;
+  background: var(--gray-6);
+}
+
+.cta-form input:focus {
+  border-color: var(--green);
+  background: white;
+}
+
+.cta-form input::placeholder {
+  color: var(--gray-4);
+}
+
+.cta-submit {
+  width: 100%;
+  background: var(--green);
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: background 0.2s;
+  margin-top: 4px;
+}
+
+.cta-submit:hover {
+  background: var(--green-dark);
+}
+
+.cta-note {
+  font-size: 12px;
+  color: var(--gray-4);
+  text-align: center;
+}
+
+.cta-link {
+  font-size: 13px;
+  color: var(--gray-3);
+  text-align: center;
+}
+
+.cta-link a {
+  color: var(--green);
+  font-weight: 700;
+}
+
+.cta-link a:hover {
+  text-decoration: underline;
+}
+
+.cta-trust {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--gray-5);
+}
+
+.cta-trust-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--gray-3);
+  font-weight: 500;
+}

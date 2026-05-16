@@ -1,0 +1,206 @@
+.neg-pagina {
+  max-width: 860px;
+  margin: 40px auto;
+  padding: 0 20px 60px;
+}
+
+/* Estado de carga / error */
+.neg-estado {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: #718096;
+}
+
+.neg-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #22c55e;
+  border-radius: 50%;
+  animation: neg-spin 0.8s linear infinite;
+}
+
+@keyframes neg-spin { to { transform: rotate(360deg); } }
+
+.neg-error-msg { color: #e53e3e; font-weight: 600; }
+
+/* Botón volver */
+.neg-btn-volver {
+  background: transparent;
+  border: 1.5px solid #cbd5e0;
+  color: #4a5568;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 24px;
+  transition: background 0.2s;
+}
+.neg-btn-volver:hover { background: #f7fafc; }
+
+/* Cabecera del negocio */
+.neg-cabecera {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  padding: 32px;
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.neg-avatar {
+  width: 80px;
+  height: 80px;
+  background: #f0fdf4;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.4rem;
+  flex-shrink: 0;
+  border: 2px solid #bbf7d0;
+}
+
+.neg-info { flex: 1; }
+
+.neg-categoria {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+.neg-nombre {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #1a202c;
+  margin: 0 0 8px;
+}
+
+.neg-descripcion {
+  color: #4a5568;
+  font-size: 0.95rem;
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.neg-detalles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.875rem;
+  color: #718096;
+}
+
+/* Mensaje de pedido confirmado */
+.neg-pedido-ok {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #16a34a;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+}
+
+/* Sección de productos */
+.neg-seccion {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  padding: 28px;
+}
+
+.neg-seccion-titulo {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0 0 20px;
+}
+
+.neg-vacio {
+  color: #718096;
+  text-align: center;
+  padding: 32px 0;
+}
+
+/* Grid de productos */
+.neg-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.neg-producto {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+}
+
+.neg-producto-emoji {
+  width: 56px;
+  height: 56px;
+  background: #f0fdf4;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+
+.neg-producto-info { flex: 1; min-width: 140px; }
+
+.neg-producto-nombre {
+  font-weight: 700;
+  color: #1a202c;
+  font-size: 0.95rem;
+  margin: 0 0 3px;
+}
+
+.neg-producto-desc {
+  font-size: 0.82rem;
+  color: #718096;
+  margin: 0 0 4px;
+}
+
+.neg-producto-precio {
+  font-weight: 800;
+  color: #22c55e;
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Botón WhatsApp */
+.neg-btn-whatsapp {
+  padding: 10px 18px;
+  background: #22c55e;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+.neg-btn-whatsapp:hover { background: #16a34a; }

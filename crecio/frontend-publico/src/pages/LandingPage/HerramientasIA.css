@@ -1,0 +1,103 @@
+.ia-section {
+  background: white;
+  padding: 80px 2rem;
+}
+
+.ia-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  align-items: center;
+}
+
+.ia-title {
+  font-size: 40px;
+  font-weight: 800;
+  color: var(--dark);
+  line-height: 1.15;
+  margin-bottom: 1rem;
+}
+
+.ia-title em {
+  color: var(--green);
+  font-style: normal;
+}
+
+.ia-sub {
+  font-size: 14px;
+  color: var(--gray-3);
+  line-height: 1.7;
+  margin-bottom: 2rem;
+  max-width: 340px;
+}
+
+.ia-tools {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 2rem;
+}
+
+.ia-tool {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ia-tool-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--green-light);
+  border: 1.5px solid var(--green);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ia-tool h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--dark);
+  margin-bottom: 4px;
+}
+
+.ia-tool p {
+  font-size: 13px;
+  color: var(--gray-3);
+  line-height: 1.5;
+}
+
+.ia-btn {
+  background: var(--green);
+  color: white;
+  border: none;
+  padding: 13px 28px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: background 0.2s;
+}
+
+.ia-btn:hover {
+  background: var(--green-dark);
+}
+
+.ia-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ia-img {
+  width: 100%;
+  max-width: 560px;
+  border-radius: var(--radius);
+  object-fit: cover;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+}

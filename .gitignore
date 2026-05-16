@@ -5,12 +5,18 @@ node_modules/
 .env
 *.env
 
-# ── Build del frontend (se genera con npm run build) ──
-frontend/dist/
+# ── Carpetas antiguas (reemplazadas por crecio/) ──
+backend/
+frontend/
+
+# ── Build del frontend ────────────────────────────
+dist/
+dist-ssr/
 
 # ── Logs ──────────────────────────────────────────
 *.log
 npm-debug.log*
+yarn-debug.log*
 
 # ── Sistema operativo ─────────────────────────────
 .DS_Store
@@ -19,3 +25,5 @@ Thumbs.db
 # ── Editor ────────────────────────────────────────
 .vscode/
 .idea/
+*.suo
+*.sw?

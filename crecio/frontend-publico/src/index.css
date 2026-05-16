@@ -1,0 +1,39 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --green: #00B894;
+  --green-dark: #00A382;
+  --green-light: #E6FAF5;
+  --dark: #0D1117;
+  --gray-1: #1E2530;
+  --gray-2: #4A5568;
+  --gray-3: #718096;
+  --gray-4: #A0AEC0;
+  --gray-5: #E2E8F0;
+  --gray-6: #F7F8FA;
+  --white: #FFFFFF;
+  --font: 'Plus Jakarta Sans', sans-serif;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+body {
+  font-family: var(--font);
+  color: var(--dark);
+  background: var(--white);
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+}

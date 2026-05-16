@@ -1,8 +1,8 @@
-# CRECIO 🛍️
+# CRECIO
 
-Plataforma web para la digitalización de microempresas. Permite a los negocios tener un catálogo digital y a los clientes explorar y contactar por WhatsApp.
+Plataforma web para la digitalización de microempresas (MYPE). Permite a los negocios tener un catálogo digital y a los clientes explorar productos y contactar por WhatsApp.
 
-Proyecto de Pre-Tesis — Carrera: Diseño y Desarrollo de Software — Tecsup (5to ciclo)
+Proyecto de Pre-Tesis — Carrera: Diseño y Desarrollo de Software — Tecsup (5to ciclo) — Grupo 48
 
 ---
 
@@ -10,7 +10,7 @@ Proyecto de Pre-Tesis — Carrera: Diseño y Desarrollo de Software — Tecsup (
 
 - Los clientes pueden registrarse, explorar negocios y ver sus productos
 - Al hacer clic en un producto, se abre WhatsApp con un mensaje listo para enviar
-- El sistema guarda un historial de los pedidos realizados
+- El sistema guarda un historial de los pedidos realizados por WhatsApp
 - El marketplace tiene buscador y filtros por categoría de negocio
 
 ---
@@ -20,8 +20,7 @@ Proyecto de Pre-Tesis — Carrera: Diseño y Desarrollo de Software — Tecsup (
 **Frontend**
 - React + Vite
 - React Router DOM
-- Axios
-- CSS Modules
+- CSS (sin librerías externas)
 
 **Backend**
 - Node.js + Express
@@ -35,19 +34,22 @@ Proyecto de Pre-Tesis — Carrera: Diseño y Desarrollo de Software — Tecsup (
 
 ```
 crecio/
-├── backend/
-│   ├── index.js
-│   └── src/
-│       ├── config/        # Conexión a la base de datos
-│       ├── controllers/   # Lógica de negocio
-│       ├── middlewares/   # Verificación de token
-│       ├── models/        # Archivos SQL (schema y datos de prueba)
-│       └── routes/        # Endpoints de la API
-└── frontend/
-    └── src/
-        ├── components/    # Componentes reutilizables
-        ├── pages/         # Páginas de la aplicación
-        └── services/      # Llamadas a la API
+└── crecio/
+    ├── backend-publico/        # API REST (Node.js + Express)
+    │   ├── index.js
+    │   ├── .env.example
+    │   └── src/
+    │       ├── controllers/    # Lógica de cada endpoint
+    │       ├── db/             # Archivos SQL y conexión a PostgreSQL
+    │       ├── middleware/     # Verificación de token JWT
+    │       └── routes/         # Definición de rutas
+    └── frontend-publico/       # Interfaz de usuario (React + Vite)
+        └── src/
+            ├── assets/         # Imágenes locales
+            ├── components/     # Componentes reutilizables (Navbar, guards)
+            ├── layouts/        # Layout con Navbar
+            ├── pages/          # Páginas de la aplicación
+            └── services/       # Llamadas al backend
 ```
 
 ---
@@ -55,44 +57,51 @@ crecio/
 ## Cómo ejecutar el proyecto
 
 ### Requisitos previos
-- Node.js instalado
+- Node.js v18 o superior
 - PostgreSQL instalado y corriendo
 
-### Base de datos
+### 1. Base de datos
 
-1. Crear la base de datos en PostgreSQL:
-```sql
-CREATE DATABASE crecio_db;
+En pgAdmin (Query Tool), ejecutar los archivos en este orden:
+
+```
+crecio/backend-publico/src/db/01_schema.sql   ← crea las tablas
+crecio/backend-publico/src/db/02_seed.sql     ← inserta datos de prueba
 ```
 
-2. Ejecutar los archivos SQL en orden:
-```
-backend/src/models/01_schema.sql
-backend/src/models/02_seed.sql
-```
-
-### Backend
+### 2. Backend
 
 ```bash
-cd backend
+cd crecio/backend-publico
 npm install
-```
-
-Crear el archivo `.env` basándose en `.env.example` y completar los datos de conexión.
-
-```bash
+cp .env.example .env
+# Editar .env con tus datos de PostgreSQL
 npm run dev
 ```
 
-El servidor corre en `http://localhost:3001`
+El servidor corre en: `http://localhost:3001`
 
-### Frontend
+### 3. Frontend
 
 ```bash
-cd frontend
+cd crecio/frontend-publico
 npm install
 npm run dev
 ```
 
-El frontend corre en `http://localhost:5173`
+El frontend corre en: `http://localhost:5173`
 
+---
+
+## Endpoints principales
+
+| Método | Ruta                           | Acceso     | Descripción                   |
+|--------|--------------------------------|------------|-------------------------------|
+| POST   | /api/auth/register             | Público    | Registrar nuevo cliente       |
+| POST   | /api/auth/login                | Público    | Iniciar sesión                |
+| GET    | /api/auth/me                   | Protegido  | Datos del cliente autenticado |
+| GET    | /api/negocios                  | Público    | Listar todos los negocios     |
+| GET    | /api/negocios/:id              | Público    | Ver un negocio                |
+| GET    | /api/productos/negocio/:id     | Público    | Productos de un negocio       |
+| POST   | /api/pedidos                   | Protegido  | Registrar pedido WhatsApp     |
+| GET    | /api/pedidos/mis-pedidos       | Protegido  | Historial de pedidos          |

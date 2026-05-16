@@ -1,0 +1,23 @@
+{
+  "name": "crecio-backend",
+  "version": "1.0.0",
+  "description": "API REST del proyecto CRECIO - Tecsup 5to Ciclo Grupo 48",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "pg": "^8.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "author": "Salazar Sihuay Argenis Paolo - Macavilca Nolasco Jhamile Jhersy",
+  "license": "ISC"
+}
