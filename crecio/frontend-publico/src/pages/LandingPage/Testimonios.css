@@ -1,0 +1,87 @@
+.testimonios {
+  background: white;
+  padding: 80px 2rem;
+}
+
+.testimonios-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.testi-title {
+  font-size: 42px;
+  font-weight: 800;
+  color: var(--dark);
+  margin-bottom: 3rem;
+  line-height: 1.2;
+}
+
+.testi-title em {
+  color: var(--green);
+  font-style: normal;
+}
+
+.testi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.testi-card {
+  background: var(--gray-6);
+  border-radius: var(--radius);
+  padding: 28px;
+  border: 1px solid var(--gray-5);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.testi-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+}
+
+.testi-stars {
+  display: flex;
+  gap: 3px;
+}
+
+.testi-texto {
+  font-size: 14px;
+  color: var(--gray-2);
+  line-height: 1.8;
+  flex: 1;
+  font-style: italic;
+}
+
+.testi-autor {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--gray-5);
+}
+
+.testi-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--green-light);
+  flex-shrink: 0;
+}
+
+.testi-nombre {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--dark);
+}
+
+.testi-negocio {
+  font-size: 12px;
+  color: var(--gray-4);
+  margin-top: 2px;
+}

@@ -1,0 +1,167 @@
+.footer {
+  background: #0D1117;
+  padding: 60px 2rem 0;
+}
+
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.footer-top {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 6rem;
+  padding-bottom: 3rem;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 22px;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.footer-logo-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--green);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.footer-desc {
+  font-size: 14px;
+  color: #4A5568;
+  line-height: 1.7;
+  max-width: 360px;
+  margin-bottom: 1.5rem;
+}
+
+.footer-newsletter {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.footer-newsletter input {
+  flex: 1;
+  background: #1a2030;
+  border: 1px solid #2a3545;
+  border-radius: var(--radius-sm);
+  padding: 11px 16px;
+  font-size: 14px;
+  color: white;
+  font-family: var(--font);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.footer-newsletter input::placeholder {
+  color: #4A5568;
+}
+
+.footer-newsletter input:focus {
+  border-color: var(--green);
+}
+
+.footer-newsletter button {
+  background: var(--green);
+  color: white;
+  border: none;
+  padding: 11px 24px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.footer-newsletter button:hover {
+  background: var(--green-dark);
+}
+
+.footer-social {
+  display: flex;
+  gap: 10px;
+}
+
+.footer-social a {
+  width: 38px;
+  height: 38px;
+  background: #1a2030;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4A5568;
+  transition: all 0.2s;
+  border: 1px solid #2a3545;
+}
+
+.footer-social a:hover {
+  background: var(--green);
+  color: white;
+  border-color: var(--green);
+}
+
+.footer-links {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  padding-top: 0.5rem;
+}
+
+.footer-col h5 {
+  font-size: 11px;
+  font-weight: 700;
+  color: #4A5568;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 1.25rem;
+}
+
+.footer-col a {
+  display: block;
+  font-size: 15px;
+  color: #8899A6;
+  margin-bottom: 12px;
+  transition: color 0.2s;
+}
+
+.footer-col a:hover {
+  color: white;
+}
+
+.footer-bottom {
+  border-top: 1px solid #1a2030;
+  padding: 24px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-bottom p {
+  font-size: 13px;
+  color: #2a3545;
+}
+
+.footer-legal {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.footer-legal a {
+  font-size: 13px;
+  color: #2a3545;
+  transition: color 0.2s;
+}
+
+.footer-legal a:hover {
+  color: var(--green);
+}
