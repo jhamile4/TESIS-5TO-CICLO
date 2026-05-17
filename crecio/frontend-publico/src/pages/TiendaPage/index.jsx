@@ -1,7 +1,13 @@
 import { useState } from 'react'
-import { Search, MapPin, ShieldCheck } from 'lucide-react'
-import NegocioModal from './NegocioModal'
-import './Directorio.css'
+import { useParams, useNavigate } from 'react-router-dom'
+import Navbar from '../../components/Navbar/Navbar'
+import Footer from '../../components/Footer/Footer'
+import TiendaHero from './components/TiendaHero'
+import ProductoGrid from './components/ProductoGrid'
+import SidebarNegocio from './components/SidebarNegocio'
+import ResenasList from './components/ResenasList'
+import Carrito from './components/Carrito'
+import './TiendaPage.css'
 
 import polleriaIMG from '../../assets/IMG-170.png'
 import boutiqueIMG from '../../assets/IMG-210.png'
@@ -35,11 +41,9 @@ import t6img2 from '../../assets/tienda6-img2.jpg'
 import t6img3 from '../../assets/tienda6-img3.jpg'
 import t6img4 from '../../assets/tienda6-img4.jpg'
 
-const filtros = ['Todos', 'Restaurante', 'Moda', 'Ferreteria', 'Panaderia', 'Tecnologia', 'Flores']
-
 const negocios = [
   {
-    id:0,
+    id: 0,
     img: polleriaIMG,
     nombre: 'Polleria El Sabor',
     categoria: 'Restaurante',
@@ -50,6 +54,7 @@ const negocios = [
     telefono: '999 123 456',
     whatsapp: '51999123456',
     desc: 'La mejor polleria del barrio con mas de 15 anos de experiencia. Pollo a la brasa al carbon, jugoso y crocante. Delivery disponible.',
+    galeria: [t1img1, t1img2, t1img3, t1img4],
     productos: [
       { img: t1img1, nombre: 'Pollo a la brasa 1/4', desc: '1/4 de pollo con papas fritas y salsas', precio: 28 },
       { img: t1img2, nombre: 'Pollo a la brasa 1/2', desc: '1/2 pollo con papas y arroz chaufa', precio: 48 },
@@ -57,8 +62,8 @@ const negocios = [
       { img: t1img4, nombre: 'Anticuchos de corazon', desc: '4 brochetas con papa y salsa de rocoto', precio: 18 },
     ],
     reviews: [
-      { nombre: 'Maria Elena R.', tiempo: '2 semanas atras', estrellas: 5, texto: 'El mejor pollo de Miraflores. La piel crocante y la carne jugosa. Delivery llego en 25 minutos.' },
-      { nombre: 'Carlos Vasquez', tiempo: '1 mes atras', estrellas: 5, texto: 'Vengo cada domingo con mi familia. Las salsas son increibles especialmente la de aji amarillo.' },
+      { nombre: 'Maria Elena R.', tiempo: '2 semanas atras', estrellas: 5, texto: 'El mejor pollo de Miraflores. La piel crocante y la carne jugosa.' },
+      { nombre: 'Carlos Vasquez', tiempo: '1 mes atras', estrellas: 5, texto: 'Vengo cada domingo con mi familia. Las salsas son increibles.' },
     ]
   },
   {
@@ -73,6 +78,7 @@ const negocios = [
     telefono: '999 234 567',
     whatsapp: '51999234567',
     desc: 'Moda femenina exclusiva con las ultimas tendencias. Ropa, accesorios y calzado para toda ocasion.',
+    galeria: [t2img1, t2img2, t2img3, t2img4],
     productos: [
       { img: t2img1, nombre: 'Blusa floral', desc: 'Blusa de algodon con estampado floral tallas S-XL', precio: 45 },
       { img: t2img2, nombre: 'Jeans tiro alto', desc: 'Jean de mezclilla stretch corte recto', precio: 89 },
@@ -80,8 +86,8 @@ const negocios = [
       { img: t2img4, nombre: 'Cartera de cuero', desc: 'Cartera artesanal de cuero genuino', precio: 75 },
     ],
     reviews: [
-      { nombre: 'Ana Torres', tiempo: '1 semana atras', estrellas: 5, texto: 'Encontre el vestido perfecto para mi graduacion. Excelente atencion.' },
-      { nombre: 'Sofia Ramos', tiempo: '3 semanas atras', estrellas: 5, texto: 'La mejor boutique de Miraflores. Siempre tienen lo ultimo en moda.' },
+      { nombre: 'Ana Torres', tiempo: '1 semana atras', estrellas: 5, texto: 'Encontre el vestido perfecto para mi graduacion.' },
+      { nombre: 'Sofia Ramos', tiempo: '3 semanas atras', estrellas: 5, texto: 'La mejor boutique de Miraflores.' },
     ]
   },
   {
@@ -95,7 +101,8 @@ const negocios = [
     horario: 'Lun-Sab: 8:00 am - 6:00 pm',
     telefono: '999 345 678',
     whatsapp: '51999345678',
-    desc: 'Todo en herramientas, materiales de construccion y articulos del hogar. Mas de 20 anos sirviendo al barrio.',
+    desc: 'Todo en herramientas, materiales de construccion y articulos del hogar.',
+    galeria: [t3img1, t3img2, t3img3, t3img4],
     productos: [
       { img: t3img1, nombre: 'Taladro electrico', desc: 'Taladro 750W con accesorios incluidos', precio: 180 },
       { img: t3img2, nombre: 'Pintura latex blanca', desc: 'Balde 4 litros rendimiento 40m2', precio: 65 },
@@ -103,8 +110,8 @@ const negocios = [
       { img: t3img4, nombre: 'Cinta metrica', desc: 'Cinta metrica 5m con freno de seguridad', precio: 12 },
     ],
     reviews: [
-      { nombre: 'Pedro Huanca', tiempo: '2 semanas atras', estrellas: 5, texto: 'Don Carlos siempre tiene todo lo que necesito. Precios justos.' },
-      { nombre: 'Marco Silva', tiempo: '1 mes atras', estrellas: 4, texto: 'Buena variedad de productos y personal que conoce bien su trabajo.' },
+      { nombre: 'Pedro Huanca', tiempo: '2 semanas atras', estrellas: 5, texto: 'Don Carlos siempre tiene todo lo que necesito.' },
+      { nombre: 'Marco Silva', tiempo: '1 mes atras', estrellas: 4, texto: 'Buena variedad de productos.' },
     ]
   },
   {
@@ -119,6 +126,7 @@ const negocios = [
     telefono: '999 456 789',
     whatsapp: '51999456789',
     desc: 'Pan artesanal horneado cada manana con recetas tradicionales de mas de 30 anos.',
+    galeria: [t4img1, t4img2, t4img3, t4img4],
     productos: [
       { img: t4img1, nombre: 'Pan frances', desc: 'Docena de pan frances recien horneado', precio: 6 },
       { img: t4img2, nombre: 'Torta de chocolate', desc: 'Torta entera de 1kg con cobertura de chocolate', precio: 55 },
@@ -126,8 +134,8 @@ const negocios = [
       { img: t4img4, nombre: 'Croissant mantequilla', desc: 'Croissant hojaldrado con mantequilla francesa', precio: 5 },
     ],
     reviews: [
-      { nombre: 'Rosa Mendoza', tiempo: '3 dias atras', estrellas: 5, texto: 'El mejor pan del barrio. Lo compro cada manana y siempre esta fresco.' },
-      { nombre: 'Jorge Quispe', tiempo: '2 semanas atras', estrellas: 5, texto: 'La torta de chocolate es increible. La pedi para el cumple de mi hijo.' },
+      { nombre: 'Rosa Mendoza', tiempo: '3 dias atras', estrellas: 5, texto: 'El mejor pan del barrio.' },
+      { nombre: 'Jorge Quispe', tiempo: '2 semanas atras', estrellas: 5, texto: 'La torta de chocolate es increible.' },
     ]
   },
   {
@@ -142,6 +150,7 @@ const negocios = [
     telefono: '999 567 890',
     whatsapp: '51999567890',
     desc: 'Especialistas en equipos tecnologicos, accesorios y reparacion de celulares y laptops.',
+    galeria: [t5img1, t5img2, t5img3, t5img4],
     productos: [
       { img: t5img1, nombre: 'Audifonos Bluetooth', desc: 'Audifonos inalambricos con cancelacion de ruido', precio: 120 },
       { img: t5img2, nombre: 'Cargador rapido', desc: 'Cargador 65W compatible con todos los celulares', precio: 35 },
@@ -149,8 +158,8 @@ const negocios = [
       { img: t5img4, nombre: 'Cable USB-C', desc: 'Cable trenzado 2m carga rapida y datos', precio: 18 },
     ],
     reviews: [
-      { nombre: 'Luis Garcia', tiempo: '1 semana atras', estrellas: 5, texto: 'Me repararon el celular en 2 horas. Muy profesionales y precio justo.' },
-      { nombre: 'Diana Flores', tiempo: '1 mes atras', estrellas: 4, texto: 'Buena atencion y productos originales. Recomendado.' },
+      { nombre: 'Luis Garcia', tiempo: '1 semana atras', estrellas: 5, texto: 'Me repararon el celular en 2 horas.' },
+      { nombre: 'Diana Flores', tiempo: '1 mes atras', estrellas: 4, texto: 'Buena atencion y productos originales.' },
     ]
   },
   {
@@ -165,88 +174,135 @@ const negocios = [
     telefono: '999 678 901',
     whatsapp: '51999678901',
     desc: 'Arreglos florales para toda ocasion. Flores frescas importadas y nacionales. Delivery el mismo dia.',
+    galeria: [t6img1, t6img2, t6img3, t6img4],
     productos: [
       { img: t6img1, nombre: 'Ramo de rosas rojas', desc: 'Docena de rosas rojas con lazo y tarjeta', precio: 65 },
       { img: t6img2, nombre: 'Arreglo primaveral', desc: 'Mix de flores de temporada en florero de vidrio', precio: 85 },
-      { img: t6img3, nombre: 'Bouquet de bodas', desc: 'Ramo personalizado para novias cotizar diseno', precio: 150 },
+      { img: t6img3, nombre: 'Bouquet de bodas', desc: 'Ramo personalizado para novias', precio: 150 },
       { img: t6img4, nombre: 'Orquideas blancas', desc: 'Maceta de orquideas blancas para regalo', precio: 95 },
     ],
     reviews: [
-      { nombre: 'Carmen Lopez', tiempo: '5 dias atras', estrellas: 5, texto: 'Las flores llegaron hermosas y muy frescas. El delivery fue super rapido.' },
-      { nombre: 'Patricia Vega', tiempo: '2 semanas atras', estrellas: 5, texto: 'Pedi el bouquet de bodas y quedo perfecto. Muy profesionales.' },
+      { nombre: 'Carmen Lopez', tiempo: '5 dias atras', estrellas: 5, texto: 'Las flores llegaron hermosas y muy frescas.' },
+      { nombre: 'Patricia Vega', tiempo: '2 semanas atras', estrellas: 5, texto: 'El bouquet de bodas quedo perfecto.' },
     ]
   },
 ]
 
-function Directorio() {
-  const [negocioSeleccionado, setNegocioSeleccionado] = useState(null)
+function TiendaPage() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const negocio = negocios[parseInt(id)]
+  const [carrito, setCarrito] = useState([])
+  const [carritoAbierto, setCarritoAbierto] = useState(false)
+  const [tabActivo, setTabActivo] = useState('productos')
+  const [imgActiva, setImgActiva] = useState(0)
+
+  if (!negocio) {
+    return (
+      <div style={{ padding: '4rem', textAlign: 'center' }}>
+        <h2>Tienda no encontrada</h2>
+        <button onClick={() => navigate('/')}>Volver al inicio</button>
+      </div>
+    )
+  }
+
+  const agregarAlCarrito = (producto) => {
+    setCarrito(prev => {
+      const existe = prev.find(p => p.nombre === producto.nombre)
+      if (existe) {
+        return prev.map(p => p.nombre === producto.nombre ? { ...p, cantidad: p.cantidad + 1 } : p)
+      }
+      return [...prev, { ...producto, cantidad: 1 }]
+    })
+    setCarritoAbierto(true)
+  }
+
+  const cambiarCantidad = (nombre, delta) => {
+    setCarrito(prev =>
+      prev.map(p => p.nombre === nombre ? { ...p, cantidad: Math.max(1, p.cantidad + delta) } : p)
+    )
+  }
+
+  const eliminarDelCarrito = (nombre) => {
+    setCarrito(prev => prev.filter(p => p.nombre !== nombre))
+  }
+
+  const totalItems = carrito.reduce((acc, p) => acc + p.cantidad, 0)
+  const subtotal = carrito.reduce((acc, p) => acc + p.precio * p.cantidad, 0)
+
+  const pedidoWhatsApp = () => {
+    const items = carrito.map(p => p.cantidad + 'x ' + p.nombre + ' S/' + p.precio).join(', ')
+    const msg = 'Hola! Quiero hacer un pedido: ' + items + '. Total: S/' + subtotal
+    window.open('https://wa.me/' + negocio.whatsapp + '?text=' + encodeURIComponent(msg), '_blank')
+  }
 
   return (
-    <section className="directory">
-      <div className="directory-header">
-        <div className="section-label" style={{ textAlign: 'center' }}>Directorio</div>
-        <h2 className="section-title" style={{ textAlign: 'center' }}>
-          Descubre negocios <em style={{ color: 'var(--green)', fontStyle: 'normal' }}>en tu localidad</em>
-        </h2>
-        <p className="directory-sub">
-          Encuentra tiendas, restaurantes y servicios cerca de ti. Todos verificados y con catalogo digital.
-        </p>
-        <div className="search-wrapper">
-          <div className="search-field">
-            <Search size={16} color="#A0AEC0" />
-            <input placeholder="Que buscas? (ej: polleria, ropa...)" />
+    <div className="tienda-page">
+      <Navbar />
+
+      <TiendaHero
+        negocio={negocio}
+        imgActiva={imgActiva}
+        setImgActiva={setImgActiva}
+        totalItems={totalItems}
+        onAbrirCarrito={() => setCarritoAbierto(true)}
+      />
+
+      <div className="tienda-body">
+        <div className="tienda-main">
+
+          <div className="tienda-tabs">
+            <button
+              className={tabActivo === 'productos' ? 'tienda-tab active' : 'tienda-tab'}
+              onClick={() => setTabActivo('productos')}
+            >
+              Productos ({negocio.productos.length})
+            </button>
+            <button
+              className={tabActivo === 'resenas' ? 'tienda-tab active' : 'tienda-tab'}
+              onClick={() => setTabActivo('resenas')}
+            >
+              Resenas ({negocio.reviews.length})
+            </button>
           </div>
-          <div className="search-divider" />
-          <div className="search-field">
-            <MapPin size={16} color="#A0AEC0" />
-            <input placeholder="Ubicacion" />
-          </div>
-          <button className="search-btn">
-            <Search size={15} color="white" />
-            Buscar
-          </button>
+
+          {tabActivo === 'productos' && (
+            <ProductoGrid
+              productos={negocio.productos}
+              onAgregar={agregarAlCarrito}
+              whatsapp={negocio.whatsapp}
+            />
+          )}
+
+          {tabActivo === 'resenas' && (
+            <ResenasList reviews={negocio.reviews} />
+          )}
+
         </div>
-        <div className="filter-tags">
-          {filtros.map((f, i) => (
-            <span key={i} className={i === 0 ? 'tag active' : 'tag'}>{f}</span>
-          ))}
-        </div>
+
+        <SidebarNegocio
+          negocio={negocio}
+          totalItems={totalItems}
+          subtotal={subtotal}
+          onAbrirCarrito={() => setCarritoAbierto(true)}
+          onWhatsApp={pedidoWhatsApp}
+        />
       </div>
 
-      <div className="biz-grid">
-        {negocios.map((n, i) => (
-          <div className="biz-card" key={i}>
-            <div className="biz-img-wrap">
-              <img src={n.img} alt={n.nombre} className="biz-img" />
-              <span className="biz-badge-cat">{n.categoria}</span>
-              <span className="biz-badge-verified">
-                <ShieldCheck size={12} color="white" />
-                Verificado
-              </span>
-            </div>
-            <div className="biz-info">
-              <div className="biz-name">{n.nombre}</div>
-              <div className="biz-rating">★ {n.rating} ({n.resenas} resenas)</div>
-              <div className="biz-meta">
-                <div className="biz-address">{n.direccion}</div>
-                <div className="biz-cta">Ver pagina</div>
-              </div>
-              <button className="biz-quick" onClick={() => setNegocioSeleccionado(n)}>
-                Vista rapida
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {negocioSeleccionado && (
-        <NegocioModal
-          negocio={negocioSeleccionado}
-          onClose={() => setNegocioSeleccionado(null)}
+      {carritoAbierto && (
+        <Carrito
+          carrito={carrito}
+          subtotal={subtotal}
+          onCerrar={() => setCarritoAbierto(false)}
+          onCambiar={cambiarCantidad}
+          onEliminar={eliminarDelCarrito}
+          onWhatsApp={pedidoWhatsApp}
         />
       )}
-    </section>
+
+      <Footer />
+    </div>
   )
 }
 
-export default Directorio
+export default TiendaPage

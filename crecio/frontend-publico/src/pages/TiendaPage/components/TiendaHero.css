@@ -1,0 +1,120 @@
+.tienda-hero {
+  width: 100%;
+  background: var(--dark);
+}
+
+.tienda-hero-img-wrap {
+  position: relative;
+  height: 380px;
+  overflow: hidden;
+}
+
+.tienda-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.7;
+}
+
+.tienda-hero-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 2rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+}
+
+.tienda-hero-cat {
+  background: white;
+  color: var(--dark);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+.tienda-hero-nombre {
+  font-size: 36px;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 8px;
+}
+
+.tienda-hero-meta {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.tienda-hero-meta span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.85);
+  font-weight: 500;
+}
+
+.tienda-carrito-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: var(--green);
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.tienda-carrito-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: red;
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tienda-galeria {
+  display: flex;
+  gap: 8px;
+  padding: 12px 2rem;
+  background: var(--dark);
+  overflow-x: auto;
+}
+
+.tienda-galeria-img {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0.6;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.tienda-galeria-img.active {
+  opacity: 1;
+  border-color: var(--green);
+}
+
+.tienda-galeria-img:hover {
+  opacity: 1;
+}

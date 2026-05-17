@@ -1,9 +1,10 @@
+import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { X, MapPin, Clock, Phone, ShieldCheck, MessageCircle, Store } from 'lucide-react'
 
 function NegocioModal({ negocio, onClose }) {
   const [tabActivo, setTabActivo] = useState('productos')
-
+  const navigate = useNavigate()
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
@@ -117,7 +118,7 @@ function NegocioModal({ negocio, onClose }) {
           )}
 
           <div className="modal-actions">
-            <button className="modal-btn-primary">
+            <button className="modal-btn-primary" onClick={() => navigate('/tienda/' + negocio.id)}>
               <Store size={16} color="white" />
               Ver tienda completa
             </button>

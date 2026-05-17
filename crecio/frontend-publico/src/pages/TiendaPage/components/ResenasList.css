@@ -1,0 +1,57 @@
+.resenas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.resena-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 20px;
+  border: 1px solid var(--gray-5);
+}
+
+.resena-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.resena-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--green);
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.resena-nombre {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--dark);
+}
+
+.resena-estrellas {
+  font-size: 13px;
+  color: #F59E0B;
+  letter-spacing: 1px;
+}
+
+.resena-tiempo {
+  font-size: 12px;
+  color: var(--gray-4);
+  margin-left: auto;
+}
+
+.resena-texto {
+  font-size: 14px;
+  color: var(--gray-2);
+  line-height: 1.7;
+}
