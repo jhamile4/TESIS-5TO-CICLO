@@ -90,3 +90,8 @@
 .btn-primary:hover {
   background: var(--green-dark);
 }
+.logo-img {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+}

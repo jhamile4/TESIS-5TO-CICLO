@@ -1,3 +1,4 @@
+import logoImg from '../../assets/logoCrecio.png'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import StepIndicator from './components/StepIndicator'
@@ -29,7 +30,7 @@ function RegistroPage() {
 
       <div className="registro-topbar">
         <div className="registro-logo" onClick={() => navigate('/')}>
-          <div className="registro-logo-icon"></div>
+            <img src={logoImg} alt="CRECIO" style={{ height: '32px', width: 'auto' }} />
           CRECIO
         </div>
         <button className="registro-volver" onClick={() => navigate('/')}>

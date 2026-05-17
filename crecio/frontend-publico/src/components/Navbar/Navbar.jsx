@@ -1,3 +1,4 @@
+import logoImg from '../../assets/logoCrecio.png'
 import './Navbar.css'
 
 import { useNavigate } from 'react-router-dom'
@@ -9,7 +10,7 @@ function Navbar() {
     <nav className="navbar">
       <div className="navbar-inner">
         <div className="navbar-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-          <div className="logo-icon"></div>
+          <img src={logoImg} alt="CRECIO" className="logo-img" />
           CRECIO
         </div>
         <div className="navbar-links">
@@ -18,7 +19,9 @@ function Navbar() {
           <a href="#">Precios</a>
         </div>
         <div className="navbar-actions">
-          <button className="btn-ghost">Iniciar Sesion</button>
+          <button className="btn-ghost" onClick={() => navigate('/login')}>
+            Iniciar Sesion
+          </button>
           <button className="btn-primary" onClick={() => navigate('/registro')}>
             Crear Tu Tienda →
           </button>
