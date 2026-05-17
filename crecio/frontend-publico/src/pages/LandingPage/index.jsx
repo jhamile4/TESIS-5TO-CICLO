@@ -1,3 +1,6 @@
+// Página principal de CRECIO
+// Compone todas las secciones en orden: Hero, Beneficios, Directorio, Pasos, IA, Planes, Testimonios, CTA
+// Incluye su propio Navbar y Footer (no usa PageLayout)
 import Navbar from '../../components/Navbar/Navbar'
 import Hero from './Hero'
 import Beneficios from './Beneficios'

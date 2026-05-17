@@ -1,15 +1,14 @@
 const pool = require('../db/db');
 
-// Registra un pedido cuando el cliente hace clic en "Pedir por WhatsApp"
+// Registra un pedido cuando el cliente hace clic en "Pedir por WhatsApp" (con token)
 const createOrder = async (req, res) => {
   const { fk_producto_id, fk_negocio_id } = req.body;
-  const fk_cliente_id = req.user.pk_id; // Viene del token JWT
+  const fk_cliente_id = req.user.pk_id;
 
   if (!fk_producto_id || !fk_negocio_id)
     return res.status(400).json({ message: 'Producto y negocio son requeridos' });
 
   try {
-    // Obtiene el nombre y precio del producto para armar el mensaje de WhatsApp
     const prod = await pool.query(
       'SELECT nombre, precio FROM producto WHERE pk_id = $1', [fk_producto_id]
     );
@@ -28,6 +27,32 @@ const createOrder = async (req, res) => {
     res.status(201).json(result.rows[0]);
   } catch (error) {
     res.status(500).json({ message: 'Error al registrar pedido', error: error.message });
+  }
+};
+
+// Registra un pedido sin login (cliente anónimo desde TiendaPage)
+// El carrito llega como array: [{ fk_producto_id, cantidad }]
+const createOrderPublic = async (req, res) => {
+  const { fk_negocio_id, items, mensaje_generado } = req.body;
+
+  if (!fk_negocio_id || !items || items.length === 0)
+    return res.status(400).json({ message: 'Negocio e items son requeridos' });
+
+  try {
+    // Registra un pedido por cada producto del carrito (cliente_id = 1 como placeholder anónimo)
+    const inserts = items.map(item =>
+      pool.query(
+        `INSERT INTO pedido_whatsapp (fk_cliente_id, fk_producto_id, fk_negocio_id, mensaje_generado)
+         VALUES (1, $1, $2, $3)
+         RETURNING pk_id`,
+        [item.fk_producto_id, fk_negocio_id, mensaje_generado || 'Pedido desde TiendaPage']
+      )
+    );
+
+    await Promise.all(inserts);
+    res.status(201).json({ message: 'Pedido registrado correctamente' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al registrar pedido público', error: error.message });
   }
 };
 
@@ -54,4 +79,4 @@ const getMyOrders = async (req, res) => {
   }
 };
 
-module.exports = { createOrder, getMyOrders };
+module.exports = { createOrder, createOrderPublic, getMyOrders };

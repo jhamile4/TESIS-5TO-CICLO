@@ -1,3 +1,5 @@
+// Página de registro de nuevo cliente
+// Al crear la cuenta el backend devuelve el token y se guarda automáticamente
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { register } from '../../services/api'
@@ -11,6 +13,7 @@ export default function RegisterPage() {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value })
 
+  // Envía los datos al backend; si el registro es exitoso guarda el token y redirige
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')

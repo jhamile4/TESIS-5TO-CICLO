@@ -1,3 +1,5 @@
+// Sección de beneficios de la LandingPage
+// Muestra los 3 beneficios principales y estadísticas de la plataforma
 import './Beneficios.css'
 import { Camera, MessageCircle, Shield, Megaphone } from 'lucide-react'
 function Beneficios() {

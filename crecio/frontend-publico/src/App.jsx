@@ -20,6 +20,9 @@ import ProfilePage from './pages/ClientePage/ProfilePage'
 // Página pública de negocio (vista cliente)
 import NegocioPage from './pages/NegocioPage/NegocioPage'
 
+// TiendaPage completa (hecha por Jhamile — galería, productos, reseñas, carrito)
+import TiendaPage from './pages/TiendaPage/index.jsx'
+
 function App() {
   return (
     <BrowserRouter>
@@ -49,6 +52,13 @@ function App() {
         {/* Pública — página de negocio con productos y botón WhatsApp */}
         <Route path="/negocio/:id" element={
           <PageLayout><NegocioPage /></PageLayout>
+        } />
+
+        {/* Protegida — TiendaPage completa (requiere login) */}
+        <Route path="/tienda/:slug" element={
+          <ProtectedRoute>
+            <TiendaPage />
+          </ProtectedRoute>
         } />
       </Routes>
     </BrowserRouter>

@@ -129,52 +129,216 @@
 .biz-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  gap: 24px;
   max-width: 1200px;
   margin: 2rem auto 0;
 }
 
 .biz-card {
   background: white;
-  border-radius: var(--radius);
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  border: 1px solid var(--gray-6);
   transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
   cursor: pointer;
 }
 
 .biz-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.11);
 }
 
 .biz-img-wrap {
   position: relative;
+  overflow: hidden;
 }
 
 .biz-img {
   width: 100%;
-  height: 200px;
+  height: 180px;
   object-fit: cover;
   display: block;
+  transition: transform 0.3s;
+}
+
+.biz-card:hover .biz-img {
+  transform: scale(1.04);
 }
 
 .biz-badge-cat {
   position: absolute;
-  top: 12px;
-  left: 12px;
-  background: white;
+  top: 10px;
+  left: 10px;
+  background: rgba(255,255,255,0.92);
   color: var(--dark);
   font-size: 11px;
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 20px;
+  backdrop-filter: blur(4px);
 }
 
 .biz-badge-verified {
   position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--green);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.biz-info {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+}
+
+.biz-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--dark);
+  line-height: 1.3;
+}
+
+.biz-rating {
+  font-size: 12px;
+  color: var(--gray-3);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.star {
+  font-size: 12px;
+}
+
+.biz-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  gap: 8px;
+}
+
+.biz-address {
+  font-size: 11px;
+  color: var(--gray-4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.biz-cta {
+  font-size: 12px;
+  color: var(--green);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.biz-cta:hover {
+  text-decoration: underline;
+}
+
+.biz-quick {
+  width: 100%;
+  padding: 8px;
+  border: 1.5px solid var(--gray-5);
+  background: white;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dark);
+  cursor: pointer;
+  font-family: var(--font);
+  margin-top: 6px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.biz-quick:hover {
+  background: var(--gray-6);
+  border-color: var(--gray-4);
+}
+
+/* ─── NEGOCIO MODAL ─── */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal {
+  background: white;
+  border-radius: 16px;
+  max-width: 520px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+  position: relative;
+  animation: modalIn 0.2s ease;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-close {
+  position: absolute;
   top: 12px;
   right: 12px;
+  z-index: 10;
+  background: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.modal-img-wrap {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 16px 16px 0 0;
+}
+
+.modal-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.modal-verified {
+  position: absolute;
+  top: 12px;
+  left: 12px;
   background: var(--green);
   color: white;
   font-size: 11px;
@@ -186,39 +350,281 @@
   gap: 4px;
 }
 
-.biz-info {
-  padding: 16px;
+.modal-img-badges {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
   display: flex;
-  flex-direction: column;
   gap: 6px;
+  align-items: center;
 }
 
-.biz-name {
-  font-size: 16px;
+.modal-img-badges .biz-badge-cat {
+  position: static;
+  font-size: 11px;
+}
+
+.modal-rating {
+  background: rgba(0,0,0,0.55);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.modal-body {
+  padding: 1.25rem;
+}
+
+.modal-nombre {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--dark);
+  margin: 0 0 6px;
+}
+
+.modal-desc {
+  font-size: 13px;
+  color: var(--gray-3);
+  line-height: 1.5;
+  margin: 0 0 1rem;
+}
+
+.modal-info-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.modal-info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  flex: 1;
+  min-width: 120px;
+}
+
+.modal-info-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--gray-4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modal-info-val {
+  font-size: 12px;
+  color: var(--dark);
+  font-weight: 500;
+}
+
+.modal-tabs {
+  display: flex;
+  border: 1.5px solid var(--gray-5);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 1rem 0;
+}
+
+.modal-tab {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: white;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-3);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all 0.2s;
+}
+
+.modal-tab.active {
+  background: var(--dark);
+  color: white;
+}
+
+/* Productos dentro del modal */
+.modal-productos {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.modal-producto {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--gray-6);
+}
+
+.modal-producto:last-child {
+  border-bottom: none;
+}
+
+.modal-producto-img {
+  flex-shrink: 0;
+}
+
+.modal-producto-img img {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+  display: block;
+}
+
+.modal-producto-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.modal-producto-nombre {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--dark);
+  margin-bottom: 2px;
+}
+
+.modal-producto-desc {
+  font-size: 11px;
+  color: var(--gray-3);
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.modal-producto-whatsapp {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--green);
+  text-decoration: none;
+}
+
+.modal-producto-precio {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--green);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Reseñas dentro del modal */
+.modal-resenas {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.modal-review {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--gray-6);
+}
+
+.modal-review:last-child {
+  border-bottom: none;
+}
+
+.modal-review-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.modal-review-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #d4f4e8;
+  color: var(--green);
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.modal-review-nombre {
+  font-size: 13px;
   font-weight: 700;
   color: var(--dark);
 }
 
-.biz-rating {
-  font-size: 13px;
-  color: var(--gray-3);
-  font-weight: 500;
+.modal-review-estrellas {
+  font-size: 11px;
+  color: #f59e0b;
 }
 
-.biz-meta {
+.modal-review-tiempo {
+  font-size: 11px;
+  color: var(--gray-4);
+  margin-left: auto;
+}
+
+.modal-review-texto {
+  font-size: 12px;
+  color: var(--gray-3);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Botones de acción del modal */
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  padding-top: 1rem;
+  border-top: 1.5px solid var(--gray-6);
+  margin-top: 1rem;
+}
+
+.modal-btn-primary {
+  flex: 1;
+  padding: 11px 16px;
+  background: var(--dark);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-top: 4px;
+  justify-content: center;
+  gap: 6px;
+  transition: opacity 0.2s;
 }
 
-.biz-address {
-  font-size: 12px;
-  color: var(--gray-4);
+.modal-btn-primary:hover {
+  opacity: 0.85;
 }
 
-.biz-cta {
-  font-size: 13px;
+.modal-btn-whatsapp {
+  flex: 1;
+  padding: 11px 16px;
+  border: 1.5px solid var(--green);
   color: var(--green);
+  background: white;
+  border-radius: 8px;
+  font-size: 13px;
   font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.modal-btn-whatsapp:hover {
+  background: #f0fdf8;
 }

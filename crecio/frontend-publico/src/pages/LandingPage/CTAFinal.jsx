@@ -1,3 +1,5 @@
+// Sección CTA final de la LandingPage
+// Invita al negocio a unirse; incluye formulario de contacto y puntos de confianza
 import { Check, Shield, Clock, Zap } from 'lucide-react'
 import './CTAFinal.css'
 

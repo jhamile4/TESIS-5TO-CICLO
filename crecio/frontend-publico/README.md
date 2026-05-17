@@ -1,16 +1,66 @@
-# React + Vite
+# CRECIO — Frontend Público
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación web para que clientes exploren negocios locales, vean productos y realicen pedidos por WhatsApp.
 
-Currently, two official plugins are available:
+## Tecnologías
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 18 + Vite
+- React Router v6
+- CSS Variables (sistema de diseño propio)
+- Lucide React (íconos)
 
-## React Compiler
+## Estructura del proyecto
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```
+src/
+├── App.jsx                  # Rutas principales de la aplicación
+├── main.jsx                 # Punto de entrada
+├── data/
+│   └── negociosData.js      # Datos locales de los 6 negocios demo
+├── services/
+│   ├── api.js               # Llamadas al backend privado (auth, perfil)
+│   └── apiPublico.js        # Llamadas al backend público (negocios, productos)
+├── components/
+│   ├── Auth/                # Guards de ruta (ProtectedRoute, GuestRoute)
+│   ├── Navbar/              # Barra de navegación global
+│   └── Footer/              # Pie de página
+├── layouts/
+│   └── PageLayout.jsx       # Layout con Navbar para páginas internas
+└── pages/
+    ├── LandingPage/         # Página principal (Hero, Directorio, secciones)
+    ├── AuthPage/            # Login y Registro
+    ├── ClientePage/         # Perfil del cliente con historial de pedidos
+    ├── NegocioPage/         # Página pública de negocio (legacy)
+    └── TiendaPage/          # Vista completa de tienda con carrito
+```
 
-## Expanding the ESLint configuration
+## Rutas
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+| Ruta | Acceso | Descripción |
+|------|--------|-------------|
+| `/` | Público | Landing page con directorio de negocios |
+| `/login` | Solo invitados | Inicio de sesión |
+| `/register` | Solo invitados | Registro de cuenta |
+| `/perfil` | Autenticado | Perfil y pedidos del cliente |
+| `/tienda/:slug` | Autenticado | Vista completa de la tienda |
+
+## Instalación y uso
+
+```bash
+# Instalar dependencias
+npm install
+
+# Iniciar en desarrollo
+npm run dev
+
+# Build para producción
+npm run build
+```
+
+## Variables de entorno
+
+Crear un archivo `.env` en la raíz con:
+
+```
+VITE_API_URL=http://localhost:3001
+```

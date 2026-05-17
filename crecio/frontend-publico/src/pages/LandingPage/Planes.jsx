@@ -1,3 +1,5 @@
+// Sección de planes de precios de la LandingPage
+// Muestra 3 planes: Básico (gratis), Pro (S/49/mes) y Empresarial (S/129/mes)
 import { Check, X } from 'lucide-react'
 import './Planes.css'
 

@@ -7,6 +7,8 @@ const authRoutes     = require('./src/routes/authRoutes');
 const businessRoutes = require('./src/routes/businessRoutes');
 const productRoutes  = require('./src/routes/productRoutes');
 const orderRoutes    = require('./src/routes/orderRoutes');
+const resenaRoutes   = require('./src/routes/resenaRoutes');
+const galeriaRoutes  = require('./src/routes/galeriaRoutes');
 
 const app  = express();
 const PORT = process.env.PORT || 3001;
@@ -18,10 +20,12 @@ app.use(cors());
 app.use(express.json());
 
 // Registro de rutas con su prefijo base
-app.use('/api/auth',      authRoutes);
-app.use('/api/negocios',  businessRoutes);
-app.use('/api/productos', productRoutes);
-app.use('/api/pedidos',   orderRoutes);
+app.use('/api/auth',                    authRoutes);
+app.use('/api/negocios',                businessRoutes);
+app.use('/api/negocios/:id/resenas',    resenaRoutes);
+app.use('/api/negocios/:id/galeria',    galeriaRoutes);
+app.use('/api/productos',               productRoutes);
+app.use('/api/pedidos',                 orderRoutes);
 
 // Ruta de verificación rápida
 app.get('/', (req, res) => {

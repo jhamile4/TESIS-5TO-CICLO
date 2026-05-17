@@ -1,3 +1,5 @@
+// Footer global de la aplicación
+// Muestra la marca, suscripción al newsletter, redes sociales y links de producto/empresa
 import { Globe, MessageCircle, Music, Send } from 'lucide-react'
 import './Footer.css'
 

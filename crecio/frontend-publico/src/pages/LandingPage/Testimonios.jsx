@@ -1,3 +1,5 @@
+// Sección de testimonios de la LandingPage
+// Muestra 3 testimonios de negocios que usan CRECIO con calificación de 5 estrellas
 import { Star } from 'lucide-react'
 import t1 from '../../assets/t1.jpg'
 import t2 from '../../assets/t2.jpg'

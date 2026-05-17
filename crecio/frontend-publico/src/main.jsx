@@ -1,3 +1,5 @@
+// Punto de entrada de la aplicación React
+// Monta el componente raíz App en el elemento #root del index.html
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'

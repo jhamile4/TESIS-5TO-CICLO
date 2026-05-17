@@ -8,6 +8,7 @@ const getAll = async (req, res) => {
     let query = `
       SELECT n.pk_id, n.nombre, n.categoria, n.descripcion,
              n.direccion, n.distrito, n.whatsapp, n.logo_url,
+             n.horario, n.telefono, n.rating, n.total_resenas,
              p.nombre AS plan_nombre
       FROM negocio n
       LEFT JOIN plan p ON n.fk_plan_id = p.pk_id
@@ -37,6 +38,7 @@ const getById = async (req, res) => {
     const result = await pool.query(
       `SELECT n.pk_id, n.nombre, n.categoria, n.descripcion,
               n.direccion, n.distrito, n.whatsapp, n.logo_url, n.verificado,
+              n.horario, n.telefono, n.rating, n.total_resenas,
               p.nombre AS plan_nombre
        FROM negocio n
        LEFT JOIN plan p ON n.fk_plan_id = p.pk_id

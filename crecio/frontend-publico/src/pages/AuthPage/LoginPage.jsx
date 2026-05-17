@@ -1,3 +1,5 @@
+// Página de inicio de sesión
+// Al autenticarse correctamente guarda el token en localStorage y redirige al inicio
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { login } from '../../services/api'
@@ -11,6 +13,7 @@ export default function LoginPage() {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value })
 
+  // Envía credenciales al backend; si son válidas guarda el token y redirige
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')

@@ -1,21 +1,71 @@
-# CRECIO — Backend API
+# CRECIO — Backend Público
 
-API REST del proyecto CRECIO desarrollada con Node.js, Express y PostgreSQL.
+API REST del proyecto CRECIO. Gestiona autenticación de clientes, negocios, productos, galería, reseñas y pedidos por WhatsApp.
 
-**Proyecto de Pre-Tesis · Tecsup · 5to Ciclo · Grupo 48**
+**Proyecto de Pre-Tesis · Tecsup · 5to Ciclo**
 
 ---
 
 ## Tecnologías
 
 - Node.js + Express
-- PostgreSQL
+- PostgreSQL (pg)
 - JWT (autenticación)
-- bcryptjs (encriptación de contraseñas)
+- bcryptjs (hash de contraseñas)
+- dotenv, cors, nodemon
 
 ---
 
-## Cómo correr el proyecto localmente
+## Estructura del proyecto
+
+```
+backend-publico/
+├── index.js                        # Entrada principal, configura Express y rutas
+├── .env.example                    # Variables de entorno requeridas
+└── src/
+    ├── db/
+    │   ├── db.js                   # Pool de conexión a PostgreSQL
+    │   ├── 01_schema.sql           # Creación de tablas
+    │   ├── 02_seed.sql             # Datos de prueba
+    │   └── 03_migration.sql        # Columnas y tablas adicionales
+    ├── middleware/
+    │   └── verifyToken.js          # Middleware de autenticación JWT
+    ├── controllers/
+    │   ├── authController.js       # Registro, login y perfil del cliente
+    │   ├── businessController.js   # Listado y detalle de negocios
+    │   ├── productController.js    # Productos por negocio
+    │   ├── orderController.js      # Registro de pedidos por WhatsApp
+    │   ├── galeriaController.js    # Imágenes de galería por negocio
+    │   └── resenaController.js     # Reseñas por negocio
+    └── routes/
+        ├── authRoutes.js           # /api/auth/*
+        ├── businessRoutes.js       # /api/negocios/*
+        ├── productRoutes.js        # /api/productos/*
+        ├── orderRoutes.js          # /api/pedidos/*
+        ├── galeriaRoutes.js        # /api/negocios/:id/galeria
+        └── resenaRoutes.js         # /api/negocios/:id/resenas
+```
+
+---
+
+## Endpoints
+
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| POST | `/api/auth/register` | No | Registro de cliente |
+| POST | `/api/auth/login` | No | Login, retorna JWT |
+| GET | `/api/auth/me` | Sí | Datos del cliente autenticado |
+| GET | `/api/negocios` | No | Lista de negocios |
+| GET | `/api/negocios/:id` | No | Detalle de un negocio |
+| GET | `/api/negocios/:id/galeria` | No | Galería del negocio |
+| GET | `/api/negocios/:id/resenas` | No | Reseñas del negocio |
+| GET | `/api/productos/negocio/:id` | No | Productos de un negocio |
+| POST | `/api/pedidos` | Sí | Registrar pedido por WhatsApp |
+| GET | `/api/pedidos/mis-pedidos` | Sí | Pedidos del cliente autenticado |
+
+---
+
+## Instalación y uso
 
 ### 1. Instalar dependencias
 
@@ -25,57 +75,40 @@ npm install
 
 ### 2. Configurar variables de entorno
 
-Duplica el archivo `.env.example`, renómbralo a `.env` y completa con tus datos de PostgreSQL:
-
 ```bash
 cp .env.example .env
+# Editar .env con tus datos de PostgreSQL y JWT
 ```
 
 ### 3. Crear la base de datos
 
-En **pgAdmin**, abre el Query Tool y ejecuta:
-
-```sql
-CREATE DATABASE crecio_db;
-```
-
-Luego, conectado a `crecio_db`, ejecuta los archivos SQL en este orden:
+En pgAdmin, crear la base de datos `crecio_db` y ejecutar los SQL en orden:
 
 ```
-src/db/01_schema.sql   ← crea las tablas
-src/db/02_seed.sql     ← inserta datos de prueba
+src/db/01_schema.sql    ← crea las tablas
+src/db/02_seed.sql      ← inserta datos de prueba
+src/db/03_migration.sql ← agrega columnas y tablas adicionales
 ```
-
-> Abre cada archivo en el Query Tool de pgAdmin y presiona F5 para ejecutar.
 
 ### 4. Iniciar el servidor
 
 ```bash
-npm run dev
+npm run dev   # desarrollo con nodemon
+npm start     # producción
 ```
 
 El servidor queda disponible en: `http://localhost:3001`
 
 ---
 
-## Archivos SQL
+## Variables de entorno (.env)
 
-| Archivo               | Qué hace                                      |
-|-----------------------|-----------------------------------------------|
-| `src/db/01_schema.sql` | Crea todas las tablas del proyecto            |
-| `src/db/02_seed.sql`   | Inserta negocios y productos de prueba        |
-
----
-
-## Endpoints
-
-| Método | Ruta                           | Acceso     | Descripción                   |
-|--------|--------------------------------|------------|-------------------------------|
-| POST   | /api/auth/register             | Público    | Registrar nuevo cliente       |
-| POST   | /api/auth/login                | Público    | Iniciar sesión                |
-| GET    | /api/auth/me                   | Protegido  | Datos del cliente autenticado |
-| GET    | /api/negocios                  | Público    | Listar todos los negocios     |
-| GET    | /api/negocios/:id              | Público    | Ver un negocio                |
-| GET    | /api/productos/negocio/:id     | Público    | Productos de un negocio       |
-| POST   | /api/pedidos                   | Protegido  | Registrar pedido WhatsApp     |
-| GET    | /api/pedidos/mis-pedidos       | Protegido  | Historial de pedidos          |
+```
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=crecio_db
+DB_USER=postgres
+DB_PASSWORD=tu_password
+JWT_SECRET=tu_secreto_jwt
+PORT=3001
+```

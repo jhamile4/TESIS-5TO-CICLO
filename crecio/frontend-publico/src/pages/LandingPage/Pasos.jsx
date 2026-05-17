@@ -1,3 +1,5 @@
+// Sección "Cómo funciona" de la LandingPage
+// Muestra 3 pasos para que un negocio se digitalice con CRECIO
 import paso1IMG from '../../assets/IMG-108.png'
 import paso2IMG from '../../assets/IMG-126.png'
 import paso3IMG from '../../assets/IMG-126.png'

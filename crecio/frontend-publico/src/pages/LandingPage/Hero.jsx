@@ -1,3 +1,5 @@
+// Sección Hero de la LandingPage
+// Muestra el mensaje principal, CTAs y puntos de confianza (sin costo, sin tarjeta, cancela cuando quieras)
 import heroImg from '../../assets/IMG-16.png'
 import './Hero.css'
 import { CheckCircle2 } from 'lucide-react'

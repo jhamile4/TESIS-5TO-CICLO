@@ -1,3 +1,5 @@
+// Sección de herramientas de inteligencia artificial de la LandingPage
+// Presenta 4 funcionalidades IA: carga de productos, marketing, análisis y chatbot
 import { Camera, Megaphone, BarChart2, MessageCircle } from 'lucide-react'
 import laptopImg from '../../assets/lapia.png'
 import './HerramientasIA.css'

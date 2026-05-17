@@ -1,0 +1,91 @@
+.tienda-hero {
+  width: 100%;
+  background: var(--dark);
+}
+
+.tienda-hero-img-wrap {
+  position: relative;
+  height: 380px;
+  overflow: hidden;
+}
+
+.tienda-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.7;
+}
+
+.tienda-hero-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 2rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+}
+
+.tienda-hero-cat {
+  background: white;
+  color: var(--dark);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+.tienda-hero-nombre {
+  font-size: 36px;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 8px;
+}
+
+.tienda-hero-meta {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.tienda-hero-meta span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.85);
+  font-weight: 500;
+}
+
+/* El botón del carrito fue movido a TiendaPage/index.jsx como elemento fijo (position: fixed) */
+/* Sus estilos están en TiendaPage.css — clase .tienda-fab-carrito */
+
+.tienda-galeria {
+  display: flex;
+  gap: 8px;
+  padding: 12px 2rem;
+  background: var(--dark);
+  overflow-x: auto;
+}
+
+.tienda-galeria-img {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0.6;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.tienda-galeria-img.active {
+  opacity: 1;
+  border-color: var(--green);
+}
+
+.tienda-galeria-img:hover {
+  opacity: 1;
+}

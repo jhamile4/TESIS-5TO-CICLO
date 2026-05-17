@@ -1,0 +1,104 @@
+.tienda-page {
+  min-height: 100vh;
+  background: var(--gray-6);
+}
+
+.tienda-body {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 2rem;
+  align-items: start;
+}
+
+.tienda-tabs {
+  display: flex;
+  border: 1.5px solid var(--gray-5);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  background: white;
+}
+
+.tienda-tab {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background: white;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-3);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all 0.2s;
+}
+
+.tienda-tab.active {
+  background: var(--dark);
+  color: white;
+}
+
+.tienda-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.tienda-mapa {
+  margin-top: 2rem;
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1.5px solid var(--gray-5);
+}
+
+.tienda-mapa-titulo {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--dark);
+  margin: 0 0 1rem 0;
+}
+
+/* Botón flotante del carrito — fijo en la esquina inferior derecha */
+/* Se queda visible al hacer scroll, hasta llegar al footer */
+.tienda-fab-carrito {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 500;
+  background: white;
+  border: 2.5px solid #111;
+  border-radius: 50%;
+  width: 54px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.tienda-fab-carrito:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Número de ítems encima del ícono */
+.tienda-fab-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: var(--green);
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+}
