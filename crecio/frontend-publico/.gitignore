@@ -9,7 +9,7 @@ dist-ssr/
 .env
 .env.local
 .env.*.local
-
+.vite
 # Logs
 logs/
 *.log
