@@ -1,10 +1,10 @@
 .plans {
   background: var(--gray-6);
-  padding: 80px 2rem;
+  padding: 120px 4rem 80px;
 }
 
 .plans-inner {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -75,7 +75,7 @@
 .plans-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  gap: 24px;
   align-items: start;
 }
 

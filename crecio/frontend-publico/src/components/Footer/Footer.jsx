@@ -11,8 +11,8 @@ function Footer() {
         <div className="footer-top">
           <div className="footer-brand">
             <div className="footer-logo">
-              <div className="footer-logo-icon"></div>
-              CRECIO
+                <img src={logoImg} alt="CRECIO" style={{ height: '28px', width: 'auto' }} />
+                CRECIO
             </div>
             <p className="footer-desc">
               La plataforma que ayuda a los pequeños negocios a crecer con tecnología,

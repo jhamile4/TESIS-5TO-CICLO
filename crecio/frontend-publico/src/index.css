@@ -19,6 +19,8 @@
   --font: 'Plus Jakarta Sans', sans-serif;
   --radius: 12px;
   --radius-sm: 8px;
+  --max-width: 1400px;
+  --padding-x: 4rem;
 }
 
 body {

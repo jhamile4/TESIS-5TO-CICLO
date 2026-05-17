@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import './Navbar.css'
 
+import { useNavigate } from 'react-router-dom'
+
 function Navbar() {
   const token     = localStorage.getItem('crecio_token')
   const enLanding = window.location.pathname === '/'
