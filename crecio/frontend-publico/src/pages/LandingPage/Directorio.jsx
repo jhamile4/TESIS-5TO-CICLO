@@ -186,7 +186,8 @@ function Directorio() {
       <div className="directory-header">
         <div className="section-label" style={{ textAlign: 'center' }}>Directorio</div>
         <h2 className="section-title" style={{ textAlign: 'center' }}>
-          Descubre negocios <em style={{ color: 'var(--green)', fontStyle: 'normal' }}>en tu localidad</em>
+          Descubre negocios <br />
+           <em style={{ color: 'var(--green)', fontStyle: 'normal' }}>en tu localidad</em>
         </h2>
         <p className="directory-sub">
           Encuentra tiendas, restaurantes y servicios cerca de ti. Todos verificados y con catalogo digital.

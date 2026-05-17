@@ -1,6 +1,6 @@
 .steps {
   background: white;
-  padding: 80px 2rem;
+  padding: 80px 4rem;
 }
 
 .steps-header {
@@ -8,30 +8,43 @@
   grid-template-columns: 1fr 1fr;
   gap: 4rem;
   align-items: center;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto 4rem;
 }
 
 .steps-header-left .section-title {
   font-size: 36px;
+  font-weight: 800;
+  font-family: var(--font);
   text-align: left;
+  color: var(--dark);
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
 }
 
 .steps-header-left .section-label {
+  font-family: var(--font);
   text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--green);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.75rem;
 }
 
 .steps-header-right .section-sub {
   font-size: 14px;
   color: var(--gray-3);
   line-height: 1.7;
+  font-family: var(--font);
 }
 
 .steps-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   align-items: start;
 }
@@ -56,6 +69,7 @@
   font-weight: 800;
   color: rgba(0, 0, 0, 0.08);
   line-height: 1;
+  font-family: var(--font);
 }
 
 .step-icon-badge {
@@ -69,17 +83,23 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
+.step-body {
+  font-family: var(--font);
+}
+
 .step-body h3 {
   font-size: 16px;
   font-weight: 700;
   color: var(--dark);
   margin-bottom: 8px;
+  font-family: var(--font);
 }
 
 .step-body p {
   font-size: 13px;
   color: var(--gray-3);
   line-height: 1.6;
+  font-family: var(--font);
 }
 
 .step-img-wrap {

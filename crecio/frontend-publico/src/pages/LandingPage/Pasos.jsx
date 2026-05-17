@@ -1,5 +1,5 @@
 import paso1IMG from '../../assets/IMG-108.png'
-import paso2IMG from '../../assets/IMG-126.png'
+import paso2IMG from '../../assets/IMG-143.png'
 import paso3IMG from '../../assets/IMG-126.png'
 import { Store, ThumbsUp, TrendingUp } from 'lucide-react'
 import './Pasos.css'

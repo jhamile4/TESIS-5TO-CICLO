@@ -1,10 +1,10 @@
 .plans {
   background: var(--gray-6);
-  padding: 80px 2rem;
+  padding: 80px 4srem;
 }
 
 .plans-inner {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 

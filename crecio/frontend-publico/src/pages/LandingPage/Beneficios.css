@@ -1,11 +1,11 @@
 /* BENEFICIOS */
 .benefits {
   background: white;
-  padding: 60px 2rem;
+  padding: 80px 2rem;
 }
 
 .benefits-inner {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 1fr;

@@ -1,12 +1,12 @@
 /* HERO */
 .hero {
   background:var(--white);
-  padding: 80px 2rem 80px; ;
+  padding: 100px 4rem 80px; ;
   overflow: hidden;
 }
 
 .hero-inner {
-  max-width: 1190px;
+  max-width: 1400px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -43,6 +43,7 @@
   line-height: 1.1;
   color: var(--dark);
   margin-bottom: 1rem;
+  font-family: var(--font);
 }
 
 .hero h1 em {
