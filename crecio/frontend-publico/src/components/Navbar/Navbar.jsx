@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import './Navbar.css'
-
 import { useNavigate } from 'react-router-dom'
+import logoImg from '../../assets/logoCrecio.png'
+import './Navbar.css'
 
 function Navbar() {
   const token     = localStorage.getItem('crecio_token')
@@ -48,7 +48,7 @@ function Navbar() {
 
         {/* Logo — siempre lleva al inicio */}
         <a href="/" className="navbar-logo" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <div className="logo-icon"></div>
+          <img src={logoImg} alt="CRECIO" style={{ height: '32px', width: 'auto' }} />
           CRECIO
         </a>
 

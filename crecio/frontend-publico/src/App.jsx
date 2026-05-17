@@ -54,12 +54,8 @@ function App() {
           <PageLayout><NegocioPage /></PageLayout>
         } />
 
-        {/* Protegida — TiendaPage completa (requiere login) */}
-        <Route path="/tienda/:slug" element={
-          <ProtectedRoute>
-            <TiendaPage />
-          </ProtectedRoute>
-        } />
+        {/* Pública — TiendaPage accesible sin login (se pedirá auth solo al pagar con tarjeta) */}
+        <Route path="/tienda/:slug" element={<TiendaPage />} />
       </Routes>
     </BrowserRouter>
   )

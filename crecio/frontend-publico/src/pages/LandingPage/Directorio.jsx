@@ -11,15 +11,6 @@ const categoriasIniciales = ['Todos', ...new Set(negociosLocales.map(n => n.cate
 function Directorio() {
   const navigate = useNavigate()
 
-  // Si no hay token redirige al login, si hay ejecuta la acción
-  const irConAuth = (accion) => {
-    if (!localStorage.getItem('crecio_token')) {
-      navigate('/login')
-    } else {
-      accion()
-    }
-  }
-
   // Estado inicial: datos completos locales (con productos, reviews, slug, etc.)
   const [negocios, setNegocios]         = useState(negociosLocales)
   const [filtros, setFiltros]           = useState(categoriasIniciales)
@@ -108,7 +99,7 @@ function Directorio() {
 
         <div className="biz-grid">
           {negociosFiltrados.map((n, i) => (
-            <div className="biz-card" key={i} onClick={() => irConAuth(() => navigate('/tienda/' + n.slug))}>
+            <div className="biz-card" key={i} onClick={() => navigate('/tienda/' + n.slug)}>
               <div className="biz-img-wrap">
                 <img src={n.img} alt={n.nombre} className="biz-img" />
                 <span className="biz-badge-cat">{n.categoria}</span>
@@ -125,7 +116,7 @@ function Directorio() {
                 <div className="biz-address">📍 {n.direccion}</div>
                 <button
                   className="biz-quick"
-                  onClick={e => { e.stopPropagation(); irConAuth(() => setNegocioModal(n)) }}
+                  onClick={e => { e.stopPropagation(); setNegocioModal(n) }}
                 >
                   Vista rápida
                 </button>
