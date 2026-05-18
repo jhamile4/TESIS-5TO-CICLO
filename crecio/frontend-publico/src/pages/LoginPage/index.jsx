@@ -1,12 +1,15 @@
 import logoImg from '../../assets/logoCrecio.png'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { loginCliente } from '../../services/apiPublico'
 import './LoginPage.css'
 
 function LoginPage() {
   const navigate = useNavigate()
   const [datos, setDatos] = useState({ email: '', contrasena: '' })
   const [errores, setErrores] = useState({})
+  const [cargando, setCargando] = useState(false)
+  const [errorApi, setErrorApi] = useState(null)
 
   const validar = () => {
     const e = {}
@@ -16,9 +19,19 @@ function LoginPage() {
     return Object.keys(e).length === 0
   }
 
-  const handleLogin = () => {
-    if (validar()) {
-      alert('Bienvenido! Redirigiendo al panel...')
+  const handleLogin = async () => {
+    if (!validar()) return
+    setCargando(true)
+    setErrorApi(null)
+    try {
+      const res = await loginCliente(datos.email, datos.contrasena)
+      localStorage.setItem('token', res.token)
+      localStorage.setItem('cliente', JSON.stringify(res.cliente))
+      navigate('/')
+    } catch (err) {
+      setErrorApi(err.message || 'Email o contrasena incorrectos')
+    } finally {
+      setCargando(false)
     }
   }
 
@@ -67,8 +80,14 @@ function LoginPage() {
             {errores.contrasena && <span className="campo-error">{errores.contrasena}</span>}
           </div>
 
-          <button className="login-btn" onClick={handleLogin}>
-            Iniciar Sesion
+          {errorApi && (
+            <div style={{ color: '#E53E3E', background: '#FFF5F5', border: '1px solid #FEB2B2', borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '0.5rem', fontSize: '14px' }}>
+              {errorApi}
+            </div>
+          )}
+
+          <button className="login-btn" onClick={handleLogin} disabled={cargando}>
+            {cargando ? 'Ingresando...' : 'Iniciar Sesion'}
           </button>
 
           <p className="login-olvide">Olvidaste tu contrasena?</p>

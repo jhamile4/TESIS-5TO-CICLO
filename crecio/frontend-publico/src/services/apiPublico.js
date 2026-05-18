@@ -96,3 +96,15 @@ export const registrarPedidoPublico = async (negocioId, mensajeGenerado) => {
     mensaje_generado: mensajeGenerado,
   })
 }
+
+export const registrarNegocio = async (datos) => {
+  return post('/auth/registro', datos)
+}
+
+export const loginCliente = async (email, password) => {
+  return post('/auth/login', { email, password })
+}
+
+export const verificarCodigo = async (email, codigo) => {
+  return post('/auth/verificar', { email, codigo })
+}

@@ -1,6 +1,6 @@
 import './Pasos.css'
 
-function Paso3Revisar({ datos, onAtras, onEnviar }) {
+function Paso3Revisar({ datos, onAtras, onEnviar, enviando, error }) {
   return (
     <div className="paso">
 
@@ -47,12 +47,18 @@ function Paso3Revisar({ datos, onAtras, onEnviar }) {
         <a href="#">Terminos de Servicio y Politica de Privacidad</a>.
       </p>
 
+      {error && (
+        <div style={{ color: '#E53E3E', background: '#FFF5F5', border: '1px solid #FEB2B2', borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '14px' }}>
+          {error}
+        </div>
+      )}
+
       <div className="paso-botones">
-        <button className="paso-btn-atras" onClick={onAtras}>
+        <button className="paso-btn-atras" onClick={onAtras} disabled={enviando}>
           ← Atras
         </button>
-        <button className="paso-btn-enviar" onClick={onEnviar}>
-          Enviar solicitud →
+        <button className="paso-btn-enviar" onClick={onEnviar} disabled={enviando}>
+          {enviando ? 'Enviando...' : 'Enviar solicitud →'}
         </button>
       </div>
 
