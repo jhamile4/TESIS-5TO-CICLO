@@ -4,8 +4,8 @@ const path = require('path')
 const { createClient } = require('@supabase/supabase-js')
 const pool = require('./src/db/db')
 
-const SUPABASE_URL = 'https://eywbardrnscdjaqjhngs.supabase.co'
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5d2JhcmRybnNjZGphcWpobmdzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTA0NzA5NSwiZXhwIjoyMDk0NjIzMDk1fQ.JH7DMGubdAZhYNMLpQXrQCTxd-p5V5e3uOpDSurGQBY'
+const SUPABASE_URL = process.env.SUPABASE_URL
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY
 const BUCKET = 'imagenes'
 const ASSETS_DIR = path.join(__dirname, '../frontend-publico/src/assets')
 
