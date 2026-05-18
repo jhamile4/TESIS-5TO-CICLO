@@ -1,10 +1,29 @@
-import { useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, MapPin, Clock, Phone, ShieldCheck, MessageCircle, Store } from 'lucide-react'
+import { getProductos, getResenas } from '../../services/apiPublico'
 
 function NegocioModal({ negocio, onClose }) {
   const [tabActivo, setTabActivo] = useState('productos')
-  const navigate = useNavigate()
+  const [productos, setProductos] = useState([])
+  const [resenas, setResenas] = useState([])
+  const [cargando, setCargando] = useState(true)
+
+  useEffect(() => {
+    Promise.all([
+      getProductos(negocio.id),
+      getResenas(negocio.id)
+    ])
+      .then(([prods, rese]) => {
+        setProductos(prods)
+        setResenas(rese)
+        setCargando(false)
+      })
+      .catch(err => {
+        console.error(err)
+        setCargando(false)
+      })
+  }, [negocio.id])
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
@@ -58,71 +77,80 @@ function NegocioModal({ negocio, onClose }) {
               className={tabActivo === 'productos' ? 'modal-tab active' : 'modal-tab'}
               onClick={() => setTabActivo('productos')}
             >
-              Productos ({negocio.productos.length})
+              Productos ({productos.length})
             </button>
             <button
               className={tabActivo === 'resenas' ? 'modal-tab active' : 'modal-tab'}
               onClick={() => setTabActivo('resenas')}
             >
-              Resenas ({negocio.reviews.length})
+              Resenas ({resenas.length})
             </button>
           </div>
 
-          {tabActivo === 'productos' && (
-            <div className="modal-productos">
-              {negocio.productos.map((p, i) => (
-                <div className="modal-producto" key={i}>
-                  <div className="modal-producto-img">
-                    <img src={p.img} alt={p.nombre} />
-                  </div>
-                  <div className="modal-producto-info">
-                    <div className="modal-producto-nombre">{p.nombre}</div>
-                    <div className="modal-producto-desc">{p.desc}</div>
-                    
-                    <a
-                      className="modal-producto-whatsapp"
-                      href={'https://wa.me/' + negocio.whatsapp + '?text=Hola quiero pedir: ' + encodeURIComponent(p.nombre)}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      <MessageCircle size={13} color="#00B894" />
-                      Pedir por WhatsApp
-                    </a>
-                  </div>
-                  <div className="modal-producto-precio">S/ {p.precio}</div>
-                </div>
-              ))}
+          {cargando ? (
+            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--gray-3)' }}>
+              Cargando...
             </div>
-          )}
-
-          {tabActivo === 'resenas' && (
-            <div className="modal-resenas">
-              {negocio.reviews.map((r, i) => (
-                <div className="modal-review" key={i}>
-                  <div className="modal-review-header">
-                    <div className="modal-review-avatar">{r.nombre.charAt(0)}</div>
-                    <div>
-                      <div className="modal-review-nombre">{r.nombre}</div>
-                      <div className="modal-review-estrellas">
-                        {Array.from({ length: r.estrellas }).map((_, j) => (
-                          <span key={j}>★</span>
-                        ))}
+          ) : (
+            <>
+              {tabActivo === 'productos' && (
+                <div className="modal-productos">
+                  {productos.map((p, i) => (
+                    <div className="modal-producto" key={i}>
+                      <div className="modal-producto-img">
+                        <img src={p.img} alt={p.nombre} />
                       </div>
+                      <div className="modal-producto-info">
+                        <div className="modal-producto-nombre">{p.nombre}</div>
+                        <div className="modal-producto-desc">{p.desc}</div>
+                        <a
+                          className="modal-producto-whatsapp"
+                          href={'https://wa.me/' + negocio.whatsapp + '?text=Hola quiero pedir: ' + p.nombre + ' S/' + p.precio}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <MessageCircle size={13} color="#00B894" />
+                          Pedir por WhatsApp
+                        </a>
+                      </div>
+                      <div className="modal-producto-precio">S/ {p.precio}</div>
                     </div>
-                    <div className="modal-review-tiempo">{r.tiempo}</div>
-                  </div>
-                  <p className="modal-review-texto">{r.texto}</p>
+                  ))}
                 </div>
-              ))}
-            </div>
+              )}
+
+              {tabActivo === 'resenas' && (
+                <div className="modal-resenas">
+                  {resenas.map((r, i) => (
+                    <div className="modal-review" key={i}>
+                      <div className="modal-review-header">
+                        <div className="modal-review-avatar">{r.nombre.charAt(0)}</div>
+                        <div>
+                          <div className="modal-review-nombre">{r.nombre}</div>
+                          <div className="modal-review-estrellas">
+                            {Array.from({ length: r.estrellas }).map((_, j) => (
+                              <span key={j}>★</span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="modal-review-tiempo">{r.tiempo}</div>
+                      </div>
+                      <p className="modal-review-texto">{r.texto}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
 
           <div className="modal-actions">
-            <button className="modal-btn-primary" onClick={() => navigate('/tienda/' + negocio.id)}>
+            <button
+              className="modal-btn-primary"
+              onClick={() => { onClose(); window.location.href = '/tienda/' + negocio.id }}
+            >
               <Store size={16} color="white" />
               Ver tienda completa
             </button>
-            
             <a
               className="modal-btn-whatsapp"
               href={'https://wa.me/' + negocio.whatsapp}
