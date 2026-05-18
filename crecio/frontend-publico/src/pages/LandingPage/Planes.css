@@ -32,6 +32,7 @@
   max-width: 400px;
 }
 
+/* ── Toggle ── */
 .plans-toggle {
   display: flex;
   align-items: center;
@@ -41,16 +42,31 @@
 .toggle-label {
   font-size: 14px;
   font-weight: 600;
-  color: var(--gray-3);
+  color: var(--gray-4);
+  cursor: pointer;
+  transition: color 0.2s;
+  user-select: none;
+}
+
+.toggle-label.activo {
+  color: var(--dark);
 }
 
 .toggle {
   width: 44px;
   height: 24px;
-  background: var(--green);
+  background: var(--gray-5);
   border-radius: 12px;
   position: relative;
   cursor: pointer;
+  border: none;
+  padding: 0;
+  transition: background 0.25s;
+  flex-shrink: 0;
+}
+
+.toggle.on {
+  background: var(--green);
 }
 
 .toggle-thumb {
@@ -61,6 +77,12 @@
   position: absolute;
   top: 3px;
   left: 3px;
+  transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.toggle.on .toggle-thumb {
+  left: 23px;
 }
 
 .discount-badge {
@@ -70,8 +92,18 @@
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: default;
 }
 
+.discount-badge.resaltado {
+  background: var(--green);
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0,184,148,0.3);
+}
+
+/* ── Grid ── */
 .plans-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -79,13 +111,15 @@
   align-items: start;
 }
 
+/* ── Cards ── */
 .plan-card {
   background: white;
   border-radius: var(--radius);
   padding: 32px;
   border: 1.5px solid var(--gray-5);
   position: relative;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.22s, box-shadow 0.22s, border-color 0.22s;
+  cursor: pointer;
 }
 
 .plan-card:hover {
@@ -103,6 +137,17 @@
   transform: translateY(-12px);
 }
 
+.plan-card.seleccionado {
+  border-color: var(--green);
+  box-shadow: 0 0 0 4px rgba(0,184,148,0.15), 0 12px 40px rgba(0,0,0,0.1);
+  transform: translateY(-6px);
+}
+
+.plan-card.featured.seleccionado {
+  transform: translateY(-14px);
+  box-shadow: 0 0 0 4px rgba(0,184,148,0.2), 0 16px 48px rgba(0,0,0,0.12);
+}
+
 .plan-badge {
   position: absolute;
   top: -14px;
@@ -116,6 +161,18 @@
   border-radius: 20px;
   white-space: nowrap;
   letter-spacing: 0.5px;
+}
+
+.plan-seleccionado-tag {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0,184,148,0.1);
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
 }
 
 .plan-tipo {
@@ -132,10 +189,21 @@
   font-weight: 800;
   color: var(--dark);
   line-height: 1;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   display: flex;
   align-items: flex-end;
   gap: 4px;
+}
+
+/* Animación del precio al cambiar */
+@keyframes precioEntrada {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.plan-precio-val {
+  animation: precioEntrada 0.25s ease forwards;
+  display: inline-block;
 }
 
 .plan-periodo {
@@ -145,11 +213,20 @@
   margin-bottom: 6px;
 }
 
+.plan-facturado {
+  font-size: 12px;
+  color: var(--green);
+  font-weight: 600;
+  margin-bottom: 4px;
+  animation: precioEntrada 0.25s ease forwards;
+}
+
 .plan-desc {
   font-size: 13px;
   color: var(--gray-3);
   margin-bottom: 1.5rem;
   line-height: 1.5;
+  margin-top: 8px;
 }
 
 .plan-cta {
@@ -162,6 +239,10 @@
   font-family: var(--font);
   transition: all 0.2s;
   margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 
 .plan-cta.outline {
@@ -183,6 +264,8 @@
 
 .plan-cta.solid:hover {
   background: var(--green-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,184,148,0.35);
 }
 
 .plan-features {

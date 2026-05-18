@@ -1,13 +1,16 @@
-import { Check, X } from 'lucide-react'
+import { useState } from 'react'
+import { Check, X, ArrowRight, Zap } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import './Planes.css'
 
 const planes = [
   {
     tipo: 'BÁSICO',
-    nombre: 'Gratis',
-    precio: null,
+    precioMensual: null,
+    precioAnual: null,
     desc: 'Para empezar a digitalizarte sin costo.',
     cta: 'Empezar Gratis',
+    ctaRuta: '/registro',
     ctaEstilo: 'outline',
     featured: false,
     features: [
@@ -23,10 +26,11 @@ const planes = [
   },
   {
     tipo: 'CRECIO PRO',
-    nombre: 'S/ 49',
-    precio: '/mes',
+    precioMensual: 49,
+    precioAnual: 39,
     desc: 'El plan favorito de los negocios que quieren crecer.',
     cta: 'Empezar Prueba Gratis',
+    ctaRuta: '/registro',
     ctaEstilo: 'solid',
     featured: true,
     badge: 'MÁS POPULAR',
@@ -42,10 +46,11 @@ const planes = [
   },
   {
     tipo: 'EMPRESARIAL',
-    nombre: 'S/ 129',
-    precio: '/mes',
+    precioMensual: 129,
+    precioAnual: 103,
     desc: 'Para negocios con múltiples sucursales.',
     cta: 'Contactar Ventas',
+    ctaRuta: '/registro',
     ctaEstilo: 'outline',
     featured: false,
     features: [
@@ -60,6 +65,10 @@ const planes = [
 ]
 
 function Planes() {
+  const navigate = useNavigate()
+  const [anual, setAnual] = useState(false)
+  const [planActivo, setPlanActivo] = useState(null)
+
   return (
     <section className="plans">
       <div className="plans-inner">
@@ -72,39 +81,93 @@ function Planes() {
           <p className="plans-sub">
             Empieza gratis y escala cuando estés listo. Sin sorpresas ni costos ocultos.
           </p>
+
           <div className="plans-toggle">
-            <span className="toggle-label">Mensual</span>
-            <div className="toggle">
-              <div className="toggle-thumb"></div>
-            </div>
-            <span className="toggle-label">Anual</span>
-            <span className="discount-badge">Ahorra 20%</span>
+            <span
+              className={`toggle-label ${!anual ? 'activo' : ''}`}
+              onClick={() => setAnual(false)}
+            >
+              Mensual
+            </span>
+            <button
+              className={`toggle ${anual ? 'on' : ''}`}
+              onClick={() => setAnual(v => !v)}
+              aria-label="Cambiar periodo de facturación"
+            >
+              <div className="toggle-thumb" />
+            </button>
+            <span
+              className={`toggle-label ${anual ? 'activo' : ''}`}
+              onClick={() => setAnual(true)}
+            >
+              Anual
+            </span>
+            <span className={`discount-badge ${anual ? 'resaltado' : ''}`}>
+              <Zap size={11} style={{ display: 'inline', marginRight: 3, verticalAlign: 'middle' }} />
+              Ahorra 20%
+            </span>
           </div>
         </div>
 
         <div className="plans-grid">
-          {planes.map((p, i) => (
-            <div className={`plan-card ${p.featured ? 'featured' : ''}`} key={i}>
-              {p.badge && <div className="plan-badge">{p.badge}</div>}
-              <div className="plan-tipo">{p.tipo}</div>
-              <div className="plan-nombre">{p.nombre}
-                {p.precio && <span className="plan-periodo">{p.precio}</span>}
-              </div>
-              <p className="plan-desc">{p.desc}</p>
-              <button className={`plan-cta ${p.ctaEstilo}`}>{p.cta}</button>
-              <div className="plan-features">
-                {p.features.map((f, j) => (
-                  <div className={`plan-feature ${!f.activo ? 'inactive' : ''}`} key={j}>
-                    {f.activo
-                      ? <Check size={15} color="#00B894" strokeWidth={2.5} />
-                      : <X size={15} color="#CBD5E0" strokeWidth={2} />
-                    }
-                    <span>{f.texto}</span>
+          {planes.map((p, i) => {
+            const precio = anual ? p.precioAnual : p.precioMensual
+            const estaActivo = planActivo === i
+
+            return (
+              <div
+                className={`plan-card ${p.featured ? 'featured' : ''} ${estaActivo ? 'seleccionado' : ''}`}
+                key={i}
+                onClick={() => setPlanActivo(i === planActivo ? null : i)}
+              >
+                {p.badge && <div className="plan-badge">{p.badge}</div>}
+                {estaActivo && <div className="plan-seleccionado-tag">Seleccionado ✓</div>}
+
+                <div className="plan-tipo">{p.tipo}</div>
+
+                <div className="plan-nombre">
+                  {precio !== null ? (
+                    <>
+                      <span className="plan-precio-val" key={`${precio}-${anual}`}>
+                        S/ {precio}
+                      </span>
+                      <span className="plan-periodo">/mes</span>
+                    </>
+                  ) : (
+                    <span className="plan-precio-val" key="gratis">Gratis</span>
+                  )}
+                </div>
+
+                {precio !== null && anual && (
+                  <div className="plan-facturado" key={`fact-${precio}`}>
+                    Facturado S/ {precio * 12} al año
                   </div>
-                ))}
+                )}
+
+                <p className="plan-desc">{p.desc}</p>
+
+                <button
+                  className={`plan-cta ${p.ctaEstilo}`}
+                  onClick={e => { e.stopPropagation(); navigate(p.ctaRuta) }}
+                >
+                  {p.cta}
+                  <ArrowRight size={14} style={{ display: 'inline', marginLeft: 6, verticalAlign: 'middle' }} />
+                </button>
+
+                <div className="plan-features">
+                  {p.features.map((f, j) => (
+                    <div className={`plan-feature ${!f.activo ? 'inactive' : ''}`} key={j}>
+                      {f.activo
+                        ? <Check size={15} color="#00B894" strokeWidth={2.5} />
+                        : <X size={15} color="#CBD5E0" strokeWidth={2} />
+                      }
+                      <span>{f.texto}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
         <p className="plans-note">

@@ -11,43 +11,80 @@
 }
 
 .campo-label {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--dark);
+  letter-spacing: 0.01em;
 }
 
 .requerido {
   color: var(--green);
 }
 
-.campo-input {
-  width: 100%;
-  padding: 12px 16px;
+/* Input con icono */
+.campo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
   border: 1.5px solid var(--gray-5);
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  font-family: var(--font);
-  color: var(--dark);
-  outline: none;
-  transition: border-color 0.2s;
+  border-radius: 10px;
   background: white;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.campo-input:focus {
+.campo-wrap:focus-within {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(0, 184, 148, 0.1);
+}
+
+.campo-wrap.error {
+  border-color: #FC8181;
+  box-shadow: 0 0 0 3px rgba(252, 129, 129, 0.1);
+}
+
+.campo-wrap.success {
   border-color: var(--green);
 }
 
-.campo-input.error {
-  border-color: #FC8181;
+.campo-wrap-textarea {
+  align-items: flex-start;
+  padding-top: 12px;
 }
 
-.campo-input::placeholder {
+.campo-inner {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-family: var(--font);
+  color: var(--dark);
+  background: transparent;
+  min-width: 0;
+}
+
+.campo-inner::placeholder {
   color: var(--gray-4);
 }
 
+.campo-inner option {
+  color: var(--dark);
+}
+
 .campo-textarea {
-  min-height: 100px;
+  min-height: 90px;
   resize: vertical;
+  line-height: 1.5;
+}
+
+.campo-ojo {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .campo-contador {
@@ -60,8 +97,41 @@
   font-size: 12px;
   color: #E53E3E;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
+/* Barra de fortaleza de contraseña */
+.fortaleza-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fortaleza-bar {
+  flex: 1;
+  height: 4px;
+  border-radius: 99px;
+  background: var(--gray-5);
+  transition: all 0.3s;
+}
+
+.fortaleza-bar.debil  { background: #FC8181; width: 33%; }
+.fortaleza-bar.media  { background: #F6AD55; }
+.fortaleza-bar.fuerte { background: var(--green); }
+
+.fortaleza-texto {
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.fortaleza-texto.debil  { color: #E53E3E; }
+.fortaleza-texto.media  { color: #DD6B20; }
+.fortaleza-texto.fuerte { color: var(--green); }
+
+/* Botones */
 .paso-botones {
   display: flex;
   gap: 12px;
@@ -74,16 +144,23 @@
   color: white;
   border: none;
   padding: 14px;
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   font-family: var(--font);
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.1s;
 }
 
 .paso-btn-siguiente:hover {
   background: var(--green-dark);
+  transform: translateY(-1px);
+}
+
+.paso-btn-siguiente:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .paso-btn-atras {
@@ -92,7 +169,7 @@
   color: var(--dark);
   border: 1.5px solid var(--gray-5);
   padding: 14px;
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
@@ -104,39 +181,53 @@
   border-color: var(--dark);
 }
 
+.paso-btn-atras:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .paso-btn-enviar {
   flex: 1;
   background: var(--green);
   color: white;
   border: none;
   padding: 14px;
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   font-family: var(--font);
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.1s;
 }
 
 .paso-btn-enviar:hover {
   background: var(--green-dark);
+  transform: translateY(-1px);
 }
 
-/* REVISAR */
+.paso-btn-enviar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Resumen paso 3 */
 .revisar-card {
   background: var(--gray-6);
-  border-radius: var(--radius);
+  border-radius: 12px;
   padding: 20px;
   border: 1px solid var(--gray-5);
 }
 
 .revisar-titulo {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--dark);
   margin-bottom: 12px;
   padding-bottom: 10px;
   border-bottom: 1px solid var(--gray-5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .revisar-fila {

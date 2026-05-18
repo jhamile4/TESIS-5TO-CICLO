@@ -1,6 +1,7 @@
 import logoImg from '../../assets/logoCrecio.png'
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Mail, CheckCircle, AlertCircle, ArrowLeft, ShieldCheck } from 'lucide-react'
 import { verificarCodigo } from '../../services/apiPublico'
 import './VerificacionPage.css'
 
@@ -46,13 +47,17 @@ function VerificacionPage() {
 
         {exitoso ? (
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✅</div>
-            <h2>Correo verificado</h2>
+            <div className="verificacion-icono-lucide verificacion-icono-success">
+              <CheckCircle size={52} color="#00B894" strokeWidth={1.5} />
+            </div>
+            <h2 className="verificacion-titulo">Correo verificado</h2>
             <p style={{ color: 'var(--gray-3)' }}>Redirigiendo al login...</p>
           </div>
         ) : (
           <>
-            <div className="verificacion-icono">📧</div>
+            <div className="verificacion-icono-lucide">
+              <Mail size={52} color="#00B894" strokeWidth={1.5} />
+            </div>
             <h1 className="verificacion-titulo">Verifica tu correo</h1>
             <p className="verificacion-subtitulo">
               Enviamos un codigo de 6 digitos a<br />
@@ -61,7 +66,10 @@ function VerificacionPage() {
 
             <div className="verificacion-card">
               <div className="campo">
-                <label className="campo-label">Codigo de verificacion</label>
+                <label className="campo-label" style={{ textAlign: 'center', display: 'block' }}>
+                  <ShieldCheck size={14} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} />
+                  Codigo de verificacion
+                </label>
                 <input
                   className="campo-input verificacion-input"
                   placeholder="000000"
@@ -73,8 +81,8 @@ function VerificacionPage() {
               </div>
 
               {error && (
-                <div style={{ color: '#E53E3E', background: '#FFF5F5', border: '1px solid #FEB2B2', borderRadius: '8px', padding: '0.75rem 1rem', fontSize: '14px' }}>
-                  {error}
+                <div className="verificacion-error">
+                  <AlertCircle size={14} /> {error}
                 </div>
               )}
 
@@ -86,8 +94,13 @@ function VerificacionPage() {
                 {cargando ? 'Verificando...' : 'Verificar cuenta'}
               </button>
 
+              <button className="verificacion-btn-volver" onClick={() => navigate('/registro')}>
+                <ArrowLeft size={15} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} />
+                Volver al registro
+              </button>
+
               <p className="verificacion-hint">
-                Revisa tu carpeta de spam si no lo encuentras.
+                Revisa tu carpeta de spam si no encuentras el correo.
               </p>
             </div>
           </>
