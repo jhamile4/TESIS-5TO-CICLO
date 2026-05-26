@@ -1,5 +1,6 @@
 import Navbar from '../../components/Navbar/Navbar'
 import Hero from './Hero'
+import Galeria from './Galeria'
 import Beneficios from './Beneficios'
 import Directorio from './Directorio'
 import Pasos from './Pasos'
@@ -14,6 +15,7 @@ function LandingPage() {
     <div>
       <Navbar />
       <Hero />
+      <Galeria />
       <Beneficios />
       <Directorio />
       <Pasos />
