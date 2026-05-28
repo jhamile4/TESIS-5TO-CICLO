@@ -6,7 +6,9 @@ const getAll = async (req, res) => {
     let query = `
       SELECT pk_id, nombre, categoria, descripcion,
              direccion, distrito, whatsapp, logo_url,
-             horario, telefono, rating, total_resenas, verificado
+             horario, telefono, rating, total_resenas,
+             verificado,
+             latitud, longitud
       FROM negocio
       WHERE activo = TRUE
     `
@@ -19,6 +21,7 @@ const getAll = async (req, res) => {
     const result = await pool.query(query, params)
     res.json(result.rows)
   } catch (error) {
+    console.error('ERROR getAll negocios:', error.message)
     res.status(500).json({ message: 'Error al obtener negocios', error: error.message })
   }
 }
@@ -29,7 +32,8 @@ const getById = async (req, res) => {
     const result = await pool.query(
       `SELECT pk_id, nombre, categoria, descripcion,
               direccion, distrito, whatsapp, logo_url, verificado,
-              horario, telefono, rating, total_resenas
+              horario, telefono, rating, total_resenas,
+              latitud, longitud
        FROM negocio
        WHERE pk_id = $1 AND activo = TRUE`,
       [id]
@@ -38,6 +42,7 @@ const getById = async (req, res) => {
       return res.status(404).json({ message: 'Negocio no encontrado' })
     res.json(result.rows[0])
   } catch (error) {
+    console.error('ERROR getById negocio:', error.message)
     res.status(500).json({ message: 'Error al obtener negocio', error: error.message })
   }
 }

@@ -1,16 +1,20 @@
 const BASE_URL = 'http://localhost:3001/api'
 
-const get = async (path) => {
-  const res = await fetch(`${BASE_URL}${path}`)
+const get = async (path, token = null) => {
+  const headers = { 'Content-Type': 'application/json' }
+  if (token) headers['Authorization'] = `Bearer ${token}`
+  const res  = await fetch(`${BASE_URL}${path}`, { headers })
   const data = await res.json()
   if (!res.ok) throw new Error(data.message || 'Error en la peticion')
   return data
 }
 
-const post = async (path, body) => {
-  const res = await fetch(`${BASE_URL}${path}`, {
+const post = async (path, body, token = null) => {
+  const headers = { 'Content-Type': 'application/json' }
+  if (token) headers['Authorization'] = `Bearer ${token}`
+  const res  = await fetch(`${BASE_URL}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(body),
   })
   const data = await res.json()
@@ -21,10 +25,10 @@ const post = async (path, body) => {
 const tiempoRelativo = (fechaISO) => {
   const ahora = new Date()
   const fecha = new Date(fechaISO)
-  const dias = Math.floor((ahora - fecha) / (1000 * 60 * 60 * 24))
+  const dias  = Math.floor((ahora - fecha) / (1000 * 60 * 60 * 24))
   if (dias === 0) return 'hoy'
   if (dias === 1) return '1 dia atras'
-  if (dias < 7) return `${dias} dias atras`
+  if (dias < 7)  return `${dias} dias atras`
   if (dias < 14) return '1 semana atras'
   if (dias < 30) return `${Math.floor(dias / 7)} semanas atras`
   if (dias < 60) return '1 mes atras'
@@ -45,6 +49,8 @@ const normalizarNegocio = (n) => ({
   telefono:  n.telefono,
   whatsapp:  n.whatsapp,
   verificado: n.verificado,
+  latitud:   n.latitud  ? Number(n.latitud)  : null,
+  longitud:  n.longitud ? Number(n.longitud) : null,
 })
 
 const normalizarProducto = (p) => ({
@@ -66,7 +72,7 @@ const normalizarResena = (r) => ({
 
 export const getNegocios = async (search = '') => {
   const query = search ? `?search=${encodeURIComponent(search)}` : ''
-  const data = await get(`/negocios${query}`)
+  const data  = await get(`/negocios${query}`)
   return data.map(normalizarNegocio)
 }
 
@@ -107,4 +113,26 @@ export const loginCliente = async (email, password) => {
 
 export const verificarCodigo = async (email, codigo) => {
   return post('/auth/verificar', { email, codigo })
+}
+
+// ── Comprador (cliente que compra, no dueño de negocio) ──
+export const registrarComprador = async (datos) => {
+  return post('/auth/registro-comprador', datos)
+}
+
+export const loginComprador = async (email, password) => {
+  return post('/auth/login', { email, password })
+}
+
+// ── Stripe ──
+export const crearPaymentIntent = async (items, negocioId, token) => {
+  return post('/stripe/crear-intent', {
+    items,
+    fk_negocio_id: negocioId,
+    fk_cliente_id: null,
+  }, token)
+}
+
+export const confirmarPago = async (paymentIntentId, token) => {
+  return post('/stripe/confirmar', { paymentIntentId }, token)
 }

@@ -4,6 +4,7 @@ import TiendaPage from './pages/TiendaPage/index.jsx'
 import RegistroPage from './pages/RegistroPage/index.jsx'
 import LoginPage from './pages/LoginPage/index.jsx'
 import VerificacionPage from './pages/VerificacionPage/index.jsx'
+import PerfilPage from './pages/PerfilPage/index.jsx'
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/registro" element={<RegistroPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/verificar" element={<VerificacionPage />} />
+        <Route path="/perfil" element={<PerfilPage />} />
       </Routes>
     </BrowserRouter>
   )

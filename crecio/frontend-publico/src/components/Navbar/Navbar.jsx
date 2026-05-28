@@ -3,15 +3,27 @@ import { useNavigate } from 'react-router-dom'
 import logoCrecio from '../../assets/logoCrecio.png'
 
 const Navbar = () => {
-  const navigate = useNavigate()
-  const [scrolled, setScrolled] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
+  const navigate  = useNavigate()
+  const [scrolled, setScrolled]   = useState(false)
+  const [menuOpen, setMenuOpen]   = useState(false)
+  const [comprador, setComprador] = useState(null)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80)
     window.addEventListener('scroll', onScroll, { passive: true })
     onScroll()
     return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  // Cargar comprador y escuchar actualizaciones
+  useEffect(() => {
+    const cargarComprador = () => {
+      const c = localStorage.getItem('comprador')
+      setComprador(c ? JSON.parse(c) : null)
+    }
+    cargarComprador()
+    window.addEventListener('compradorActualizado', cargarComprador)
+    return () => window.removeEventListener('compradorActualizado', cargarComprador)
   }, [])
 
   useEffect(() => {
@@ -25,32 +37,20 @@ const Navbar = () => {
     setMenuOpen(false)
   }
 
-  const bgClass = scrolled
-    ? 'bg-white/95 backdrop-blur-md border-b border-[#E5E7EB] shadow-sm'
-    : 'bg-transparent border-b border-transparent'
-
-  const textColor   = scrolled ? 'text-[#374151]' : 'text-white'
-  const logoFilter  = scrolled ? '' : 'brightness-0 invert'
-  const hamburgerColor = scrolled ? 'text-[#1E293B]' : 'text-white'
+  const bgClass    = scrolled ? 'bg-white/95 backdrop-blur-md border-b border-[#E5E7EB] shadow-sm' : 'bg-transparent border-b border-transparent'
+  const textColor  = scrolled ? 'text-[#374151]' : 'text-white'
+  const logoFilter = scrolled ? '' : 'brightness-0 invert'
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${bgClass}`}>
-      {/* Contenedor más alto — h-16 móvil, h-24 desktop igual al ref */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between h-16 md:h-24">
 
         {/* Logo */}
-        <div
-          className="flex items-center gap-2 cursor-pointer"
-          onClick={() => navigate('/')}
-        >
-          <img
-            src={logoCrecio}
-            alt="CRECIO"
-            className={`h-7 md:h-9 w-auto object-contain transition-all duration-500 ${logoFilter}`}
-          />
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
+          <img src={logoCrecio} alt="CRECIO" className={`h-7 md:h-9 w-auto object-contain transition-all duration-500 ${logoFilter}`} />
         </div>
 
-        {/* Desktop nav links */}
+        {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-1">
           {[
             { label: 'Inicio',        id: 'inicio'        },
@@ -71,25 +71,43 @@ const Navbar = () => {
 
         {/* Desktop CTAs */}
         <div className="hidden md:flex items-center gap-3">
-          <button
-            onClick={() => navigate('/login')}
-            className={`px-4 py-2 text-[13px] font-semibold rounded-md transition-all cursor-pointer hover:text-[#0D9488] ${textColor}`}
-          >
-            Iniciar sesión
-          </button>
-          <button
-            onClick={() => navigate('/registro')}
-            className="px-5 py-2.5 text-[13px] font-bold rounded-full bg-[#0D9488] text-white hover:bg-[#0F766E] transition-all whitespace-nowrap cursor-pointer inline-flex items-center gap-1.5"
-          >
-            Crear mi tienda gratis
-          </button>
+          {comprador ? (
+            <button
+              onClick={() => navigate('/perfil')}
+              className="flex items-center gap-2.5 cursor-pointer group"
+            >
+              <div className="w-9 h-9 rounded-full bg-[#0D9488] flex items-center justify-center shadow-sm group-hover:shadow-md transition-all shrink-0">
+                <span className="text-sm font-bold text-white">
+                  {comprador.nombre?.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div className={`hidden lg:block text-left transition-colors ${textColor} group-hover:text-[#0D9488]`}>
+                <p className="text-xs font-bold leading-none">{comprador.nombre}</p>
+                <p className="text-[10px] opacity-60 mt-0.5">Ver mis pedidos</p>
+              </div>
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => navigate('/login')}
+                className={`px-4 py-2 text-[13px] font-semibold rounded-md transition-all cursor-pointer hover:text-[#0D9488] ${textColor}`}
+              >
+                Iniciar sesión
+              </button>
+              <button
+                onClick={() => navigate('/registro')}
+                className="px-5 py-2.5 text-[13px] font-bold rounded-full bg-[#0D9488] text-white hover:bg-[#0F766E] transition-all whitespace-nowrap cursor-pointer"
+              >
+                Crear mi tienda gratis
+              </button>
+            </>
+          )}
         </div>
 
         {/* Hamburger */}
         <button
-          className={`md:hidden w-8 h-8 flex items-center justify-center cursor-pointer transition-colors ${hamburgerColor}`}
+          className={`md:hidden w-8 h-8 flex items-center justify-center cursor-pointer ${textColor}`}
           onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Menú"
         >
           <i className={`text-xl ${menuOpen ? 'ri-close-line' : 'ri-menu-line'}`} />
         </button>
@@ -114,18 +132,32 @@ const Navbar = () => {
             </button>
           ))}
           <div className="flex flex-col gap-3 pt-6">
-            <button
-              onClick={() => { navigate('/login'); setMenuOpen(false) }}
-              className="w-full py-3 rounded-xl border border-[#E5E7EB] text-[#374151] font-semibold text-sm hover:border-[#0D9488] hover:text-[#0D9488] transition-all cursor-pointer"
-            >
-              Iniciar sesión
-            </button>
-            <button
-              onClick={() => { navigate('/registro'); setMenuOpen(false) }}
-              className="w-full py-3 rounded-xl bg-[#0D9488] text-white font-bold text-sm hover:bg-[#0F766E] transition-all cursor-pointer"
-            >
-              Crear mi tienda gratis
-            </button>
+            {comprador ? (
+              <button
+                onClick={() => { navigate('/perfil'); setMenuOpen(false) }}
+                className="w-full py-3 rounded-xl bg-[#0D9488] text-white font-bold text-sm flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
+                  {comprador.nombre?.charAt(0).toUpperCase()}
+                </div>
+                Mi perfil — {comprador.nombre}
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => { navigate('/login'); setMenuOpen(false) }}
+                  className="w-full py-3 rounded-xl border border-[#E5E7EB] text-[#374151] font-semibold text-sm cursor-pointer hover:border-[#0D9488] hover:text-[#0D9488] transition-all"
+                >
+                  Iniciar sesión
+                </button>
+                <button
+                  onClick={() => { navigate('/registro'); setMenuOpen(false) }}
+                  className="w-full py-3 rounded-xl bg-[#0D9488] text-white font-bold text-sm cursor-pointer hover:bg-[#0F766E] transition-all"
+                >
+                  Crear mi tienda gratis
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
