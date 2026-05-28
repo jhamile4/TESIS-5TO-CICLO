@@ -3,7 +3,6 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const { enviarCodigoVerificacion } = require('../utils/email')
 
-// ── Geocodificar ──
 const geocodificar = async (direccion) => {
   try {
     const query = encodeURIComponent(direccion + ', Perú')
@@ -20,7 +19,7 @@ const geocodificar = async (direccion) => {
   return { latitud: null, longitud: null }
 }
 
-// ── Login ──
+// ── Login — detecta rol ──
 const login = async (req, res) => {
   const { email, password } = req.body
   try {
@@ -36,18 +35,54 @@ const login = async (req, res) => {
     if (!cliente.email_verificado)
       return res.status(403).json({ message: 'Debes verificar tu correo antes de ingresar' })
 
+    // Detectar si tiene negocio
+    const negocioResult = await pool.query(
+      'SELECT pk_id FROM negocio WHERE fk_cliente_id = $1 LIMIT 1',
+      [cliente.pk_id]
+    )
+    const tieneNegocio = negocioResult.rows.length > 0
+
     const token = jwt.sign(
       { id: cliente.pk_id, email: cliente.email },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     )
-    res.json({ token, cliente: { id: cliente.pk_id, nombre: cliente.nombre, email: cliente.email } })
+
+    res.json({
+      token,
+      cliente: {
+        id:     cliente.pk_id,
+        nombre: cliente.nombre,
+        email:  cliente.email,
+      },
+      roles: {
+        esEmprendedor: tieneNegocio,
+        esComprador:   true, // todos pueden comprar
+        ambos:         tieneNegocio, // tiene negocio Y puede comprar
+      }
+    })
   } catch (error) {
     res.status(500).json({ message: 'Error al iniciar sesión', error: error.message })
   }
 }
 
-// ── Registro negocio completo ──
+const register = async (req, res) => {
+  const { nombre, email, password } = req.body
+  try {
+    const existe = await pool.query('SELECT pk_id FROM cliente WHERE email = $1', [email])
+    if (existe.rows.length > 0)
+      return res.status(400).json({ message: 'El email ya está registrado' })
+    const hash   = await bcrypt.hash(password, 10)
+    const result = await pool.query(
+      `INSERT INTO cliente (nombre, email, password) VALUES ($1,$2,$3) RETURNING pk_id, nombre, email`,
+      [nombre, email, hash]
+    )
+    res.json({ message: 'Registro exitoso', cliente: result.rows[0] })
+  } catch (error) {
+    res.status(500).json({ message: 'Error al registrar', error: error.message })
+  }
+}
+
 const registroCompleto = async (req, res) => {
   const { nombre, categoria, direccion, descripcion, whatsapp, nombreCompleto, email, contrasena } = req.body
   const client = await pool.connect()
@@ -64,11 +99,12 @@ const registroCompleto = async (req, res) => {
     const codigo = Math.floor(100000 + Math.random() * 900000).toString()
     const expira = new Date(Date.now() + 15 * 60 * 1000)
 
-    await client.query(
+    const clienteResult = await client.query(
       `INSERT INTO cliente (nombre, email, password, codigo_verificacion, codigo_expira, email_verificado)
-       VALUES ($1,$2,$3,$4,$5,FALSE)`,
+       VALUES ($1,$2,$3,$4,$5,FALSE) RETURNING pk_id`,
       [nombreCompleto, email, hash, codigo, expira]
     )
+    const clienteId = clienteResult.rows[0].pk_id
 
     let latitud = null, longitud = null
     if (direccion && direccion.trim().length > 3) {
@@ -79,9 +115,9 @@ const registroCompleto = async (req, res) => {
 
     await client.query(
       `INSERT INTO negocio
-         (nombre, categoria, descripcion, logo_url, direccion, distrito, horario, telefono, whatsapp, rating, total_resenas, verificado, activo, latitud, longitud)
-       VALUES ($1,$2,$3,'',$4,'','Por confirmar',$5,$5,0,0,FALSE,FALSE,$6,$7)`,
-      [nombre, categoria, descripcion || '', direccion || '', whatsapp, latitud, longitud]
+         (nombre, categoria, descripcion, logo_url, direccion, distrito, horario, telefono, whatsapp, rating, total_resenas, verificado, activo, latitud, longitud, fk_cliente_id)
+       VALUES ($1,$2,$3,'',$4,'','Por confirmar',$5,$5,0,0,FALSE,FALSE,$6,$7,$8)`,
+      [nombre, categoria, descripcion || '', direccion || '', whatsapp, latitud, longitud, clienteId]
     )
 
     await client.query('COMMIT')
@@ -99,13 +135,11 @@ const registroCompleto = async (req, res) => {
   }
 }
 
-// ── Registro comprador (con código de verificación) ──
 const registroComprador = async (req, res) => {
   const { nombre, email, contrasena } = req.body
   try {
     if (!nombre || !email || !contrasena)
       return res.status(400).json({ message: 'Todos los campos son obligatorios' })
-
     if (contrasena.length < 6)
       return res.status(400).json({ message: 'La contraseña debe tener al menos 6 caracteres' })
 
@@ -124,14 +158,12 @@ const registroComprador = async (req, res) => {
     )
 
     await enviarCodigoVerificacion(email, codigo)
-
     res.json({ message: 'Registro exitoso. Revisa tu correo para el código.' })
   } catch (error) {
     res.status(500).json({ message: 'Error al registrar', error: error.message })
   }
 }
 
-// ── Verificar email comprador ──
 const verificarComprador = async (req, res) => {
   const { email, codigo } = req.body
   try {
@@ -143,13 +175,10 @@ const verificarComprador = async (req, res) => {
       return res.status(404).json({ message: 'Email no encontrado' })
 
     const cliente = result.rows[0]
-
     if (cliente.email_verificado)
       return res.json({ message: 'Email ya verificado' })
-
     if (cliente.codigo_verificacion !== codigo)
       return res.status(400).json({ message: 'Código incorrecto' })
-
     if (new Date() > new Date(cliente.codigo_expira))
       return res.status(400).json({ message: 'El código expiró. Solicita uno nuevo.' })
 
@@ -157,14 +186,12 @@ const verificarComprador = async (req, res) => {
       'UPDATE cliente SET email_verificado = TRUE, codigo_verificacion = NULL, codigo_expira = NULL WHERE pk_id = $1',
       [cliente.pk_id]
     )
-
     res.json({ message: 'Correo verificado. Ahora inicia sesión.' })
   } catch (error) {
     res.status(500).json({ message: 'Error al verificar', error: error.message })
   }
 }
 
-// ── Reenviar código ──
 const reenviarCodigo = async (req, res) => {
   const { email } = req.body
   try {
@@ -179,16 +206,13 @@ const reenviarCodigo = async (req, res) => {
       'UPDATE cliente SET codigo_verificacion = $1, codigo_expira = $2 WHERE email = $3',
       [codigo, expira, email]
     )
-
     await enviarCodigoVerificacion(email, codigo)
-
     res.json({ message: 'Código reenviado' })
   } catch (error) {
     res.status(500).json({ message: 'Error al reenviar código', error: error.message })
   }
 }
 
-// ── Verificar email negocio (legacy) ──
 const verificarEmail = async (req, res) => {
   const { email, codigo } = req.body
   try {
@@ -200,50 +224,23 @@ const verificarEmail = async (req, res) => {
       return res.status(404).json({ message: 'Email no encontrado' })
 
     const cliente = result.rows[0]
-
-    if (cliente.email_verificado)
-      return res.json({ message: 'Email ya verificado' })
-
+    if (cliente.email_verificado) return res.json({ message: 'Email ya verificado' })
     if (cliente.codigo_verificacion !== codigo)
       return res.status(400).json({ message: 'Codigo incorrecto' })
-
     if (new Date() > new Date(cliente.codigo_expira))
-      return res.status(400).json({ message: 'El codigo ha expirado. Registrate nuevamente.' })
+      return res.status(400).json({ message: 'El codigo ha expirado.' })
 
     await pool.query(
       'UPDATE cliente SET email_verificado = TRUE, codigo_verificacion = NULL, codigo_expira = NULL WHERE pk_id = $1',
       [cliente.pk_id]
     )
-
     res.json({ message: 'Correo verificado correctamente' })
   } catch (error) {
     res.status(500).json({ message: 'Error al verificar', error: error.message })
   }
 }
 
-const register = async (req, res) => {
-  const { nombre, email, password } = req.body
-  try {
-    const existe = await pool.query('SELECT pk_id FROM cliente WHERE email = $1', [email])
-    if (existe.rows.length > 0)
-      return res.status(400).json({ message: 'El email ya esta registrado' })
-    const hash   = await bcrypt.hash(password, 10)
-    const result = await pool.query(
-      `INSERT INTO cliente (nombre, email, password) VALUES ($1,$2,$3) RETURNING pk_id, nombre, email`,
-      [nombre, email, hash]
-    )
-    res.json({ message: 'Registro exitoso', cliente: result.rows[0] })
-  } catch (error) {
-    res.status(500).json({ message: 'Error al registrar', error: error.message })
-  }
-}
-
 module.exports = {
-  register,
-  login,
-  registroCompleto,
-  registroComprador,
-  verificarComprador,
-  reenviarCodigo,
-  verificarEmail,
+  register, login, registroCompleto, registroComprador,
+  verificarComprador, reenviarCodigo, verificarEmail,
 }
