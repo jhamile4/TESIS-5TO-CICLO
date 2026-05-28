@@ -10,6 +10,8 @@ const authRoutes     = require('./src/routes/authRoutes')
 const orderRoutes    = require('./src/routes/orderRoutes')
 const stripeRoutes   = require('./src/routes/stripeRoutes')
 const perfilRoutes   = require('./src/routes/perfilRoutes')
+const planRoutes     = require('./src/routes/planRoutes')
+const chatRoutes     = require('./src/routes/chatRoutes')
 
 const app  = express()
 const PORT = process.env.PORT || 3001
@@ -25,6 +27,8 @@ app.use('/api/productos', productRoutes)
 app.use('/api/pedidos',   orderRoutes)
 app.use('/api/stripe',    stripeRoutes)
 app.use('/api/perfil',    perfilRoutes)
+app.use('/api/plan',      planRoutes)
+app.use('/api/chat',      chatRoutes)
 
 app.get('/', (req, res) => {
   res.json({ mensaje: 'API CRECIO funcionando' })

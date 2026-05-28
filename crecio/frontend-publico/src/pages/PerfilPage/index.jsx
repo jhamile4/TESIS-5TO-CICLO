@@ -15,9 +15,9 @@ const get = async (path, token) => {
 
 const put = async (path, body, token) => {
   const res  = await fetch(`${BASE_URL}${path}`, {
-    method: 'PUT',
+    method:  'PUT',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify(body),
+    body:    JSON.stringify(body),
   })
   const data = await res.json()
   if (!res.ok) throw new Error(data.message)
@@ -39,24 +39,32 @@ const estadoBadge = (estado) => {
 }
 
 function PerfilPage() {
-  const navigate  = useNavigate()
-  const token     = localStorage.getItem('token_comprador')
-  const compradorLocal = JSON.parse(localStorage.getItem('comprador') || '{}')
+  const navigate       = useNavigate()
+  const token          = localStorage.getItem('token_comprador')
 
-  const [tab, setTab]             = useState('pedidos')
-  const [perfil, setPerfil]       = useState(null)
-  const [pedidos, setPedidos]     = useState([])
-  const [cargando, setCargando]   = useState(true)
+  const [tab, setTab]               = useState('pedidos')
+  const [perfil, setPerfil]         = useState(null)
+  const [pedidos, setPedidos]       = useState([])
+  const [cargando, setCargando]     = useState(true)
   const [editNombre, setEditNombre] = useState('')
-  const [editando, setEditando]   = useState(false)
-  const [guardando, setGuardando] = useState(false)
-  const [msgExito, setMsgExito]   = useState(null)
+  const [editando, setEditando]     = useState(false)
+  const [guardando, setGuardando]   = useState(false)
+  const [msgExito, setMsgExito]     = useState(null)
 
   useEffect(() => {
     if (!token) { navigate('/'); return }
     Promise.all([get('/perfil/me', token), get('/perfil/pedidos', token)])
-      .then(([p, ped]) => { setPerfil(p); setEditNombre(p.nombre); setPedidos(ped); setCargando(false) })
-      .catch(() => { localStorage.removeItem('token_comprador'); navigate('/') })
+      .then(([p, ped]) => {
+        setPerfil(p)
+        setEditNombre(p.nombre)
+        setPedidos(ped)
+        setCargando(false)
+      })
+      .catch(() => {
+        localStorage.removeItem('token_comprador')
+        localStorage.removeItem('comprador')
+        navigate('/')
+      })
   }, [])
 
   const handleGuardar = async () => {
@@ -65,8 +73,9 @@ function PerfilPage() {
       const res = await put('/perfil/me', { nombre: editNombre }, token)
       setPerfil(res.cliente)
       localStorage.setItem('comprador', JSON.stringify(res.cliente))
+      window.dispatchEvent(new Event('compradorActualizado'))
       setEditando(false)
-      setMsgExito('¡Perfil actualizado!')
+      setMsgExito('¡Perfil actualizado correctamente!')
       setTimeout(() => setMsgExito(null), 3000)
     } catch (err) {
       console.error(err)
@@ -78,6 +87,9 @@ function PerfilPage() {
   const handleCerrarSesion = () => {
     localStorage.removeItem('token_comprador')
     localStorage.removeItem('comprador')
+    localStorage.removeItem('token')
+    localStorage.removeItem('cliente')
+    window.dispatchEvent(new Event('compradorActualizado'))
     navigate('/')
   }
 
@@ -94,7 +106,16 @@ function PerfilPage() {
     <div className="min-h-screen bg-[#FAFAFA]">
       <Navbar />
 
-      <div className="max-w-4xl mx-auto px-4 md:px-8 pt-28 md:pt-32 pb-16">
+      <div className="max-w-4xl mx-auto px-4 md:px-8 pt-24 md:pt-28 pb-16">
+
+        {/* Botón volver */}
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 text-sm text-[#6B7280] hover:text-[#0D9488] font-medium mb-6 cursor-pointer transition-colors group"
+        >
+          <i className="ri-arrow-left-line group-hover:-translate-x-1 transition-transform" />
+          Volver al inicio
+        </button>
 
         {/* Header perfil */}
         <div className="flex flex-col md:flex-row items-start md:items-center gap-5 mb-8">
@@ -159,7 +180,6 @@ function PerfilPage() {
                 const items = typeof p.items === 'string' ? JSON.parse(p.items) : p.items
                 return (
                   <div key={i} className="bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden hover:shadow-md transition-all">
-
                     {/* Header pedido */}
                     <div className="flex items-center justify-between px-5 py-4 border-b border-[#F3F4F6]">
                       <div className="flex items-center gap-3">
@@ -184,7 +204,7 @@ function PerfilPage() {
                       </div>
                     </div>
 
-                    {/* Items del pedido */}
+                    {/* Items */}
                     <div className="px-5 py-3 flex flex-col gap-2">
                       {items && items.map((item, j) => (
                         <div key={j} className="flex items-center justify-between text-sm">
@@ -199,12 +219,12 @@ function PerfilPage() {
                       ))}
                     </div>
 
-                    {/* Footer pedido */}
+                    {/* Footer */}
                     <div className="px-5 py-3 bg-[#FAFAFA] border-t border-[#F3F4F6] flex items-center justify-between">
-                      <span className="text-[10px] text-[#9CA3AF] font-mono truncate max-w-[200px]">
+                      <span className="text-[10px] text-[#9CA3AF] font-mono truncate max-w-[180px]">
                         {p.stripe_payment_intent}
                       </span>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         {p.negocio_whatsapp && (
                           <a
                             href={`https://wa.me/${p.negocio_whatsapp}?text=${encodeURIComponent(`Hola, tengo una consulta sobre mi pedido ${p.stripe_payment_intent}`)}`}
@@ -269,7 +289,7 @@ function PerfilPage() {
                 )}
               </div>
 
-              {/* Email (no editable) */}
+              {/* Email */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-[#374151] uppercase tracking-wider">Email</label>
                 <div className="flex items-center gap-2 px-4 py-3 rounded-xl border border-[#E5E7EB] bg-[#FAFAFA]">
@@ -307,7 +327,7 @@ function PerfilPage() {
               )}
             </div>
 
-            {/* Zona peligrosa */}
+            {/* Cerrar sesión */}
             <div className="mt-8 pt-6 border-t border-[#E5E7EB]">
               <h4 className="text-sm font-bold text-[#374151] mb-3">Sesión</h4>
               <button

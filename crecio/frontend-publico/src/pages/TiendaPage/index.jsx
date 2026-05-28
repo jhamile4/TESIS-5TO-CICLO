@@ -5,6 +5,7 @@ import Footer from '../../components/Footer/Footer'
 import ProductoGrid from './components/ProductoGrid'
 import ResenasList from './components/ResenasList'
 import Carrito from './components/Carrito'
+import ChatNegocio from './components/ChatNegocio'
 import { getNegocio, getProductos, getResenas, getGaleria } from '../../services/apiPublico'
 
 function TiendaPage() {
@@ -378,6 +379,7 @@ function TiendaPage() {
           negocioId={negocio.id}
         />
       )}
+      <ChatNegocio negocio={negocio} />
 
       <Footer />
 

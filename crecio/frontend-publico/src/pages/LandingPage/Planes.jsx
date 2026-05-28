@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const planes = [
   {
-    nombre: 'Basico',
+    id: 'gratis',
+    nombre: 'Básico',
     precio: { mensual: 0, anual: 0 },
     descripcion: 'Para empezar a digitalizarte sin costo.',
     features: [
@@ -11,13 +12,14 @@ const planes = [
       'Panel de administración básico',
       'Perfil en buscador local',
       'Soporte por email',
-      '1 usuario administrador',
     ],
     noFeatures: ['Herramientas de IA', 'Dominio personalizado', 'Reportes avanzados'],
     cta: 'Empezar Gratis',
     popular: false,
+    accion: 'registro',
   },
   {
+    id: 'pro',
     nombre: 'CRECIO Pro',
     precio: { mensual: 49, anual: 39 },
     descripcion: 'El plan favorito de los negocios que quieren crecer.',
@@ -28,13 +30,14 @@ const planes = [
       'Dominio personalizado',
       'Reportes y analíticas avanzadas',
       'Soporte prioritario 24/7',
-      'Hasta 3 usuarios',
     ],
     noFeatures: [],
     cta: 'Empezar Prueba Gratis',
     popular: true,
+    accion: 'pagar',
   },
   {
+    id: 'enterprise',
     nombre: 'Empresarial',
     precio: { mensual: 129, anual: 99 },
     descripcion: 'Para negocios con múltiples sucursales.',
@@ -49,38 +52,63 @@ const planes = [
     noFeatures: [],
     cta: 'Contactar Ventas',
     popular: false,
+    accion: 'whatsapp',
   },
 ]
 
 function Planes() {
-  const navigate = useNavigate()
-  const [anual, setAnual] = useState(false)
+  const navigate   = useNavigate()
+  const [anual, setAnual]     = useState(false)
   const [visible, setVisible] = useState(false)
   const sectionRef = useRef(null)
 
   useEffect(() => {
     const obs = new IntersectionObserver(
       ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect() } },
-      { threshold: 0.15 }
+      { threshold: 0.1 }
     )
     if (sectionRef.current) obs.observe(sectionRef.current)
     return () => obs.disconnect()
   }, [])
 
+  const handleCTA = (plan) => {
+    const token = localStorage.getItem('token_comprador')
+    const periodo = anual ? 'anual' : 'mensual'
+
+    if (plan.accion === 'registro') {
+      navigate('/registro')
+    } else if (plan.accion === 'pagar') {
+      if (!token) {
+        // No logueado → ir a login primero
+        navigate(`/login?redirect=/pagar-plan?plan=${plan.id}%26periodo=${periodo}`)
+      } else {
+        navigate(`/pagar-plan?plan=${plan.id}&periodo=${periodo}`)
+      }
+    } else if (plan.accion === 'whatsapp') {
+      window.open(
+        `https://wa.me/51987654321?text=${encodeURIComponent('Hola CRECIO, me interesa el plan Empresarial para mi negocio. ¿Podemos hablar?')}`,
+        '_blank'
+      )
+    }
+  }
+
+  const ctaStyle = (plan) => {
+    if (plan.popular) return 'bg-[#0D9488] text-white hover:bg-[#0F766E] shadow-lg shadow-[#0D9488]/20'
+    if (plan.id === 'enterprise') return 'border border-white/20 text-white hover:bg-white/5'
+    return 'border border-white/20 text-white hover:bg-white/5'
+  }
+
   return (
     <section
       ref={sectionRef}
       id="precios"
-      className="relative py-24 md:py-32 bg-[#0B0F19] overflow-hidden noise-bg"
+      className="relative py-24 md:py-32 bg-[#0B0F19] overflow-hidden"
     >
-      {/* Grid background sutil */}
-      <div
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px)`,
-          backgroundSize: '60px 60px',
-        }}
-      />
+      {/* Grid bg */}
+      <div className="absolute inset-0 opacity-[0.03]" style={{
+        backgroundImage: `linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px)`,
+        backgroundSize: '60px 60px'
+      }} />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8">
 
@@ -94,28 +122,22 @@ function Planes() {
             <br />
             <span className="gradient-teal">ritmo</span>
           </h2>
-          <p className="text-[#9CA3AF] max-w-md mx-auto text-sm md:text-base">
+          <p className="text-[#9CA3AF] max-w-md mx-auto text-sm md:text-base mb-10">
             Empieza gratis y escala cuando estés listo. Sin sorpresas ni costos ocultos.
           </p>
 
-          {/* Toggle — igual al ref: switch deslizante */}
-          <div className="flex items-center justify-center gap-3 mt-10">
-            <span className={`text-sm font-medium transition-colors ${!anual ? 'text-white' : 'text-[#6B7280]'}`}>
-              Mensual
-            </span>
+          {/* Toggle */}
+          <div className="flex items-center justify-center gap-3">
+            <span className={`text-sm font-medium transition-colors ${!anual ? 'text-white' : 'text-[#6B7280]'}`}>Mensual</span>
             <button
               onClick={() => setAnual(!anual)}
               className={`relative w-14 h-7 rounded-full transition-colors cursor-pointer ${anual ? 'bg-[#0D9488]' : 'bg-[#374151]'}`}
             >
-              <span
-                className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-all duration-300 ${anual ? 'left-8' : 'left-1'}`}
-              />
+              <span className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-all duration-300 ${anual ? 'left-8' : 'left-1'}`} />
             </button>
-            <span className={`text-sm font-medium transition-colors ${anual ? 'text-white' : 'text-[#6B7280]'}`}>
-              Anual
-            </span>
+            <span className={`text-sm font-medium transition-colors ${anual ? 'text-white' : 'text-[#6B7280]'}`}>Anual</span>
             {anual && (
-              <span className="bg-[#0D9488]/20 text-[#0D9488] text-xs px-2 py-1 rounded font-semibold animate-pulse-glow">
+              <span className="bg-[#0D9488]/20 text-[#0D9488] text-xs px-2 py-1 rounded font-semibold">
                 Ahorra 20%
               </span>
             )}
@@ -126,11 +148,10 @@ function Planes() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 items-start">
           {planes.map((plan, idx) => (
             <div
-              key={plan.nombre}
+              key={plan.id}
               className={`relative group transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
               style={{ transitionDelay: `${200 + idx * 150}ms` }}
             >
-              {/* Badge popular */}
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
                   <span className="bg-[#0D9488] text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider whitespace-nowrap shadow-lg shadow-[#0D9488]/20">
@@ -147,11 +168,6 @@ function Planes() {
                 }`}
                 style={{ transform: plan.popular ? 'translateY(-8px)' : 'translateY(0)' }}
               >
-                {/* Glow popular */}
-                {plan.popular && (
-                  <div className="absolute inset-0 rounded-2xl bg-[#0D9488]/5 blur-xl -z-10 group-hover:bg-[#0D9488]/10 transition-all duration-500" />
-                )}
-
                 {/* Nombre y precio */}
                 <div>
                   <span className="text-xs font-semibold uppercase tracking-wider text-[#6B7280]">
@@ -167,21 +183,25 @@ function Planes() {
                       <span className="text-[#6B7280] text-sm">/mes</span>
                     )}
                   </div>
+                  {anual && plan.precio.mensual > 0 && (
+                    <p className="text-xs text-[#0D9488] font-medium mt-1">
+                      Ahorras S/ {(plan.precio.mensual - plan.precio.anual) * 12} al año
+                    </p>
+                  )}
                   <p className="text-[#9CA3AF] text-sm mt-2">{plan.descripcion}</p>
                 </div>
 
                 {/* CTA */}
                 <button
-                  onClick={() => navigate('/registro')}
-                  className={`w-full py-3.5 rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer whitespace-nowrap ${
-                    plan.popular
-                      ? 'bg-[#0D9488] text-white hover:bg-[#0F766E] shadow-lg shadow-[#0D9488]/20 hover:shadow-[#0D9488]/30 hover:scale-[1.02]'
-                      : plan.precio.mensual === 0
-                      ? 'border border-[#374151] text-white hover:border-[#0D9488] hover:text-[#0D9488]'
-                      : 'border border-[#374151] text-white hover:bg-[#1F2937]'
-                  }`}
+                  onClick={() => handleCTA(plan)}
+                  className={`w-full py-3.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${ctaStyle(plan)}`}
                 >
-                  {plan.cta}
+                  {plan.id === 'enterprise'
+                    ? <span className="flex items-center justify-center gap-2">
+                        <i className="ri-whatsapp-line" /> {plan.cta}
+                      </span>
+                    : plan.cta
+                  }
                 </button>
 
                 {/* Features */}
@@ -209,7 +229,7 @@ function Planes() {
         </div>
 
         <p className="text-[#6B7280]/60 text-xs text-center mt-10">
-          Todos los planes incluyen 14 días de prueba gratis. Sin tarjeta de crédito requerida.
+          Todos los planes incluyen 14 días de prueba gratis. Sin tarjeta de crédito requerida para el plan Básico.
         </p>
       </div>
     </section>

@@ -9,6 +9,7 @@ import Planes from './Planes'
 import Testimonios from './Testimonios'
 import CTAFinal from './CTAFinal'
 import Footer from '../../components/Footer/Footer'
+import ChatCrecio from './ChatCrecio'
 
 function LandingPage() {
   return (
@@ -23,6 +24,7 @@ function LandingPage() {
       <Planes />
       <Testimonios />
       <CTAFinal />
+      <ChatCrecio />
       <Footer />
     </div>
   )
