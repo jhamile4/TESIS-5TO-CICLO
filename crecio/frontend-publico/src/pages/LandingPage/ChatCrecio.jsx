@@ -11,15 +11,15 @@ const SUGERENCIAS = [
 ]
 
 function ChatCrecio() {
-  const navigate                  = useNavigate()
-  const [abierto, setAbierto]     = useState(false)
-  const [mensajes, setMensajes]   = useState([])
-  const [input, setInput]         = useState('')
-  const [cargando, setCargando]   = useState(false)
-  const [iniciado, setIniciado]   = useState(false)
-  const [noLeido, setNoLeido]     = useState(true)
-  const bottomRef                 = useRef(null)
-  const inputRef                  = useRef(null)
+  const navigate                = useNavigate()
+  const [abierto, setAbierto]   = useState(false)
+  const [mensajes, setMensajes] = useState([])
+  const [input, setInput]       = useState('')
+  const [cargando, setCargando] = useState(false)
+  const [iniciado, setIniciado] = useState(false)
+  const [noLeido, setNoLeido]   = useState(true)
+  const bottomRef               = useRef(null)
+  const inputRef                = useRef(null)
 
   useEffect(() => {
     if (bottomRef.current)
@@ -92,44 +92,54 @@ function ChatCrecio() {
 
   return (
     <>
-      {/* ── Botón flotante ── */}
+      {/* ── Botón flotante — negro con estrella ── */}
       {!abierto && (
         <button
           onClick={handleAbrir}
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 bg-[#0D9488] text-white px-5 py-3.5 rounded-full shadow-xl hover:bg-[#0F766E] hover:shadow-2xl transition-all cursor-pointer"
-          style={{ animation: 'float 3s ease-in-out infinite' }}
+          className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-2xl text-white shadow-2xl cursor-pointer flex items-center justify-center hover:scale-110 transition-all duration-300 group"
+          style={{ background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0D9488 100%)' }}
         >
-          <div className="relative">
-            <i className="ri-chat-ai-line text-xl" />
-            {noLeido && (
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-400 rounded-full border border-white animate-ping" />
-            )}
-          </div>
-          <span className="text-sm font-bold">¿Tienes dudas?</span>
+          {/* Brillo en hover */}
+          <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.1), transparent)' }} />
+
+          <i className="ri-stars-fill text-2xl relative z-10" style={{ color: '#2DD4BF' }} />
+
+          {/* Punto verde */}
+          {noLeido && (
+            <>
+              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-white animate-ping" />
+              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-white" />
+            </>
+          )}
         </button>
       )}
 
       {/* ── Ventana del chat ── */}
       {abierto && (
         <div
-          className="fixed bottom-6 right-6 z-50 w-80 md:w-96 flex flex-col rounded-2xl shadow-2xl overflow-hidden border border-[#E5E7EB] bg-white"
-          style={{ height: '500px', animation: 'modalIn 0.3s cubic-bezier(0.16,1,0.3,1)' }}
+          className="fixed bottom-6 right-6 z-50 w-80 md:w-96 flex flex-col rounded-2xl shadow-2xl overflow-hidden"
+          style={{ height: '500px', animation: 'modalIn 0.3s cubic-bezier(0.16,1,0.3,1)', border: '1px solid rgba(255,255,255,0.1)' }}
         >
-          {/* Header */}
-          <div className="flex items-center gap-3 px-4 py-3.5 bg-gradient-to-r from-[#0D9488] to-[#0F766E]">
-            <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
-              <i className="ri-robot-2-line text-white text-xl" />
+          {/* Header oscuro con gradiente */}
+          <div
+            className="flex items-center gap-3 px-4 py-3.5 shrink-0"
+            style={{ background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 60%, #0D9488 100%)' }}
+          >
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <i className="ri-stars-fill text-xl" style={{ color: '#2DD4BF' }} />
             </div>
             <div className="flex-1">
               <p className="text-white font-bold text-sm">Asistente CRECIO</p>
-              <p className="text-white/70 text-[10px] flex items-center gap-1">
+              <p className="text-white/50 text-[10px] flex items-center gap-1">
                 <span className="w-1.5 h-1.5 bg-green-400 rounded-full inline-block animate-pulse" />
-                En línea · Responde al instante
+                IA · Responde al instante
               </p>
             </div>
             <button
               onClick={() => setAbierto(false)}
-              className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors cursor-pointer text-white"
+              className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors cursor-pointer text-white/70 hover:text-white"
             >
               <i className="ri-close-line text-sm" />
             </button>
@@ -140,18 +150,19 @@ function ChatCrecio() {
             {mensajes.map((m, i) => (
               <div key={i} className={`flex ${m.rol === 'usuario' ? 'justify-end' : 'justify-start'}`}>
                 {m.rol === 'asistente' && (
-                  <div className="w-7 h-7 rounded-xl bg-[#0D9488] flex items-center justify-center shrink-0 mr-2 mt-0.5">
-                    <i className="ri-robot-line text-white text-xs" />
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mr-2 mt-0.5"
+                    style={{ background: 'linear-gradient(135deg, #0a0a0a, #0D9488)' }}>
+                    <i className="ri-stars-fill text-[10px]" style={{ color: '#2DD4BF' }} />
                   </div>
                 )}
-                <div
-                  className={`max-w-[75%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                    m.rol === 'usuario'
-                      ? 'bg-[#0D9488] text-white rounded-br-sm'
-                      : m.error
-                        ? 'bg-red-50 text-red-600 border border-red-200 rounded-bl-sm'
-                        : 'bg-white text-[#374151] border border-[#E5E7EB] rounded-bl-sm shadow-sm'
-                  }`}
+                <div className={`max-w-[75%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                  m.rol === 'usuario'
+                    ? 'text-white rounded-br-sm'
+                    : m.error
+                      ? 'bg-red-50 text-red-600 border border-red-200 rounded-bl-sm'
+                      : 'bg-white text-[#374151] border border-[#E5E7EB] rounded-bl-sm shadow-sm'
+                }`}
+                style={m.rol === 'usuario' ? { background: 'linear-gradient(135deg, #0D9488, #0F766E)' } : {}}
                 >
                   {renderTexto(m.texto)}
                 </div>
@@ -161,8 +172,9 @@ function ChatCrecio() {
             {/* Typing */}
             {cargando && (
               <div className="flex justify-start items-end gap-2">
-                <div className="w-7 h-7 rounded-xl bg-[#0D9488] flex items-center justify-center shrink-0">
-                  <i className="ri-robot-line text-white text-xs" />
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                  style={{ background: 'linear-gradient(135deg, #0a0a0a, #0D9488)' }}>
+                  <i className="ri-stars-fill text-[10px]" style={{ color: '#2DD4BF' }} />
                 </div>
                 <div className="bg-white border border-[#E5E7EB] px-4 py-3 rounded-2xl rounded-bl-sm shadow-sm">
                   <div className="flex gap-1 items-center h-4">
@@ -181,23 +193,21 @@ function ChatCrecio() {
           {mensajes.length === 1 && !cargando && (
             <div className="px-3 py-2 flex gap-1.5 overflow-x-auto no-scrollbar bg-white border-t border-[#F3F4F6]">
               {SUGERENCIAS.map((s, i) => (
-                <button
-                  key={i}
-                  onClick={() => enviarMensaje(s)}
-                  className="shrink-0 px-3 py-1.5 rounded-full border border-[#0D9488]/30 text-[#0D9488] text-xs font-medium hover:bg-[#0D9488]/5 transition-colors cursor-pointer whitespace-nowrap"
-                >
+                <button key={i} onClick={() => enviarMensaje(s)}
+                  className="shrink-0 px-3 py-1.5 rounded-full border border-[#0D9488]/30 text-[#0D9488] text-xs font-medium hover:bg-[#0D9488]/5 transition-colors cursor-pointer whitespace-nowrap">
                   {s}
                 </button>
               ))}
             </div>
           )}
 
-          {/* CTA registro */}
+          {/* CTA */}
           {mensajes.length >= 3 && (
-            <div className="px-3 py-2 bg-[#F0FDF9] border-t border-[#99F6E4]">
+            <div className="px-3 py-2 border-t border-[#F3F4F6] bg-white">
               <button
                 onClick={() => { navigate('/registro'); setAbierto(false) }}
-                className="w-full py-2 rounded-xl bg-[#0D9488] text-white text-xs font-bold hover:bg-[#0F766E] transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                className="w-full py-2 rounded-xl text-white text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                style={{ background: 'linear-gradient(135deg, #0a0a0a, #0D9488)' }}
               >
                 <i className="ri-store-2-line" />
                 Crear mi tienda gratis ahora
@@ -220,7 +230,8 @@ function ChatCrecio() {
             <button
               onClick={() => enviarMensaje()}
               disabled={!input.trim() || cargando}
-              className="w-9 h-9 flex items-center justify-center rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white transition-all cursor-pointer disabled:opacity-40 shrink-0"
+              className="w-9 h-9 flex items-center justify-center rounded-xl text-white transition-all cursor-pointer disabled:opacity-40 shrink-0"
+              style={{ background: 'linear-gradient(135deg, #0a0a0a, #0D9488)' }}
             >
               <i className="ri-send-plane-fill text-sm" />
             </button>
