@@ -21,6 +21,7 @@ const getMisPedidos = async (req, res) => {
     const result = await pool.query(
       `SELECT
         pp.pk_id,
+        pp.numero_pedido,
         pp.stripe_payment_intent,
         pp.monto_total,
         pp.estado,
