@@ -23,10 +23,11 @@ function LoginPage() {
   }
 
   const guardarSesion = (data) => {
+    const compradorConRol = { ...data.cliente, esEmprendedor: data.roles?.esEmprendedor ?? false }
     localStorage.setItem('token',           data.token)
     localStorage.setItem('cliente',         JSON.stringify(data.cliente))
     localStorage.setItem('token_comprador', data.token)
-    localStorage.setItem('comprador',       JSON.stringify(data.cliente))
+    localStorage.setItem('comprador',       JSON.stringify(compradorConRol))
     window.dispatchEvent(new Event('compradorActualizado'))
   }
 

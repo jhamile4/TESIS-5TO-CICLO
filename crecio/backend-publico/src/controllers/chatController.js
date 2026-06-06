@@ -3,29 +3,25 @@ const pool = require('../db/db')
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
+// ── Chat del negocio ──
 const chatNegocio = async (req, res) => {
   const { negocioId, mensaje, historial = [] } = req.body
-
   if (!mensaje || !negocioId)
     return res.status(400).json({ message: 'Faltan datos' })
 
   try {
-    // Info del negocio
     const negocioResult = await pool.query(
       `SELECT nombre, categoria, descripcion, direccion, horario, telefono, whatsapp
-       FROM negocio WHERE pk_id = $1`,
-      [negocioId]
+       FROM negocio WHERE pk_id = $1`, [negocioId]
     )
     if (negocioResult.rows.length === 0)
       return res.status(404).json({ message: 'Negocio no encontrado' })
 
     const negocio = negocioResult.rows[0]
 
-    // Productos del negocio
     const productosResult = await pool.query(
       `SELECT nombre, descripcion, precio FROM producto
-       WHERE fk_negocio_id = $1 AND activo = TRUE LIMIT 20`,
-      [negocioId]
+       WHERE fk_negocio_id = $1 AND activo = TRUE LIMIT 20`, [negocioId]
     )
     const productos = productosResult.rows
 
@@ -33,7 +29,7 @@ const chatNegocio = async (req, res) => {
       ? productos.map(p => `- ${p.nombre}: S/${p.precio}${p.descripcion ? ` (${p.descripcion})` : ''}`).join('\n')
       : 'No hay productos registrados aún.'
 
-    const sistemaPrompt = `Eres el asistente virtual de "${negocio.nombre}", un negocio de ${negocio.categoria} en la plataforma CRECIO.
+    const sistemaPrompt = `Eres el asistente virtual EXCLUSIVO de "${negocio.nombre}", un negocio de ${negocio.categoria} en la plataforma CRECIO.
 
 INFORMACIÓN DEL NEGOCIO:
 - Nombre: ${negocio.nombre}
@@ -47,14 +43,13 @@ INFORMACIÓN DEL NEGOCIO:
 PRODUCTOS DISPONIBLES:
 ${productosTexto}
 
-INSTRUCCIONES:
-- Responde SIEMPRE en español peruano, de forma amable y breve (máximo 3 oraciones)
-- Solo responde sobre este negocio y sus productos
-- Si preguntan por delivery, di que pueden coordinar por WhatsApp
-- Si preguntan por precios, da la info exacta de los productos
-- Si no sabes algo, sugiere contactar por WhatsApp
-- No inventes información que no esté en el contexto
-- Usa un tono amigable y cercano`
+REGLAS ESTRICTAS — DEBES SEGUIRLAS SIN EXCEPCIÓN:
+1. SOLO puedes responder preguntas relacionadas con "${negocio.nombre}", sus productos, precios, horarios, ubicación y servicios.
+2. Si te preguntan sobre cualquier otro tema (deportes, política, ciencia, personas famosas, recetas, tecnología general, u CUALQUIER cosa ajena al negocio), responde EXACTAMENTE: "Solo puedo ayudarte con información de ${negocio.nombre}. ¿Tienes alguna consulta sobre nuestros productos o servicios?"
+3. NUNCA respondas preguntas sobre otras personas, marcas, negocios o temas generales.
+4. NUNCA uses tu conocimiento general — solo la información del negocio que te dieron.
+5. Si no sabes algo del negocio, sugiere contactar por WhatsApp.
+6. Responde siempre en español, de forma amable y breve (máximo 3 oraciones).`
 
     const messages = [
       { role: 'system', content: sistemaPrompt },
@@ -65,28 +60,24 @@ INSTRUCCIONES:
     const completion = await groq.chat.completions.create({
       model:       'llama-3.1-8b-instant',
       messages,
-      max_tokens:  250,
-      temperature: 0.7,
+      max_tokens:  200,
+      temperature: 0.3, // Más bajo = más estricto y predecible
     })
 
     const respuesta = completion.choices[0].message.content
-
-    res.json({ respuesta, tokens: completion.usage?.total_tokens || 0 })
+    res.json({ respuesta })
   } catch (error) {
-    console.error('Error Groq:', error.message)
+    console.error('Error Groq negocio:', error.message)
     res.status(500).json({ message: 'Error al procesar el mensaje', error: error.message })
   }
 }
 
-module.exports = { chatNegocio }
-
+// ── Chat de la landing (CRECIO) ──
 const chatCrecio = async (req, res) => {
   const { mensaje, historial = [] } = req.body
+  if (!mensaje) return res.status(400).json({ message: 'Falta el mensaje' })
 
-  if (!mensaje)
-    return res.status(400).json({ message: 'Falta el mensaje' })
-
-  const sistemaPrompt = `Eres el asistente virtual de CRECIO, una plataforma SaaS peruana que ayuda a pequeños negocios a digitalizarse.
+  const sistemaPrompt = `Eres el asistente virtual oficial de CRECIO, una plataforma SaaS peruana que ayuda a pequeños negocios a digitalizarse.
 
 SOBRE CRECIO:
 - CRECIO permite a emprendedores crear su tienda digital en minutos
@@ -99,27 +90,23 @@ PLANES:
 - Plan Empresarial (S/129/mes): múltiples sucursales, API, usuarios ilimitados, SLA
 
 CÓMO REGISTRARSE:
-- Ir a crecio.pe y hacer clic en "Crear mi tienda gratis"
+- Ir a la página y hacer clic en "Crear mi tienda gratis"
 - Completar datos del negocio: nombre, categoría, WhatsApp, dirección
 - Verificar el correo con el código que llega al email
-- ¡Listo! La tienda queda activa
 
 FUNCIONES PRINCIPALES:
 - Catálogo digital con fotos y precios
 - Mapa de ubicación del negocio
-- Carrito de compras y pago con tarjeta (Stripe)
+- Carrito de compras y pago con tarjeta
 - Reseñas de clientes
-- Galería de fotos
 - Asistente IA para responder preguntas de clientes
-- Herramientas de IA para generar descripciones (próximamente)
 
-INSTRUCCIONES:
-- Responde SIEMPRE en español peruano, amable y breve (máximo 4 oraciones)
-- Si preguntan por precios, da los valores exactos en soles
-- Si quieren registrarse, guíalos al botón "Crear mi tienda gratis"
-- Si tienen dudas técnicas, sugiere escribir a soporte@crecio.pe
-- Usa un tono entusiasta y motivador
-- Si preguntan algo que no sabes, sé honesto y deriva a soporte`
+REGLAS ESTRICTAS:
+1. SOLO responde preguntas sobre CRECIO: cómo funciona, planes, precios, registro, funciones.
+2. Si te preguntan sobre cualquier otro tema ajeno a CRECIO, responde: "Solo puedo ayudarte con información sobre la plataforma CRECIO. ¿Tienes alguna consulta sobre cómo digitalizar tu negocio?"
+3. NUNCA uses tu conocimiento general sobre otros temas.
+4. Responde en español peruano, amable y breve (máximo 4 oraciones).
+5. Si quieren registrarse, guíalos al botón "Crear mi tienda gratis".`
 
   try {
     const messages = [
@@ -132,7 +119,7 @@ INSTRUCCIONES:
       model:       'llama-3.1-8b-instant',
       messages,
       max_tokens:  250,
-      temperature: 0.7,
+      temperature: 0.3,
     })
 
     const respuesta = completion.choices[0].message.content

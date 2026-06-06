@@ -92,20 +92,58 @@ const Navbar = () => {
         {/* Desktop CTAs */}
         <div className="hidden md:flex items-center gap-3">
           {comprador ? (
-            <button
-              onClick={() => navigate('/perfil')}
-              className="flex items-center gap-2.5 cursor-pointer group"
-            >
-              <div className="w-9 h-9 rounded-full bg-[#0D9488] flex items-center justify-center shadow-sm group-hover:shadow-md transition-all shrink-0">
-                <span className="text-sm font-bold text-white">
-                  {comprador.nombre?.charAt(0).toUpperCase()}
-                </span>
+            <div className="relative group">
+              {/* Clic en avatar → perfil */}
+              <button
+                onClick={() => navigate('/perfil')}
+                className="flex items-center gap-2.5 cursor-pointer"
+              >
+                <div className="w-9 h-9 rounded-full bg-[#0D9488] flex items-center justify-center shadow-sm group-hover:shadow-md transition-all shrink-0">
+                  <span className="text-sm font-bold text-white">
+                    {comprador.nombre?.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <div className={`hidden lg:block text-left transition-colors ${textColor} group-hover:text-[#0D9488]`}>
+                  <p className="text-xs font-bold leading-none">{comprador.nombre}</p>
+                  <p className="text-[10px] opacity-60 mt-0.5">Mi cuenta ▾</p>
+                </div>
+              </button>
+
+              {/* Dropdown aparece al hacer hover */}
+              <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-[#E5E7EB] py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                {comprador.esEmprendedor && (
+                  <button
+                    onClick={() => navigate('/panel')}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#374151] hover:bg-[#F0FDF9] hover:text-[#0D9488] transition-colors cursor-pointer"
+                  >
+                    <i className="ri-dashboard-line text-base" />
+                    Mi panel de negocio
+                  </button>
+                )}
+                <button
+                  onClick={() => handleNavLink('buscar')}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#374151] hover:bg-[#F0FDF9] hover:text-[#0D9488] transition-colors cursor-pointer"
+                >
+                  <i className="ri-shopping-bag-line text-base" />
+                  Comprar algo
+                </button>
+                <div className="border-t border-[#E5E7EB] my-1" />
+                <button
+                  onClick={() => {
+                    localStorage.removeItem('comprador')
+                    localStorage.removeItem('token')
+                    localStorage.removeItem('token_comprador')
+                    localStorage.removeItem('cliente')
+                    window.dispatchEvent(new Event('compradorActualizado'))
+                    navigate('/')
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                >
+                  <i className="ri-logout-box-line text-base" />
+                  Cerrar sesión
+                </button>
               </div>
-              <div className={`hidden lg:block text-left transition-colors ${textColor} group-hover:text-[#0D9488]`}>
-                <p className="text-xs font-bold leading-none">{comprador.nombre}</p>
-                <p className="text-[10px] opacity-60 mt-0.5">Ver mis pedidos</p>
-              </div>
-            </button>
+            </div>
           ) : (
             <>
               <button
@@ -147,15 +185,46 @@ const Navbar = () => {
           ))}
           <div className="flex flex-col gap-3 pt-6">
             {comprador ? (
-              <button
-                onClick={() => { navigate('/perfil'); setMenuOpen(false) }}
-                className="w-full py-3 rounded-xl bg-[#0D9488] text-white font-bold text-sm flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
-                  {comprador.nombre?.charAt(0).toUpperCase()}
-                </div>
-                Mi perfil — {comprador.nombre}
-              </button>
+              <>
+                <button
+                  onClick={() => { navigate('/perfil'); setMenuOpen(false) }}
+                  className="w-full py-3 rounded-xl bg-[#0D9488] text-white font-bold text-sm flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <i className="ri-user-line" />
+                  Mi perfil — {comprador.nombre}
+                </button>
+                {comprador.esEmprendedor && (
+                  <button
+                    onClick={() => { navigate('/panel'); setMenuOpen(false) }}
+                    className="w-full py-3 rounded-xl border border-[#0D9488] text-[#0D9488] font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <i className="ri-dashboard-line" />
+                    Mi panel de negocio
+                  </button>
+                )}
+                <button
+                  onClick={() => { handleNavLink('buscar'); setMenuOpen(false) }}
+                  className="w-full py-3 rounded-xl border border-[#E5E7EB] text-[#374151] font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <i className="ri-shopping-bag-line" />
+                  Comprar algo
+                </button>
+                <button
+                  onClick={() => {
+                    localStorage.removeItem('comprador')
+                    localStorage.removeItem('token')
+                    localStorage.removeItem('token_comprador')
+                    localStorage.removeItem('cliente')
+                    window.dispatchEvent(new Event('compradorActualizado'))
+                    navigate('/')
+                    setMenuOpen(false)
+                  }}
+                  className="w-full py-3 rounded-xl border border-red-200 text-red-500 font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <i className="ri-logout-box-line" />
+                  Cerrar sesión
+                </button>
+              </>
             ) : (
               <>
                 <button

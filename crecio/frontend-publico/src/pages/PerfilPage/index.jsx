@@ -159,7 +159,10 @@ function PerfilPage() {
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
-      <PerfilNavbar comprador={perfil} />
+          <PerfilNavbar comprador={{
+              ...perfil,
+              esEmprendedor: JSON.parse(localStorage.getItem('comprador') || '{}').esEmprendedor ?? false
+          }} />
 
       {/* Banner error de red */}
       {errorRed && (

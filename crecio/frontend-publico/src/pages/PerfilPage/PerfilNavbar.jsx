@@ -194,12 +194,14 @@ function PerfilNavbar({ comprador }) {
               <i className="ri-search-line text-base" />
             </button>
 
-            {/* Mi Panel */}
-            <button onClick={() => navigate('/panel')}
-              className="hidden md:flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-white text-xs font-semibold transition-all cursor-pointer whitespace-nowrap">
-              <i className="ri-dashboard-line text-sm" />
-              Mi Panel
-            </button>
+            {/* Mi Panel — solo si es emprendedor */}
+            {comprador?.esEmprendedor && (
+              <button onClick={() => navigate('/panel')}
+                className="hidden md:flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-white text-xs font-semibold transition-all cursor-pointer whitespace-nowrap">
+                <i className="ri-dashboard-line text-sm" />
+                Mi Panel
+              </button>
+            )}
 
             {/* Avatar con dropdown */}
             <div className="relative" ref={menuRef}>
@@ -243,8 +245,8 @@ function PerfilNavbar({ comprador }) {
                   {/* Links */}
                   <div className="py-1.5">
                     {[
-                      { icon: 'ri-user-line',     label: 'Mis Datos',        sub: 'Perfil y configuración', action: () => { navigate('/perfil'); setMenuOpen(false) } },
-                      { icon: 'ri-dashboard-line', label: 'Mi Panel',         sub: 'Gestiona tu negocio',    action: () => { navigate('/panel'); setMenuOpen(false) } },
+                      { icon: 'ri-user-line',      label: 'Mis Datos',        sub: 'Perfil y configuración', action: () => { navigate('/perfil'); setMenuOpen(false) } },
+                      ...(comprador?.esEmprendedor ? [{ icon: 'ri-dashboard-line', label: 'Mi Panel', sub: 'Gestiona tu negocio', action: () => { navigate('/panel'); setMenuOpen(false) } }] : []),
                       { icon: 'ri-heart-line',     label: 'Favoritos',        sub: 'Productos guardados',    action: () => { navigate('/perfil'); setMenuOpen(false) } },
                       { icon: 'ri-store-2-line',   label: 'Explorar Tiendas', sub: 'Descubrir negocios',     action: () => { navigate('/'); setMenuOpen(false) } },
                     ].map((item, i) => (
