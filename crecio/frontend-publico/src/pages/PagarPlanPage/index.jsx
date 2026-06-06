@@ -166,8 +166,9 @@ function FormularioPago({ planId, esAnual, planInfo, onExito }) {
           <div className="relative px-4 py-3.5 rounded-xl border border-[#E5E7EB] bg-white focus-within:border-[#0D9488] transition-colors">
             <CardNumberElement options={ELEMENT_STYLE} />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa" className="h-5 w-auto opacity-60" />
-              <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="MC" className="h-5 w-auto opacity-60" />
+               <img src="https://js.stripe.com/v3/fingerprinted/img/visa-365725566f9578a9589553aa9296d178.svg" alt="Visa" className="h-5 w-auto opacity-60" />
+               <img src="https://js.stripe.com/v3/fingerprinted/img/mastercard-4d8844094130711885b5e41b28c9848f.svg" alt="MC" className="h-5 w-auto opacity-60" />
+             
             </div>
           </div>
         </div>
@@ -194,13 +195,8 @@ function FormularioPago({ planId, esAnual, planInfo, onExito }) {
         </p>
       </div>
 
-      {/* Tarjeta de prueba */}
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
-        <p className="text-[11px] font-bold text-amber-700 mb-1 flex items-center gap-1">
-          <i className="ri-information-line" /> Modo de prueba:
-        </p>
-        <p className="text-[11px] text-amber-600 font-mono">4242 4242 4242 4242 · 12/34 · 123</p>
-      </div>
+    
+      
 
       {error && (
         <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 text-xs rounded-xl px-3 py-2.5">
