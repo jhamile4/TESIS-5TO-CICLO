@@ -1,12 +1,21 @@
 function TabTiendas({ tiendas, pedidos, navigate }) {
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-black text-[#111827]">Tus tiendas</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-black text-[#111827]">Tus tiendas</h2>
+        <button
+          onClick={() => navigate('/tiendas')}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-[#0D9488] text-[#0D9488] text-xs font-bold hover:bg-[#0D9488] hover:text-white transition-all cursor-pointer"
+        >
+          <i className="ri-store-2-line text-[10px]" />
+          Explorar tiendas
+        </button>
+      </div>
       {tiendas.length === 0 ? (
         <div className="bg-white rounded-2xl border border-[#E5E7EB] p-12 text-center">
           <i className="ri-store-2-line text-5xl text-[#E5E7EB] block mb-3" />
           <p className="text-sm text-[#9CA3AF] mb-4">Aún no has comprado en ninguna tienda.</p>
-          <button onClick={() => navigate('/')} className="px-6 py-2.5 rounded-xl bg-[#0D9488] text-white font-semibold text-xs cursor-pointer">
+          <button onClick={() => navigate('/tiendas')} className="px-6 py-2.5 rounded-xl bg-[#0D9488] text-white font-semibold text-xs cursor-pointer">
             Ver negocios
           </button>
         </div>

@@ -6,7 +6,7 @@ function TabFavoritos({ favData, navigate, onToggleFav }) {
         <div className="bg-white rounded-2xl border border-[#E5E7EB] p-12 text-center">
           <i className="ri-heart-line text-5xl text-[#E5E7EB] block mb-3" />
           <p className="text-sm text-[#9CA3AF] mb-4">Toca el corazón en cualquier producto para guardarlo aquí.</p>
-          <button onClick={() => navigate('/')} className="px-6 py-2.5 rounded-xl bg-[#0D9488] text-white font-semibold text-xs cursor-pointer">
+          <button onClick={() => navigate('/tiendas')} className="px-6 py-2.5 rounded-xl bg-[#0D9488] text-white font-semibold text-xs cursor-pointer">
             Explorar tiendas
           </button>
         </div>

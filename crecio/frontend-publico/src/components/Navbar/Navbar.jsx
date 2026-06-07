@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import logoCrecio from '../../assets/logoCrecio.png'
+import logoCrecio  from '../../assets/logoCrecio.png'
+import logo2Crecio from '../../assets/logo2Crecio.png'
 
 const Navbar = () => {
   const navigate  = useNavigate()
@@ -37,14 +38,13 @@ const Navbar = () => {
     return () => { document.body.style.overflow = '' }
   }, [menuOpen])
 
-  const handleNavLink = (id) => {
+  const handleNavLink = (id, href) => {
     setMenuOpen(false)
+    if (href) { navigate(href); return }
     if (esLanding) {
-      // Ya estamos en la landing — hacer scroll directo
       const el = document.getElementById(id)
       if (el) el.scrollIntoView({ behavior: 'smooth' })
     } else {
-      // Estamos en otra página — ir a landing con hash
       navigate(`/#${id}`)
       setTimeout(() => {
         const el = document.getElementById(id)
@@ -55,12 +55,11 @@ const Navbar = () => {
 
   const bgClass    = scrolled ? 'bg-white/95 backdrop-blur-md border-b border-[#E5E7EB] shadow-sm' : 'bg-transparent border-b border-transparent'
   const textColor  = scrolled ? 'text-[#374151]' : 'text-white'
-  const logoFilter = scrolled ? '' : 'brightness-0 invert'
 
   const navLinks = [
     { label: 'Inicio',        id: 'inicio'        },
     { label: 'Cómo funciona', id: 'como-funciona' },
-    { label: 'Directorio',    id: 'buscar'        },
+    { label: 'Explorar tiendas', id: 'buscar', href: '/tiendas' },
     { label: 'Herramientas',  id: 'ia-tools'      },
     { label: 'Precios',       id: 'precios'       },
   ]
@@ -71,7 +70,10 @@ const Navbar = () => {
 
         {/* Logo */}
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-          <img src={logoCrecio} alt="CRECIO" className={`h-7 md:h-9 w-auto object-contain transition-all duration-500 ${logoFilter}`} />
+          {scrolled || esPaginaBlanca
+            ? <img src={logoCrecio}  alt="CRECIO" className="h-7 md:h-9 w-auto object-contain transition-all duration-500" style={{ mixBlendMode: 'multiply' }} />
+            : <img src={logo2Crecio} alt="CRECIO" className="h-7 md:h-9 w-auto object-contain transition-all duration-500" style={{ filter: 'brightness(0) invert(1)' }} />
+          }
         </div>
 
         {/* Desktop nav — oculto en páginas blancas */}
@@ -80,7 +82,7 @@ const Navbar = () => {
             {navLinks.map((item) => (
               <button
                 key={item.id}
-                onClick={() => handleNavLink(item.id)}
+                onClick={() => handleNavLink(item.id, item.href)}
                 className={`px-3 py-2 text-[13px] font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap hover:text-[#0D9488] ${textColor}`}
               >
                 {item.label}
@@ -121,7 +123,7 @@ const Navbar = () => {
                   </button>
                 )}
                 <button
-                  onClick={() => handleNavLink('buscar')}
+                  onClick={() => navigate('/tiendas')}
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#374151] hover:bg-[#F0FDF9] hover:text-[#0D9488] transition-colors cursor-pointer"
                 >
                   <i className="ri-shopping-bag-line text-base" />
@@ -177,7 +179,7 @@ const Navbar = () => {
           {!esPaginaBlanca && navLinks.map((item) => (
             <button
               key={item.id}
-              onClick={() => handleNavLink(item.id)}
+              onClick={() => handleNavLink(item.id, item.href)}
               className="text-left text-[#374151] font-medium py-3 text-base border-b border-[#F3F4F6] cursor-pointer hover:text-[#0D9488] transition-colors"
             >
               {item.label}
@@ -203,7 +205,7 @@ const Navbar = () => {
                   </button>
                 )}
                 <button
-                  onClick={() => { handleNavLink('buscar'); setMenuOpen(false) }}
+                  onClick={() => { navigate('/tiendas'); setMenuOpen(false) }}
                   className="w-full py-3 rounded-xl border border-[#E5E7EB] text-[#374151] font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <i className="ri-shopping-bag-line" />

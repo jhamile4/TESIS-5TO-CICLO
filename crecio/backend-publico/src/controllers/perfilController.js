@@ -26,6 +26,9 @@ const getMisPedidos = async (req, res) => {
         pp.monto_total,
         pp.estado,
         pp.items,
+        pp.direccion,
+        pp.ciudad,
+        pp.notas,
         pp.created_at,
         n.nombre   AS negocio_nombre,
         n.logo_url AS negocio_logo,
@@ -59,4 +62,22 @@ const actualizarPerfil = async (req, res) => {
   }
 }
 
-module.exports = { getPerfil, getMisPedidos, actualizarPerfil }
+const confirmarPagoEfectivo = async (req, res) => {
+  const { id }       = req.user
+  const { pedidoId } = req.params
+  try {
+    const result = await pool.query(
+      `UPDATE pedido_pago SET estado = 'pagado'
+       WHERE pk_id = $1 AND fk_cliente_id = $2 AND estado = 'efectivo'
+       RETURNING pk_id`,
+      [pedidoId, id]
+    )
+    if (result.rows.length === 0)
+      return res.status(404).json({ message: 'Pedido no encontrado o ya confirmado' })
+    res.json({ message: 'Pago confirmado', pk_id: result.rows[0].pk_id })
+  } catch (error) {
+    res.status(500).json({ message: 'Error al confirmar pago', error: error.message })
+  }
+}
+
+module.exports = { getPerfil, getMisPedidos, actualizarPerfil, confirmarPagoEfectivo }

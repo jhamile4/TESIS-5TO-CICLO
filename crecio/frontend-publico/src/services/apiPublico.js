@@ -125,14 +125,25 @@ export const loginComprador = async (email, password) => {
 }
 
 // ── Stripe ──
-export const crearPaymentIntent = async (items, negocioId, token) => {
+export const crearPaymentIntent = async (items, negocioId, token, direccionData = {}) => {
   return post('/stripe/crear-intent', {
     items,
     fk_negocio_id: negocioId,
-    fk_cliente_id: null,
+    ...direccionData,
   }, token)
 }
 
 export const confirmarPago = async (paymentIntentId, token) => {
   return post('/stripe/confirmar', { paymentIntentId }, token)
+}
+
+export const confirmarPedidoEfectivo = async ({ carrito, negocioId, direccion, ciudad, notas, total }, token) => {
+  return post('/stripe/efectivo', {
+    items:        carrito,
+    fk_negocio_id: negocioId,
+    direccion,
+    ciudad,
+    notas,
+    monto_total:  total,
+  }, token)
 }

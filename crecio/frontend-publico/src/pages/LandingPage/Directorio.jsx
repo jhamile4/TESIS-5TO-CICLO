@@ -157,6 +157,19 @@ function Directorio() {
               <p className="text-sm">No encontramos negocios con esa búsqueda.</p>
             </div>
           )}
+
+          {/* Ver todas */}
+          {!cargando && negociosFiltrados.length > 0 && (
+            <div className="mt-10 text-center">
+              <button
+                onClick={() => navigate('/tiendas')}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#0D9488] text-[#0D9488] text-sm font-bold hover:bg-[#0D9488] hover:text-white transition-all cursor-pointer"
+              >
+                Ver todas las tiendas
+                <i className="ri-arrow-right-line" />
+              </button>
+            </div>
+          )}
         </div>
       </section>
 

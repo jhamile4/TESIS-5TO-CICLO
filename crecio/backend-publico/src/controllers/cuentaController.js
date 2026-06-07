@@ -96,6 +96,35 @@ const getParaTi = async (req, res) => {
   } catch (error) { res.status(500).json({ message: 'Error', error: error.message }) }
 }
 
+const getParaTiEconomico = async (req, res) => {
+  const { id } = req.user
+  try {
+    const categoriasResult = await pool.query(
+      `SELECT DISTINCT n.categoria FROM pedido_pago pp
+       JOIN negocio n ON pp.fk_negocio_id = n.pk_id
+       WHERE pp.fk_cliente_id = $1 AND pp.estado = 'pagado'`, [id])
+    const categorias = categoriasResult.rows.map(r => r.categoria)
+    let query, params
+    if (categorias.length > 0) {
+      query  = `SELECT p.pk_id as producto_id, p.nombre, p.precio, p.precio_oferta, p.imagen_url as img,
+                       n.nombre as negocio_nombre, n.pk_id as negocio_id, n.categoria
+                FROM producto p JOIN negocio n ON p.fk_negocio_id = n.pk_id
+                WHERE n.categoria = ANY($1) AND p.activo = TRUE AND n.activo = TRUE
+                ORDER BY COALESCE(p.precio_oferta, p.precio) ASC LIMIT 6`
+      params = [categorias]
+    } else {
+      query  = `SELECT p.pk_id as producto_id, p.nombre, p.precio, p.precio_oferta, p.imagen_url as img,
+                       n.nombre as negocio_nombre, n.pk_id as negocio_id, n.categoria
+                FROM producto p JOIN negocio n ON p.fk_negocio_id = n.pk_id
+                WHERE p.activo = TRUE AND n.activo = TRUE
+                ORDER BY COALESCE(p.precio_oferta, p.precio) ASC LIMIT 6`
+      params = []
+    }
+    const result = await pool.query(query, params)
+    res.json(result.rows)
+  } catch (error) { res.status(500).json({ message: 'Error', error: error.message }) }
+}
+
 const getCarrito = async (req, res) => {
   const { id } = req.user
   try {
@@ -170,7 +199,7 @@ const buscar = async (req, res) => {
 module.exports = {
   getFavoritos, toggleFavorito,
   getVistos, registrarVisto,
-  getOfertas, getParaTi,
+  getOfertas, getParaTi, getParaTiEconomico,
   getCarrito, agregarAlCarrito, actualizarCarrito, limpiarCarrito,
   buscar,
 }

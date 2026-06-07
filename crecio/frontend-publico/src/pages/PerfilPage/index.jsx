@@ -143,7 +143,7 @@ function PerfilPage() {
     { key: 'inicio',    label: 'Inicio',    icon: 'ri-home-line'         },
     { key: 'pedidos',   label: 'Pedidos',   icon: 'ri-file-list-3-line', badge: pedidos.length },
     { key: 'favoritos', label: 'Favoritos', icon: 'ri-heart-line',       badge: favData.length },
-    { key: 'para-ti',   label: 'Para vos',  icon: 'ri-magic-line'        },
+    { key: 'para-ti',   label: 'Para ti',   icon: 'ri-magic-line'        },
     { key: 'tiendas',   label: 'Tiendas',   icon: 'ri-store-2-line'      },
     { key: 'datos',     label: 'Mis Datos', icon: 'ri-user-line'         },
   ]
@@ -212,7 +212,7 @@ function PerfilPage() {
           />
         )}
         {tab === 'pedidos' && (
-          <TabPedidos pedidos={pedidos} pagados={pagados} pendientes={pendientes} navigate={navigate} />
+          <TabPedidos pedidos={pedidos} pagados={pagados} pendientes={pendientes} navigate={navigate} perfil={perfil} setPedidos={setPedidos} />
         )}
         {tab === 'favoritos' && (
           <TabFavoritos favData={favData} navigate={navigate} onToggleFav={handleToggleFav} />

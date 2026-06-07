@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import logoCrecio from '../../assets/logoCrecio.png'
+import logo2Crecio from '../../assets/logo2Crecio.png'
 
 const BASE_URL = 'http://localhost:3001/api'
 
@@ -177,29 +177,46 @@ function PerfilNavbar({ comprador }) {
   return (
     <>
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${bgClass}`}>
-        <div className="max-w-5xl mx-auto px-6 md:px-12 flex items-center justify-between h-16 md:h-20">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between h-16 md:h-20">
 
           {/* Logo */}
-          <div className="cursor-pointer shrink-0" onClick={() => navigate('/')}>
-            <img src={logoCrecio} alt="CRECIO"
-              className="h-7 w-auto object-contain brightness-0 invert" />
+          <div className="flex items-center gap-2 cursor-pointer shrink-0" onClick={() => navigate('/')}>
+            <img src={logo2Crecio} alt="CRECIO" className="h-7 md:h-9 w-auto object-contain" />
           </div>
 
-          {/* Derecha — lupa + Mi Panel + Avatar */}
-          <div className="flex items-center gap-4">
+          {/* Centro — links de navegación */}
+          <div className="hidden md:flex items-center gap-1">
+            <button onClick={() => navigate('/tiendas')}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/8 text-xs font-medium transition-all cursor-pointer">
+              <i className="ri-store-2-line text-sm" /> Explorar tiendas
+            </button>
+            <button onClick={() => navigate('/perfil')}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/8 text-xs font-medium transition-all cursor-pointer">
+              <i className="ri-user-line text-sm" /> Mi cuenta
+            </button>
+            {comprador?.esEmprendedor && (
+              <button onClick={() => navigate('/panel')}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/8 text-xs font-medium transition-all cursor-pointer">
+                <i className="ri-dashboard-line text-sm" /> Mi Panel
+              </button>
+            )}
+          </div>
 
-            {/* Solo lupa — abre modal */}
+          {/* Derecha — lupa + Mi Panel (mobile) + Avatar */}
+          <div className="flex items-center gap-3">
+
+            {/* Lupa — abre modal */}
             <button onClick={() => setBuscando(true)}
               className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer">
               <i className="ri-search-line text-base" />
             </button>
 
-            {/* Mi Panel — solo si es emprendedor */}
+            {/* Mi Panel mobile — solo si es emprendedor */}
             {comprador?.esEmprendedor && (
               <button onClick={() => navigate('/panel')}
-                className="hidden md:flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-white text-xs font-semibold transition-all cursor-pointer whitespace-nowrap">
+                className="md:hidden flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-white text-xs font-semibold transition-all cursor-pointer whitespace-nowrap">
                 <i className="ri-dashboard-line text-sm" />
-                Mi Panel
+                Panel
               </button>
             )}
 
@@ -248,7 +265,7 @@ function PerfilNavbar({ comprador }) {
                       { icon: 'ri-user-line',      label: 'Mis Datos',        sub: 'Perfil y configuración', action: () => { navigate('/perfil'); setMenuOpen(false) } },
                       ...(comprador?.esEmprendedor ? [{ icon: 'ri-dashboard-line', label: 'Mi Panel', sub: 'Gestiona tu negocio', action: () => { navigate('/panel'); setMenuOpen(false) } }] : []),
                       { icon: 'ri-heart-line',     label: 'Favoritos',        sub: 'Productos guardados',    action: () => { navigate('/perfil'); setMenuOpen(false) } },
-                      { icon: 'ri-store-2-line',   label: 'Explorar Tiendas', sub: 'Descubrir negocios',     action: () => { navigate('/'); setMenuOpen(false) } },
+                      { icon: 'ri-store-2-line',   label: 'Explorar Tiendas', sub: 'Descubrir negocios',     action: () => { navigate('/tiendas'); setMenuOpen(false) } },
                     ].map((item, i) => (
                       <button key={i} onClick={item.action}
                         className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 transition-colors cursor-pointer text-left">
@@ -286,6 +303,7 @@ function PerfilNavbar({ comprador }) {
           from { opacity: 0; transform: translateY(-8px) scale(0.96); }
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
+        .hover\\:bg-white\\/8:hover { background-color: rgba(255,255,255,0.08); }
       `}</style>
     </>
   )

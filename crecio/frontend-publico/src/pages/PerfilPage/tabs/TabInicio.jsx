@@ -2,12 +2,44 @@ import ProductoCard from '../components/ProductoCard'
 import PedidoRow   from '../components/PedidoRow'
 
 const formatFecha = (iso) => new Date(iso).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
+const formatMes   = (iso) => new Date(iso).toLocaleDateString('es-PE', { day: 'numeric', month: 'short' })
+
+function calcularComprasFrecuentes(pedidos) {
+  const mapa = {}
+  pedidos.forEach(pedido => {
+    const items = Array.isArray(pedido.items)
+      ? pedido.items
+      : (typeof pedido.items === 'string' ? JSON.parse(pedido.items) : [])
+    items.forEach(item => {
+      const key = item.nombre
+      if (!mapa[key]) {
+        mapa[key] = {
+          nombre:         item.nombre,
+          precio:         item.precio,
+          img:            item.img || item.imagen_url || null,
+          negocio_id:     pedido.negocio_id,
+          negocio_nombre: pedido.negocio_nombre,
+          ultima_compra:  pedido.created_at,
+          total_comprado: 0,
+        }
+      }
+      mapa[key].total_comprado += item.cantidad
+      if (new Date(pedido.created_at) > new Date(mapa[key].ultima_compra))
+        mapa[key].ultima_compra = pedido.created_at
+    })
+  })
+  return Object.values(mapa)
+    .filter(p => p.total_comprado > 0)
+    .sort((a, b) => b.total_comprado - a.total_comprado)
+    .slice(0, 6)
+}
 
 function TabInicio({ perfil, pedidos, ofertas, carritoAbandonado, vistos, tiendas,
   pagados, pendientes, navigate, token, favoritos, onToggleFav, onVerTab }) {
 
-  const initials = perfil?.nombre?.split(' ').map(p => p[0]).join('').slice(0,2).toUpperCase() || '?'
-  const nombre   = perfil?.nombre?.split(' ')[0] || ''
+  const initials          = perfil?.nombre?.split(' ').map(p => p[0]).join('').slice(0,2).toUpperCase() || '?'
+  const nombre            = perfil?.nombre?.split(' ')[0] || ''
+  const comprasFrecuentes = calcularComprasFrecuentes(pedidos)
 
   return (
     <div className="space-y-6">
@@ -79,7 +111,7 @@ function TabInicio({ perfil, pedidos, ofertas, carritoAbandonado, vistos, tienda
               </div>
             ))}
           </div>
-          <button onClick={() => navigate('/')} className="mt-3 w-full py-2.5 rounded-xl border border-[#0D9488] text-[#0D9488] text-xs font-bold hover:bg-[#0D9488]/5 transition-all cursor-pointer">
+          <button onClick={() => navigate('/tiendas')} className="mt-3 w-full py-2.5 rounded-xl border border-[#0D9488] text-[#0D9488] text-xs font-bold hover:bg-[#0D9488]/5 transition-all cursor-pointer">
             Continuar comprando →
           </button>
         </div>
@@ -99,6 +131,57 @@ function TabInicio({ perfil, pedidos, ofertas, carritoAbandonado, vistos, tienda
           </div>
           <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
             {vistos.map((p, i) => <ProductoCard key={i} p={p} navigate={navigate} token={token} favoritos={favoritos} onToggleFav={onToggleFav} />)}
+          </div>
+        </div>
+      )}
+
+      {/* Compras frecuentes */}
+      {comprasFrecuentes.length > 0 && (
+        <div className="bg-white rounded-2xl border border-[#E5E7EB] p-5">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-9 h-9 rounded-xl bg-[#0D9488]/10 flex items-center justify-center">
+              <i className="ri-refresh-line text-[#0D9488] text-sm" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-[#111827]">Tus compras frecuentes</h3>
+              <p className="text-[10px] text-[#9CA3AF]">Un clic al carrito</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {comprasFrecuentes.map((item, i) => (
+              <div key={i} className="flex flex-col gap-2 border border-[#F3F4F6] rounded-xl p-3 hover:border-[#0D9488]/30 transition-all">
+                {/* Imagen + badge + fecha */}
+                <div className="flex items-start gap-2.5">
+                  <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-[#F3F4F6]">
+                    {item.img
+                      ? <img src={item.img} alt={item.nombre} className="w-full h-full object-cover" />
+                      : <div className="w-full h-full flex items-center justify-center">
+                          <i className="ri-shopping-basket-line text-[#D1D5DB] text-lg" />
+                        </div>
+                    }
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-1 mb-1">
+                      <span className="text-[9px] font-bold text-[#0D9488] bg-[#F0FDF9] px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                        {item.total_comprado}x comprado
+                      </span>
+                      <span className="text-[9px] text-[#9CA3AF] shrink-0">{formatMes(item.ultima_compra)}</span>
+                    </div>
+                    <p className="text-xs font-bold text-[#111827] leading-snug line-clamp-2">{item.nombre}</p>
+                  </div>
+                </div>
+                {/* Precio + botón */}
+                <div className="flex items-center justify-between gap-2 mt-1">
+                  <span className="text-sm font-black text-[#111827]">S/ {Number(item.precio).toFixed(2)}</span>
+                  <button
+                    onClick={() => navigate(`/tienda/${item.negocio_id}`)}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#111827] hover:bg-[#374151] text-white text-[10px] font-bold transition-all cursor-pointer whitespace-nowrap"
+                  >
+                    <i className="ri-add-line text-[10px]" /> Al carrito
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

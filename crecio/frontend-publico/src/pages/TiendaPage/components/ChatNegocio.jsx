@@ -83,7 +83,7 @@ function ChatNegocio({ negocio }) {
       {!abierto && (
         <button
           onClick={handleAbrir}
-          className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full cursor-pointer group flex items-center justify-center"
+          className="fixed bottom-6 left-6 z-50 w-16 h-16 rounded-full cursor-pointer group flex items-center justify-center"
           style={{
             background: 'radial-gradient(circle at 35% 35%, #0D9488 0%, #042f2e 70%)',
             boxShadow: '0 0 0 2px rgba(13,148,136,0.35), 0 8px 32px rgba(13,148,136,0.55), 0 0 50px rgba(13,148,136,0.18)',
@@ -119,7 +119,7 @@ function ChatNegocio({ negocio }) {
 
       {/* ── Ventana del chat ── */}
       {abierto && (
-        <div className="fixed bottom-6 right-6 lg:right-20 z-50 w-80 md:w-[360px] flex flex-col rounded-2xl overflow-hidden"
+        <div className="fixed bottom-6 left-6 lg:left-20 z-50 w-80 md:w-[360px] flex flex-col rounded-2xl overflow-hidden"
           style={{
             height: '520px',
             animation: 'chatIn 0.35s cubic-bezier(0.16,1,0.3,1)',

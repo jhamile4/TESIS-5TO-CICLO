@@ -377,6 +377,7 @@ function TiendaPage() {
           onEliminar={eliminarDelCarrito}
           onWhatsApp={pedidoWhatsApp}
           negocioId={negocio.id}
+          negocioNombre={negocio.nombre}
         />
       )}
       <ChatNegocio negocio={negocio} />

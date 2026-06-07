@@ -29,7 +29,7 @@ const limpiarCarritoBD = async (token) => {
   } catch {}
 }
 
-function Carrito({ carrito, subtotal, onCerrar, onCambiar, onEliminar, onWhatsApp, negocioId }) {
+function Carrito({ carrito, subtotal, onCerrar, onCambiar, onEliminar, onWhatsApp, negocioId, negocioNombre }) {
   const [showLogin, setShowLogin] = useState(false)
   const [showPago, setShowPago]   = useState(false)
   const token = localStorage.getItem('token_comprador')
@@ -126,8 +126,8 @@ function Carrito({ carrito, subtotal, onCerrar, onCambiar, onEliminar, onWhatsAp
               </button>
               <button onClick={handlePagarTarjeta}
                 className="w-full py-3.5 rounded-xl bg-[#111827] hover:bg-[#374151] text-white font-bold text-sm transition-all cursor-pointer flex items-center justify-center gap-2">
-                <i className="ri-bank-card-line text-base" />
-                Pagar con tarjeta
+                <i className="ri-secure-payment-line text-base" />
+                ¿Cómo pagar?
               </button>
             </div>
           )}
@@ -135,7 +135,7 @@ function Carrito({ carrito, subtotal, onCerrar, onCambiar, onEliminar, onWhatsAp
       </div>
 
       {showLogin && <LoginCompradorModal onClose={() => setShowLogin(false)} onSuccess={handleLoginExito} />}
-      {showPago  && <PagoStripeModal carrito={carrito} negocioId={negocioId} subtotal={subtotal} onCerrar={() => setShowPago(false)} onExito={handlePagoExito} />}
+      {showPago  && <PagoStripeModal carrito={carrito} negocioId={negocioId} negocioNombre={negocioNombre} subtotal={subtotal} onCerrar={() => setShowPago(false)} onExito={handlePagoExito} />}
 
       <style>{`
         @keyframes slideInRight {
