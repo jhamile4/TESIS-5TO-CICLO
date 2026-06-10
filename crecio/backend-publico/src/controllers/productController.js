@@ -1,19 +1,10 @@
-const pool = require('../db/db')
+const productoService = require('../services/productoService')
 
-const getByNegocio = async (req, res) => {
-  const { id } = req.params
+const getByNegocio = async (req, res, next) => {
   try {
-    const result = await pool.query(
-      `SELECT pk_id, nombre, descripcion, precio, imagen_url, stock, categoria
-       FROM producto
-       WHERE fk_negocio_id = $1 AND activo = TRUE
-       ORDER BY created_at ASC`,
-      [id]
-    )
-    res.json(result.rows)
-  } catch (error) {
-    res.status(500).json({ message: 'Error al obtener productos', error: error.message })
-  }
+    const data = await productoService.getByNegocio(req.params.id)
+    res.json(data)
+  } catch (err) { next(err) }
 }
 
 module.exports = { getByNegocio }
