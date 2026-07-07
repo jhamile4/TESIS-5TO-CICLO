@@ -70,13 +70,13 @@ const Hero = () => {
             loaded ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'
           }`}
         >
-          <span className="block text-5xl font-bold leading-[1.05] tracking-tight text-white md:text-7xl lg:text-8xl">
+          <span className="block text-5xl font-bold leading-[1.15] tracking-tight text-white md:text-7xl lg:text-8xl pb-1">
             Transforma tu
           </span>
-          <span className="mt-2 block text-5xl font-bold leading-[1.05] tracking-tight text-white md:text-7xl lg:text-8xl">
+          <span className="mt-2 block text-5xl font-bold leading-[1.15] tracking-tight text-white md:text-7xl lg:text-8xl pb-1">
             negocio en una
           </span>
-          <span className="mt-2 block bg-gradient-to-r from-[#0D9488] via-[#14B8A6] to-[#2DD4BF] bg-clip-text text-5xl font-bold leading-[1.05] tracking-tight text-transparent md:text-7xl lg:text-8xl">
+          <span className="mt-2 block bg-gradient-to-r from-[#0D9488] via-[#14B8A6] to-[#2DD4BF] bg-clip-text text-5xl font-bold leading-[1.15] tracking-tight text-transparent md:text-7xl lg:text-8xl pb-3.5">
             empresa digital
           </span>
         </h1>
@@ -131,12 +131,11 @@ const Hero = () => {
       </div>
 
       {/* Fade a blanco abajo */}
-      <div className="absolute bottom-0 left-0 right-0 z-10 h-32 bg-gradient-to-t from-white to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 z-10 h-20 bg-gradient-to-t from-white to-transparent" />
 
       {/* Indicador de scroll */}
       <div className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2">
         <div className="flex flex-col items-center gap-2 text-white/40">
-          <span className="text-[10px] font-medium uppercase tracking-widest">Scroll</span>
           <div className="h-8 w-[1px] overflow-hidden bg-white/20">
             <div className="h-full w-full animate-bounce bg-white/60" style={{ transformOrigin: 'top' }} />
           </div>

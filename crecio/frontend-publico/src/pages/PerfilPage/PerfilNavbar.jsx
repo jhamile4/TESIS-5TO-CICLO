@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import logo2Crecio from '../../assets/logo2Crecio.png'
+import '../../components/Navbar/Navbar.css'
 
 const BASE_URL = 'http://localhost:3001/api'
 
@@ -170,51 +170,111 @@ function PerfilNavbar({ comprador }) {
 
   const initials    = comprador?.nombre?.split(' ').map(p => p[0]).join('').slice(0,2).toUpperCase() || '?'
   const avatarColor = getAvatarColor(comprador?.nombre)
-  const bgClass     = scrolled
-    ? 'bg-[#0a0a0a] border-b border-white/5 shadow-xl'
-    : 'bg-transparent border-b border-transparent'
+  const navClass = scrolled
+    ? 'bg-black/95 backdrop-blur-md border-b border-white/10 shadow-xl shadow-black/30 text-white'
+    : 'bg-white/90 backdrop-blur-md border-b border-[#E5E7EB] shadow-sm text-[#111827]'
 
   return (
     <>
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${bgClass}`}>
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${navClass}`}>
         <div className="max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between h-16 md:h-20">
 
           {/* Logo */}
-          <div className="flex items-center gap-2 cursor-pointer shrink-0" onClick={() => navigate('/')}>
-            <img src={logo2Crecio} alt="CRECIO" className="h-7 md:h-9 w-auto object-contain" />
+          <div 
+            className="logo-container-group flex items-center gap-2.5 cursor-pointer select-none shrink-0" 
+            onClick={() => navigate('/')}
+          >
+            {/* 3D Holographic Growth Bars Icon */}
+            <div className="w-5 h-5 relative perspective-sm shrink-0 flex items-end gap-[2px] pb-[1px]">
+              <div className="logo-prism-wrapper w-full h-full relative transform-style-3d">
+                <div className="logo-bars-back !gap-[2px]">
+                  <div className="logo-bar-back-1 !w-[4px] !h-[8px]" />
+                  <div className="logo-bar-back-2 !w-[4px] !h-[13px]" />
+                  <div className="logo-bar-back-3 !w-[4px] !h-[18px]" />
+                </div>
+                <div className="logo-bars-front !gap-[2px]">
+                  <div className="logo-bar-front-1 !w-[4px] !h-[8px]" />
+                  <div className="logo-bar-front-2 !w-[4px] !h-[13px]" />
+                  <div className="logo-bar-front-3 !w-[4px] !h-[18px]" />
+                </div>
+              </div>
+            </div>
+            {/* Wordmark */}
+            <span className="font-sans font-bold text-sm tracking-tight flex items-center">
+              <span className={`transition-colors duration-300 ${scrolled ? 'text-white' : 'text-[#111827]'}`}>CRE</span>
+              <span className="text-[#0D9488]">CIO</span>
+            </span>
           </div>
 
           {/* Centro — links de navegación */}
           <div className="hidden md:flex items-center gap-1">
             <button onClick={() => navigate('/tiendas')}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/8 text-xs font-medium transition-all cursor-pointer">
-              <i className="ri-store-2-line text-sm" /> Explorar tiendas
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold font-sans tracking-wide transition-all cursor-pointer ${
+                scrolled 
+                  ? 'text-white/60 hover:text-white hover:bg-white/5' 
+                  : 'text-[#374151] hover:text-black hover:bg-[#F3F4F6]'
+              }`}>
+              <i className="ri-store-2-line text-sm text-[#0D9488]" /> Tiendas
             </button>
             <button onClick={() => navigate('/perfil')}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/8 text-xs font-medium transition-all cursor-pointer">
-              <i className="ri-user-line text-sm" /> Mi cuenta
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold font-sans tracking-wide transition-all cursor-pointer ${
+                scrolled 
+                  ? 'text-white/60 hover:text-white hover:bg-white/5' 
+                  : 'text-[#374151] hover:text-black hover:bg-[#F3F4F6]'
+              }`}>
+              <i className="ri-user-line text-sm text-[#0D9488]" /> Mi cuenta
             </button>
             {comprador?.esEmprendedor && (
               <button onClick={() => navigate('/panel')}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/8 text-xs font-medium transition-all cursor-pointer">
-                <i className="ri-dashboard-line text-sm" /> Mi Panel
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold font-sans tracking-wide transition-all cursor-pointer ${
+                  scrolled 
+                    ? 'text-white/60 hover:text-white hover:bg-white/5' 
+                    : 'text-[#374151] hover:text-black hover:bg-[#F3F4F6]'
+                }`}>
+                <i className="ri-dashboard-line text-sm text-[#0D9488]" /> Panel
               </button>
             )}
           </div>
 
-          {/* Derecha — lupa + Mi Panel (mobile) + Avatar */}
+          {/* Derecha — Buscador + Avatar */}
           <div className="flex items-center gap-3">
-
-            {/* Lupa — abre modal */}
-            <button onClick={() => setBuscando(true)}
-              className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer">
-              <i className="ri-search-line text-base" />
+            {/* Lupa / Buscador Capsule */}
+            <button 
+              onClick={() => setBuscando(true)}
+              className={`hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-xl border text-[11px] font-semibold transition-all duration-200 cursor-pointer shadow-sm ${
+                scrolled 
+                  ? 'bg-white/5 hover:bg-white/10 border-white/5 hover:border-white/10 text-white/40 hover:text-white' 
+                  : 'bg-[#F8FAFC] hover:bg-slate-100/60 border-slate-200/80 hover:border-slate-300 text-slate-400 hover:text-slate-700 shadow-slate-100/10'
+              }`}
+            >
+              <i className="ri-search-2-line text-sm text-[#0D9488]/70" />
+              <span>Buscar...</span>
+              <kbd className={`hidden md:inline-flex items-center justify-center h-4 px-1.5 rounded text-[9px] font-mono font-medium transition-all ${
+                scrolled 
+                  ? 'bg-white/10 border-white/10 text-white/55' 
+                  : 'bg-white border border-slate-200 text-slate-400 shadow-sm'
+              }`}>⌘K</kbd>
             </button>
 
-            {/* Mi Panel mobile — solo si es emprendedor */}
+            <button 
+              onClick={() => setBuscando(true)}
+              className={`sm:hidden w-8 h-8 flex items-center justify-center rounded-xl transition-all cursor-pointer border ${
+                scrolled 
+                  ? 'bg-white/5 border-white/5 text-white/70 hover:text-white' 
+                  : 'bg-[#F8FAFC] border-slate-200/80 hover:bg-slate-100 text-[#374151]'
+              }`}
+            >
+              <i className="ri-search-2-line text-base text-[#0D9488]/70" />
+            </button>
+
+            {/* Mi Panel mobile */}
             {comprador?.esEmprendedor && (
               <button onClick={() => navigate('/panel')}
-                className="md:hidden flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-white text-xs font-semibold transition-all cursor-pointer whitespace-nowrap">
+                className={`md:hidden flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  scrolled 
+                    ? 'bg-white/10 hover:bg-white/20 border-white/10 text-white' 
+                    : 'bg-white hover:bg-slate-50 border-[#E5E7EB] hover:border-[#0D9488]/30 text-[#374151]'
+                }`}>
                 <i className="ri-dashboard-line text-sm" />
                 Panel
               </button>
@@ -223,27 +283,41 @@ function PerfilNavbar({ comprador }) {
             {/* Avatar con dropdown */}
             <div className="relative" ref={menuRef}>
               <button onClick={() => setMenuOpen(!menuOpen)}
-                className="flex items-center gap-2.5 cursor-pointer group">
+                className={`flex items-center gap-2.5 p-1 pr-3.5 rounded-full border transition-all duration-200 cursor-pointer group ${
+                  scrolled
+                    ? 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'
+                    : 'bg-slate-50/50 border-slate-100 hover:bg-slate-100/60 hover:border-slate-200'
+                }`}>
                 <div
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0 ring-2 ring-white/15 group-hover:ring-white/35 transition-all"
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 transition-all shadow-sm ${
+                    scrolled ? 'ring-2 ring-white/15' : 'ring-2 ring-black/5'
+                  }`}
                   style={{ background: avatarColor }}
                 >
                   {initials}
                 </div>
-                <div className="hidden md:flex items-center gap-1">
-                  <span className="text-xs font-semibold text-white">{comprador?.nombre?.split(' ')[0]}</span>
-                  <i className={`ri-arrow-down-s-line text-white/50 text-sm transition-transform duration-200 ${menuOpen ? 'rotate-180' : ''}`} />
+                <div className="hidden md:flex items-center gap-1.5">
+                  <span className={`text-[12px] font-semibold tracking-wide transition-colors ${
+                    scrolled ? 'text-white/80 group-hover:text-white' : 'text-slate-700 group-hover:text-black'
+                  }`}>{comprador?.nombre?.split(' ')[0]}</span>
+                  <i className={`ri-chevron-down-line text-xs transition-transform duration-200 ${
+                    scrolled ? 'text-white/45' : 'text-slate-400'
+                  } ${menuOpen ? 'rotate-180' : ''}`} />
                 </div>
               </button>
 
               {/* Dropdown */}
               {menuOpen && (
                 <div
-                  className="absolute right-0 top-12 bg-[#111827] rounded-2xl shadow-2xl border border-white/10 overflow-hidden z-50"
+                  className={`absolute right-0 top-12 rounded-2xl shadow-2xl border overflow-hidden z-50 transition-all ${
+                    scrolled 
+                      ? 'bg-[#0f172a]/95 backdrop-blur-2xl border-white/10 text-white' 
+                      : 'bg-white/95 backdrop-blur-2xl border-[#E5E7EB] text-[#111827]'
+                  }`}
                   style={{ animation: 'dropIn 0.2s ease-out', minWidth: '260px' }}
                 >
                   {/* Header */}
-                  <div className="flex items-center gap-3 px-4 py-4 border-b border-white/10">
+                  <div className={`flex items-center gap-3 px-4 py-4 border-b ${scrolled ? 'border-white/10' : 'border-[#F3F4F6]'}`}>
                     <div
                       className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0"
                       style={{ background: avatarColor }}
@@ -251,9 +325,11 @@ function PerfilNavbar({ comprador }) {
                       {initials}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-white truncate">{comprador?.nombre}</p>
-                      <p className="text-[10px] text-white/50 truncate">{comprador?.email}</p>
-                      <span className="text-[9px] bg-white/10 text-white/60 px-2 py-0.5 rounded-full font-medium mt-1 inline-block">
+                      <p className={`text-xs font-bold truncate ${scrolled ? 'text-white' : 'text-[#111827]'}`}>{comprador?.nombre}</p>
+                      <p className={`text-[10px] truncate ${scrolled ? 'text-white/50' : 'text-[#6B7280]'}`}>{comprador?.email}</p>
+                      <span className={`text-[9px] px-2 py-0.5 rounded-full font-medium mt-1 inline-block ${
+                        scrolled ? 'bg-white/10 text-white/60' : 'bg-[#F3F4F6] text-[#0D9488]'
+                      }`}>
                         Cliente CRECIO
                       </span>
                     </div>
@@ -268,20 +344,24 @@ function PerfilNavbar({ comprador }) {
                       { icon: 'ri-store-2-line',   label: 'Explorar Tiendas', sub: 'Descubrir negocios',     action: () => { navigate('/tiendas'); setMenuOpen(false) } },
                     ].map((item, i) => (
                       <button key={i} onClick={item.action}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 transition-colors cursor-pointer text-left">
-                        <div className="w-8 h-8 rounded-lg bg-white/8 border border-white/8 flex items-center justify-center shrink-0">
-                          <i className={`${item.icon} text-white/60 text-sm`} />
+                        className={`w-full flex items-center gap-3 px-4 py-2.5 transition-colors cursor-pointer text-left ${
+                          scrolled ? 'hover:bg-white/5' : 'hover:bg-[#F3F4F6]'
+                        }`}>
+                        <div className={`w-8 h-8 rounded-lg border flex items-center justify-center shrink-0 ${
+                          scrolled ? 'bg-white/8 border-white/8' : 'bg-[#FAFAFA] border-[#E5E7EB]'
+                        }`}>
+                          <i className={`${item.icon} text-sm ${scrolled ? 'text-white/60' : 'text-[#6B7280]'}`} />
                         </div>
                         <div>
-                          <p className="text-xs font-semibold text-white">{item.label}</p>
-                          <p className="text-[10px] text-white/35">{item.sub}</p>
+                          <p className={`text-xs font-semibold ${scrolled ? 'text-white' : 'text-[#374151]'}`}>{item.label}</p>
+                          <p className={`text-[10px] ${scrolled ? 'text-white/35' : 'text-[#9CA3AF]'}`}>{item.sub}</p>
                         </div>
                       </button>
                     ))}
                   </div>
 
                   {/* Cerrar sesión */}
-                  <div className="border-t border-white/10 p-1.5">
+                  <div className={`border-t p-1.5 ${scrolled ? 'border-white/10' : 'border-[#F3F4F6]'}`}>
                     <button onClick={handleCerrarSesion}
                       className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-red-500/10 transition-colors cursor-pointer">
                       <i className="ri-logout-box-line text-red-400 text-sm" />
@@ -292,6 +372,7 @@ function PerfilNavbar({ comprador }) {
               )}
             </div>
           </div>
+
         </div>
       </nav>
 
@@ -301,6 +382,10 @@ function PerfilNavbar({ comprador }) {
       <style>{`
         @keyframes dropIn {
           from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes dropInUp {
+          from { opacity: 0; transform: translateY(12px) scale(0.95); }
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
         .hover\\:bg-white\\/8:hover { background-color: rgba(255,255,255,0.08); }

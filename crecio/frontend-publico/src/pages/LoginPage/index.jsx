@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import logoCrecio from '../../assets/logoCrecio.png'
+import '../../components/Navbar/Navbar.css'
 
 const BASE_URL = 'http://localhost:3001/api'
 
@@ -128,20 +128,78 @@ function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex flex-col">
+    <div className="min-h-screen bg-[#FAFAFA] flex flex-col relative overflow-hidden" style={{
+      backgroundImage: `radial-gradient(rgba(13, 148, 136, 0.04) 1.5px, transparent 1.5px)`,
+      backgroundSize: '24px 24px'
+    }}>
+      {/* Top spotlight glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-gradient-to-b from-[#0D9488]/5 to-transparent rounded-full blur-[100px] pointer-events-none" />
 
       {/* Topbar */}
-      <div className="h-16 border-b border-[#E5E7EB] bg-white/80 backdrop-blur-md flex items-center justify-between px-4 md:px-8">
-        <button onClick={() => navigate('/')} className="cursor-pointer">
-          <img src={logoCrecio} alt="CRECIO" className="h-7 w-auto object-contain" />
-        </button>
-        <button
+      <div className="sticky top-0 z-50 h-16 border-b border-[#E5E7EB] bg-white/70 backdrop-blur-lg flex items-center justify-between px-4 md:px-8 shadow-sm shadow-[#E5E7EB]/10">
+        <div 
+          className="logo-container-group flex items-center gap-3.5 cursor-pointer select-none relative" 
           onClick={() => navigate('/')}
-          className="text-sm text-[#6B7280] hover:text-[#0D9488] font-medium transition-colors cursor-pointer flex items-center gap-1.5"
         >
-          <i className="ri-arrow-left-line text-sm" />
-          Volver al inicio
-        </button>
+          {/* 3D Holographic Growth Bars Icon */}
+          <div className="w-6 h-6 relative perspective-sm shrink-0 flex items-end gap-[3px] pb-[1px]">
+            <div className="logo-prism-wrapper w-full h-full relative transform-style-3d">
+              {/* Back Face (Translucent Teal Glass Bars) */}
+              <div className="logo-bars-back">
+                <div className="logo-bar-back-1" />
+                <div className="logo-bar-back-2" />
+                <div className="logo-bar-back-3" />
+              </div>
+              {/* Front Face (Glowing Teal Gradient Bars) */}
+              <div className="logo-bars-front">
+                <div className="logo-bar-front-1" />
+                <div className="logo-bar-front-2" />
+                <div className="logo-bar-front-3" />
+              </div>
+            </div>
+          </div>
+          
+          {/* Bold custom logo text with 3D slot-machine rise */}
+          <div className="logo-text-holder flex items-center h-7 select-none">
+            <span className="logo-word flex items-center tracking-tighter">
+              <span className="logo-char-wrapper">
+                <span className="logo-char-3d text-[#111827]">C</span>
+              </span>
+              <span className="logo-char-wrapper">
+                <span className="logo-char-3d text-[#111827]">R</span>
+              </span>
+              <span className="logo-char-wrapper">
+                <span className="logo-char-3d text-[#111827]">E</span>
+              </span>
+              <span className="logo-char-wrapper">
+                <span className="logo-char-3d text-[#0D9488]">C</span>
+              </span>
+              <span className="logo-char-wrapper">
+                <span className="logo-char-3d text-[#0D9488]">I</span>
+              </span>
+              <span className="logo-char-wrapper">
+                <span className="logo-char-3d text-[#0D9488]">O</span>
+              </span>
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate('/')}
+            className="text-xs md:text-sm text-[#6B7280] hover:text-[#0D9488] font-medium transition-colors cursor-pointer flex items-center gap-1.5"
+          >
+            <i className="ri-arrow-left-line text-sm" />
+            Volver
+          </button>
+          <button
+            onClick={() => navigate('/registro')}
+            className="text-xs md:text-sm text-[#374151] hover:text-[#0D9488] font-semibold transition-colors flex items-center gap-1.5 cursor-pointer bg-white px-4 py-2 border border-[#E5E7EB] rounded-xl hover:border-[#0D9488]/30 shadow-sm"
+          >
+            <span>Crear cuenta</span>
+            <i className="ri-arrow-right-line" />
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 flex items-center justify-center px-4 py-12">
@@ -154,15 +212,15 @@ function LoginPage() {
             <p className="text-sm text-[#6B7280]">Accede a tu cuenta CRECIO</p>
           </div>
 
-          <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-sm p-8 flex flex-col gap-5">
+          <div className="bg-white/90 backdrop-blur-md rounded-2xl border border-[#E5E7EB] shadow-xl shadow-teal-950/[0.02] p-8 flex flex-col gap-5 relative z-10">
 
             {/* Email */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-[#374151] uppercase tracking-wider">
                 Email <span className="text-red-400">*</span>
               </label>
-              <div className={`flex items-center gap-2 px-4 rounded-xl border transition-all bg-[#FAFAFA] ${
-                errores.email ? 'border-red-400' : 'border-[#E5E7EB] focus-within:border-[#0D9488]'
+              <div className={`flex items-center gap-2.5 px-4 rounded-xl border transition-all bg-white ${
+                errores.email ? 'border-red-400 focus-within:ring-4 focus-within:ring-red-500/10' : 'border-[#E5E7EB] focus-within:border-[#0D9488] focus-within:ring-4 focus-within:ring-[#0D9488]/10'
               }`}>
                 <i className="ri-mail-line text-[#9CA3AF] text-sm shrink-0" />
                 <input
@@ -173,7 +231,7 @@ function LoginPage() {
                   className="flex-1 py-3.5 bg-transparent text-sm text-[#111827] outline-none placeholder-[#9CA3AF]"
                 />
               </div>
-              {errores.email && <span className="text-xs text-red-500 flex items-center gap-1"><i className="ri-error-warning-line" />{errores.email}</span>}
+              {errores.email && <span className="text-xs text-red-500 flex items-center gap-1 mt-1"><i className="ri-error-warning-line" />{errores.email}</span>}
             </div>
 
             {/* Contraseña */}
@@ -181,8 +239,8 @@ function LoginPage() {
               <label className="text-xs font-semibold text-[#374151] uppercase tracking-wider">
                 Contraseña <span className="text-red-400">*</span>
               </label>
-              <div className={`flex items-center gap-2 px-4 rounded-xl border transition-all bg-[#FAFAFA] ${
-                errores.contrasena ? 'border-red-400' : 'border-[#E5E7EB] focus-within:border-[#0D9488]'
+              <div className={`flex items-center gap-2.5 px-4 rounded-xl border transition-all bg-white ${
+                errores.contrasena ? 'border-red-400 focus-within:ring-4 focus-within:ring-red-500/10' : 'border-[#E5E7EB] focus-within:border-[#0D9488] focus-within:ring-4 focus-within:ring-[#0D9488]/10'
               }`}>
                 <i className="ri-lock-line text-[#9CA3AF] text-sm shrink-0" />
                 <input
@@ -201,7 +259,7 @@ function LoginPage() {
                   <i className={verPass ? 'ri-eye-off-line' : 'ri-eye-line'} />
                 </button>
               </div>
-              {errores.contrasena && <span className="text-xs text-red-500 flex items-center gap-1"><i className="ri-error-warning-line" />{errores.contrasena}</span>}
+              {errores.contrasena && <span className="text-xs text-red-500 flex items-center gap-1 mt-1"><i className="ri-error-warning-line" />{errores.contrasena}</span>}
             </div>
 
             {errorApi && (
@@ -214,7 +272,7 @@ function LoginPage() {
             <button
               onClick={handleLogin}
               disabled={cargando}
-              className="w-full py-3.5 rounded-xl bg-[#0D9488] text-white font-bold text-sm hover:bg-[#0F766E] transition-all cursor-pointer disabled:opacity-60 flex items-center justify-center gap-2 shadow-lg shadow-[#0D9488]/20"
+              className="w-full py-3.5 rounded-xl bg-[#0D9488] text-white font-bold text-sm hover:bg-[#0F766E] hover:scale-[1.01] hover:shadow-[#0D9488]/20 transition-all cursor-pointer disabled:opacity-60 flex items-center justify-center gap-2 shadow-lg shadow-[#0D9488]/20"
             >
               {cargando
                 ? <><i className="ri-loader-4-line animate-spin" /> Ingresando...</>
@@ -222,7 +280,7 @@ function LoginPage() {
               }
             </button>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 py-1">
               <div className="flex-1 h-px bg-[#E5E7EB]" />
               <span className="text-xs text-[#9CA3AF]">¿Aún no tienes cuenta?</span>
               <div className="flex-1 h-px bg-[#E5E7EB]" />
@@ -230,7 +288,7 @@ function LoginPage() {
 
             <button
               onClick={() => navigate('/registro')}
-              className="w-full py-3.5 rounded-xl border border-[#E5E7EB] text-[#374151] font-semibold text-sm hover:border-[#0D9488] hover:text-[#0D9488] transition-all cursor-pointer"
+              className="w-full py-3.5 rounded-xl border border-[#E5E7EB] text-[#374151] font-semibold text-sm hover:border-[#0D9488]/55 hover:text-[#0D9488] hover:scale-[1.01] hover:bg-slate-50/50 transition-all cursor-pointer"
             >
               Crear mi tienda gratis
             </button>
