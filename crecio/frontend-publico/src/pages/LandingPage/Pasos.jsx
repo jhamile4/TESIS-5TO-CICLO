@@ -82,15 +82,15 @@ function Pasos() {
             headerVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}
         >
-          <span className="mb-4 inline-block rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#0D9488]">
+          <span className="inline-flex items-center rounded-full bg-[#0D9488]/20 border border-[#0D9488]/30 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0D9488] mb-4">
             Proceso
           </span>
-          <h2 className="mt-4 max-w-3xl text-3xl font-bold leading-[1.1] tracking-tight text-white md:text-5xl lg:text-6xl">
+          <h2 className="mt-4 max-w-3xl text-4xl md:text-5xl lg:text-[56px] font-extrabold leading-[1.1] tracking-tight text-white">
             Tres pasos para
             <br />
-            <span className="text-[#0D9488]">digitalizar tu negocio</span>
+            <span className="gradient-teal">digitalizar tu negocio</span>
           </h2>
-          <p className="mt-6 max-w-md text-sm leading-relaxed text-white/40 md:text-base">
+          <p className="mt-4 max-w-2xl text-sm md:text-base text-white/60 leading-relaxed">
             No necesitas saber de tecnología. CRECIO hace el trabajo difícil por ti.
           </p>
         </div>

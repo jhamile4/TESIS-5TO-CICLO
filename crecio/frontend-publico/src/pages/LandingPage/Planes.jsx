@@ -114,15 +114,15 @@ function Planes() {
 
         {/* Header */}
         <div className={`text-center mb-16 transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <span className="inline-block text-xs font-semibold tracking-[0.2em] uppercase text-[#0D9488] mb-4">
+          <span className="inline-flex items-center rounded-full bg-[#0D9488]/20 border border-[#0D9488]/30 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0D9488] mb-4">
             Planes y Precios
           </span>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.1] mb-5 tracking-tight">
+          <h2 className="text-4xl md:text-5xl lg:text-[56px] font-extrabold text-white leading-[1.1] tracking-tight">
             Crece a tu
             <br />
             <span className="gradient-teal">ritmo</span>
           </h2>
-          <p className="text-[#9CA3AF] max-w-md mx-auto text-sm md:text-base mb-10">
+          <p className="mt-4 max-w-2xl mx-auto text-sm md:text-base text-white/60 leading-relaxed mb-10">
             Empieza gratis y escala cuando estés listo. Sin sorpresas ni costos ocultos.
           </p>
 

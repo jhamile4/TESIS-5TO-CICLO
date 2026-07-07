@@ -47,15 +47,25 @@ const cards = [
     badge: null,
     size: 'wide',
     dark: false,
-    pills: ['Sin comisiones', 'Instantáneo', 'Sin apps extra'],
   },
 ]
 
-const bars = [35, 55, 48, 72, 90, 65, 85]
+const barsData = [
+  { day: 'L', value: 35, label: 'S/ 350' },
+  { day: 'M', value: 55, label: 'S/ 550' },
+  { day: 'X', value: 48, label: 'S/ 480' },
+  { day: 'J', value: 72, label: 'S/ 720' },
+  { day: 'V', value: 90, label: 'S/ 900' },
+  { day: 'S', value: 65, label: 'S/ 650' },
+  { day: 'D', value: 85, label: 'S/ 850' }
+]
 
 function Beneficios() {
   const sectionRef = useRef(null)
   const [visible, setVisible] = useState(false)
+  const [hoveredBar, setHoveredBar] = useState(null)
+  const [googleVis, setGoogleVis] = useState(0)
+  const [chatStep, setChatStep] = useState(0)
 
   useEffect(() => {
     const obs = new IntersectionObserver(
@@ -66,6 +76,34 @@ function Beneficios() {
     return () => obs.disconnect()
   }, [])
 
+  useEffect(() => {
+    if (visible) {
+      let start = 0
+      const end = 300
+      const duration = 1200 // ms
+      const stepTime = Math.abs(Math.floor(duration / (end / 5)))
+      const timer = setInterval(() => {
+        start += 5
+        if (start >= end) {
+          setGoogleVis(end)
+          clearInterval(timer)
+        } else {
+          setGoogleVis(start)
+        }
+      }, stepTime)
+      return () => clearInterval(timer)
+    }
+  }, [visible])
+
+  useEffect(() => {
+    if (visible) {
+      const interval = setInterval(() => {
+        setChatStep(prev => (prev + 1) % 4)
+      }, 3000)
+      return () => clearInterval(interval)
+    }
+  }, [visible])
+
   return (
     <section
       ref={sectionRef}
@@ -75,30 +113,30 @@ function Beneficios() {
       <div className="max-w-7xl mx-auto px-4 md:px-8">
 
         {/* Header */}
-        <div className={`text-center mb-14 transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <span className="inline-block rounded-full border border-[#E5E7EB] px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#9CA3AF] mb-4">
+        <div className={`text-center mb-16 transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <span className="inline-flex items-center rounded-full bg-[#0D9488]/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0D9488] mb-4">
             Para tu negocio
           </span>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#111827] leading-[1.1] tracking-tight">
+          <h2 className="text-4xl md:text-5xl lg:text-[56px] font-extrabold text-[#111827] leading-[1.1] tracking-tight">
             Lo que obtienes
             <br />
-            <span className="text-[#0D9488]">con CRECIO</span>
+            <span className="gradient-teal">con CRECIO</span>
           </h2>
-          <p className="mt-5 max-w-lg mx-auto text-sm md:text-base text-[#6B7280] leading-relaxed">
+          <p className="mt-4 max-w-2xl mx-auto text-sm md:text-base text-[#4B5563] leading-relaxed">
             Todo lo que un negocio moderno necesita para crecer digitalmente. Sin complicaciones.
           </p>
         </div>
 
         {/* Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
 
           {/* CARD 1 — Tienda digital (tall, col-span-1 row-span-2) */}
           <div
-            className={`lg:row-span-2 group relative overflow-hidden rounded-2xl bg-white border border-[#E5E7EB] hover:border-[#0D9488]/30 hover:shadow-xl transition-all duration-700 cursor-pointer flex flex-col min-h-[360px] ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+            className={`lg:row-span-2 group relative overflow-hidden rounded-2xl bg-white border border-[#E5E7EB] hover:border-[#0D9488]/30 hover:shadow-2xl hover:-translate-y-2 transition-all duration-550 cursor-pointer flex flex-col min-h-[360px] ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
             style={{ transitionDelay: '100ms' }}
           >
             {/* Imagen de fondo superior */}
-            <div className="relative h-52 overflow-hidden shrink-0">
+            <div className="relative h-56 overflow-hidden shrink-0">
               <img
                 src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80"
                 alt="Tienda digital"
@@ -109,7 +147,7 @@ function Beneficios() {
 
             {/* Contenido */}
             <div className="p-7 md:p-8 flex flex-col flex-1">
-              <div className="w-11 h-11 flex items-center justify-center bg-[#0D9488]/10 rounded-xl mb-5">
+              <div className="w-12 h-12 flex items-center justify-center bg-[#0D9488]/10 group-hover:bg-[#0D9488]/15 transition-colors rounded-xl mb-5">
                 <i className="ri-store-2-line text-[#0D9488] text-xl" />
               </div>
               <h3 className="text-xl font-bold text-[#111827] mb-2">Tienda digital propia</h3>
@@ -121,23 +159,28 @@ function Beneficios() {
                   <span className="w-1.5 h-1.5 rounded-full bg-[#0D9488] animate-ping" />
                   Disponible ya
                 </span>
-                <i className="ri-arrow-right-line text-[#0D9488] group-hover:translate-x-1 transition-transform" />
+                <i className="ri-arrow-right-line text-[#0D9488] group-hover:translate-x-2 transition-transform duration-300" />
               </div>
             </div>
           </div>
 
           {/* CARD 2 — IA (dark, medium) */}
           <div
-            className={`group relative overflow-hidden rounded-2xl bg-[#111827] border border-[#1F2937] hover:border-[#0D9488]/30 hover:shadow-xl transition-all duration-700 cursor-pointer p-7 md:p-8 flex flex-col ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+            className={`group relative overflow-hidden rounded-2xl bg-[#0B0F19] border border-[#1F2937] hover:border-[#0D9488]/40 hover:shadow-2xl hover:shadow-[#0D9488]/10 hover:-translate-y-2 transition-all duration-550 cursor-pointer p-7 md:p-8 flex flex-col ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
             style={{ transitionDelay: '200ms' }}
           >
-            {/* Glow decorativo */}
-            <div className="absolute top-0 right-0 w-40 h-40 bg-[#0D9488]/10 rounded-full blur-3xl pointer-events-none" />
+            {/* Glow decorativo de fondo */}
+            <div className="absolute -right-10 -top-10 w-44 h-44 bg-[#0D9488]/15 rounded-full blur-3xl opacity-60 group-hover:opacity-100 group-hover:scale-125 transition-all duration-700 pointer-events-none" />
 
-            <div className="w-11 h-11 flex items-center justify-center bg-[#0D9488]/15 rounded-xl mb-5 relative z-10">
-              <i className="ri-sparkling-2-line text-[#0D9488] text-xl" />
+            <div className="w-12 h-12 flex items-center justify-center bg-[#0D9488]/15 group-hover:bg-[#0D9488]/25 transition-colors rounded-xl mb-5 relative z-10">
+              <i className="ri-sparkling-2-line text-[#0D9488] text-xl animate-pulse" />
             </div>
-            <h3 className="text-lg font-bold text-white mb-2 relative z-10">IA que trabaja por ti</h3>
+
+            <h3 className="text-lg font-bold text-white mb-2 relative z-10 flex items-center gap-2">
+              IA que trabaja por ti
+              <span className="text-[9px] font-bold uppercase tracking-wider bg-[#0D9488]/20 text-[#0D9488] px-2 py-0.5 rounded border border-[#0D9488]/30">Beta</span>
+            </h3>
+
             <p className="text-sm text-[#9CA3AF] leading-relaxed flex-1 relative z-10">
               Genera descripciones, precios y campañas de marketing automáticamente. Solo sube una foto.
             </p>
@@ -145,22 +188,23 @@ function Beneficios() {
             {/* Tags flotantes */}
             <div className="flex flex-wrap gap-2 mt-5 relative z-10">
               {['Descripciones', 'Precios IA', 'Marketing'].map(t => (
-                <span key={t} className="text-[10px] font-semibold bg-white/5 border border-white/10 text-white/60 px-2.5 py-1 rounded-full">
+                <span key={t} className="text-[10px] font-semibold bg-white/5 border border-white/10 text-white/70 px-2.5 py-1 rounded-full group-hover:border-[#0D9488]/30 group-hover:bg-[#0D9488]/5 transition-all duration-300">
                   {t}
                 </span>
               ))}
             </div>
-            <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-[#0D9488] relative z-10 group-hover:gap-3 transition-all">
+
+            <div className="mt-6 flex items-center gap-2 text-xs font-bold text-[#0D9488] relative z-10 group-hover:gap-3 transition-all duration-300">
               Próximamente <i className="ri-arrow-right-line" />
             </div>
           </div>
 
           {/* CARD 3 — Analítica (blanca, medium) */}
           <div
-            className={`group relative overflow-hidden rounded-2xl bg-white border border-[#E5E7EB] hover:border-[#0D9488]/30 hover:shadow-xl transition-all duration-700 cursor-pointer p-7 md:p-8 flex flex-col ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+            className={`group relative overflow-hidden rounded-2xl bg-white border border-[#E5E7EB] hover:border-[#0D9488]/30 hover:shadow-2xl hover:-translate-y-2 transition-all duration-550 cursor-pointer p-7 md:p-8 flex flex-col ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
             style={{ transitionDelay: '300ms' }}
           >
-            <div className="w-11 h-11 flex items-center justify-center bg-[#0D9488]/10 rounded-xl mb-5">
+            <div className="w-12 h-12 flex items-center justify-center bg-[#0D9488]/10 group-hover:bg-[#0D9488]/15 transition-colors rounded-xl mb-5">
               <i className="ri-bar-chart-box-line text-[#0D9488] text-xl" />
             </div>
             <h3 className="text-lg font-bold text-[#111827] mb-2">Analítica en tiempo real</h3>
@@ -168,84 +212,108 @@ function Beneficios() {
               Ventas, visitas y conversiones. Todo en un panel simple desde tu celular.
             </p>
 
-            {/* Mini chart */}
-            <div className="mt-5 flex items-end gap-1.5 h-14">
-              {bars.map((h, i) => (
+            {/* Mini chart con tooltip interactivo */}
+            <div className="mt-6 relative flex items-end gap-1.5 h-16">
+              {barsData.map((bar, i) => (
                 <div
                   key={i}
-                  className="flex-1 rounded-t-sm transition-all duration-1000"
-                  style={{
-                    height: visible ? `${h}%` : '0%',
-                    transitionDelay: `${600 + i * 80}ms`,
-                    background: i === 5 ? '#0D9488' : i === 6 ? '#0D9488' : `rgba(13,148,136,${0.15 + i * 0.1})`,
-                  }}
-                />
+                  className="flex-1 flex flex-col justify-end items-center h-full relative"
+                  onMouseEnter={() => setHoveredBar(i)}
+                  onMouseLeave={() => setHoveredBar(null)}
+                >
+                  {/* Tooltip */}
+                  <div
+                    className={`absolute -top-7 left-1/2 -translate-x-1/2 bg-[#111827] text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-md pointer-events-none transition-all duration-200 ${
+                      hoveredBar === i ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-2 scale-90'
+                    }`}
+                  >
+                    {bar.label}
+                  </div>
+
+                  {/* Bar */}
+                  <div
+                    className="w-full rounded-t transition-all duration-500"
+                    style={{
+                      height: visible ? `${bar.value}%` : '0%',
+                      transitionDelay: visible ? `${400 + i * 50}ms` : '0ms',
+                      background: hoveredBar === i
+                        ? '#0D9488'
+                        : i === 5 || i === 6
+                        ? 'linear-gradient(to top, #0D9488, #14B8A6)'
+                        : `rgba(13,148,136,${0.15 + i * 0.1})`,
+                    }}
+                  />
+                </div>
               ))}
             </div>
-            <div className="flex justify-between mt-2">
-              {['L','M','X','J','V','S','D'].map(d => (
-                <span key={d} className="flex-1 text-center text-[9px] text-[#9CA3AF]">{d}</span>
+            <div className="flex justify-between mt-2 border-t border-[#F3F4F6] pt-2">
+              {barsData.map((bar, i) => (
+                <span key={i} className={`flex-1 text-center text-[10px] font-semibold transition-colors duration-200 ${hoveredBar === i ? 'text-[#0D9488]' : 'text-[#9CA3AF]'}`}>{bar.day}</span>
               ))}
             </div>
           </div>
 
           {/* CARD 4 — Google (tall dark, col-span-1 row-span-2) */}
           <div
-            className={`lg:row-span-2 group relative overflow-hidden rounded-2xl bg-[#0D9488] hover:shadow-2xl hover:shadow-[#0D9488]/20 transition-all duration-700 cursor-pointer flex flex-col min-h-[360px] ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
-            style={{ transitionDelay: '200ms' }}
+            className={`lg:row-span-2 group relative overflow-hidden rounded-2xl bg-[#0D9488] hover:shadow-2xl hover:shadow-[#0D9488]/30 hover:-translate-y-2 transition-all duration-550 cursor-pointer flex flex-col min-h-[360px] ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+            style={{ transitionDelay: '400ms' }}
           >
             {/* Imagen de fondo */}
             <div className="absolute inset-0">
               <img
                 src="https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=600&q=80"
                 alt="Aparecer en Google"
-                className="w-full h-full object-cover opacity-20 group-hover:opacity-30 group-hover:scale-105 transition-all duration-700"
+                className="w-full h-full object-cover opacity-15 group-hover:opacity-25 group-hover:scale-105 transition-all duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0D9488] via-[#0D9488]/80 to-[#0D9488]/60" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0D9488] via-[#0D9488]/90 to-[#0D9488]/70" />
             </div>
 
             {/* Contenido */}
             <div className="relative z-10 p-7 md:p-8 flex flex-col flex-1">
-              <div className="w-11 h-11 flex items-center justify-center bg-white/15 rounded-xl mb-5">
+              <div className="w-12 h-12 flex items-center justify-center bg-white/15 group-hover:bg-white/20 transition-colors rounded-xl mb-5">
                 <i className="ri-search-eye-line text-white text-xl" />
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Aparece en Google</h3>
-              <p className="text-sm text-white/70 leading-relaxed">
+              <p className="text-sm text-white/80 leading-relaxed">
                 Tus clientes te encuentran cuando buscan negocios cerca. Posicionamiento local incluido.
               </p>
 
               {/* Simulación resultado de búsqueda */}
-              <div className="mt-6 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/15">
+              <div className="mt-6 bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 shadow-lg group-hover:border-white/30 transition-all">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-4 h-4 rounded-full bg-white/30 flex items-center justify-center">
-                    <i className="ri-global-line text-white text-[8px]" />
+                  <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                    <i className="ri-global-line text-white text-[10px]" />
                   </div>
-                  <span className="text-[10px] text-white/50">google.com › maps</span>
+                  <span className="text-[10px] text-white/60 font-medium">google.com › maps</span>
                 </div>
-                <p className="text-xs font-semibold text-[#5EEAD4] mb-1">Tu negocio · Lima, Perú</p>
-                <p className="text-[10px] text-white/60 mb-2">Abierto ahora · Ver más</p>
+                <p className="text-xs font-semibold text-[#5EEAD4] mb-0.5">Tu negocio · Lima, Perú</p>
+                <p className="text-[10px] text-white/50 mb-2">Abierto ahora · Ver más</p>
                 <div className="flex items-center gap-1">
-                  {[1,2,3,4,5].map(s => <i key={s} className="ri-star-fill text-amber-300 text-[10px]" />)}
-                  <span className="text-[10px] text-white/60 ml-1">4.9 (142)</span>
+                  {[1,2,3,4,5].map(s => <i key={s} className="ri-star-fill text-amber-300 text-[10px] animate-pulse" style={{ animationDelay: `${s * 150}ms` }} />)}
+                  <span className="text-[10px] text-white/70 ml-1 font-bold">4.9 (142 reseñas)</span>
                 </div>
               </div>
 
-              {/* Stat grande */}
-              <div className="mt-auto pt-6">
-                <div className="text-4xl font-bold text-white">+300%</div>
-                <div className="text-xs text-white/60 mt-1">más visibilidad en búsquedas locales</div>
+              {/* Stat grande con contador */}
+              <div className="mt-auto pt-8">
+                <div className="text-5xl font-extrabold text-white tracking-tight flex items-baseline">
+                  +{googleVis}%
+                </div>
+                <div className="text-xs text-white/75 mt-1.5 font-medium leading-normal">
+                  más visibilidad en búsquedas locales de tu distrito
+                </div>
               </div>
             </div>
           </div>
 
           {/* CARD 5 — WhatsApp (ancha, col-span-2) */}
           <div
-            className={`md:col-span-2 lg:col-span-1 group relative overflow-hidden rounded-2xl bg-white border border-[#E5E7EB] hover:border-[#25D366]/40 hover:shadow-xl transition-all duration-700 cursor-pointer p-7 md:p-8 flex flex-col gap-4 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+            className={`md:col-span-2 lg:col-span-1 group relative overflow-hidden rounded-2xl bg-white border border-[#E5E7EB] hover:border-[#25D366]/40 hover:shadow-2xl hover:-translate-y-2 transition-all duration-550 cursor-pointer p-7 md:p-8 flex flex-col gap-4 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
             style={{ transitionDelay: '500ms' }}
           >
             <div className="flex items-start gap-4">
-              <div className="w-11 h-11 flex items-center justify-center bg-[#25D366]/10 rounded-xl shrink-0">
-                <i className="ri-whatsapp-line text-[#25D366] text-xl" />
+              <div className="w-12 h-12 flex items-center justify-center bg-[#25D366]/10 group-hover:bg-[#25D366]/15 transition-colors rounded-xl shrink-0">
+                <i className="ri-whatsapp-line text-[#25D366] text-xl animate-pulse" />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-[#111827] mb-1">Pedidos directos por WhatsApp</h3>
@@ -255,25 +323,61 @@ function Beneficios() {
               </div>
             </div>
 
-            {/* Simulación burbuja WhatsApp */}
-            <div className="bg-[#F0FDF4] rounded-xl p-4 flex flex-col gap-2">
-              <div className="flex items-end gap-2">
-                <div className="bg-white rounded-xl rounded-bl-sm px-3 py-2 shadow-sm max-w-[200px]">
-                  <p className="text-xs text-[#111827]">🛍 Nuevo pedido de <strong>Carlos</strong></p>
-                  <p className="text-[10px] text-[#6B7280] mt-0.5">Pollo a la brasa x2 · S/ 48.00</p>
+            {/* Simulación burbuja WhatsApp animada */}
+            <div className="bg-[#EFEAE2] rounded-xl p-4 flex flex-col gap-3 min-h-[140px] relative overflow-hidden border border-[#D1D5DB]/30 shadow-inner">
+              {/* Fondo patrón sutil de whatsapp */}
+              <div
+                className="absolute inset-0 opacity-[0.03] pointer-events-none"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cpath d='M40 0c22.091 0 40 17.909 40 40S62.091 80 40 80 0 62.091 0 40 17.909 0 40 0zm0 5C20.67 5 5 20.67 5 40s15.67 35 35 35 35-15.67 35-35S59.33 5 40 5z' fill='%23000' fill-opacity='.1' fill-rule='evenodd'/%3E%3C/svg%3E")`
+                }}
+              />
+
+              {/* Mensaje 1: Cliente (Aparece con animación fade-in-up siempre) */}
+              <div className="flex items-end gap-2 relative z-10 animate-fade-in-up">
+                <div className="bg-white rounded-2xl rounded-bl-none px-3.5 py-2 shadow-sm max-w-[220px]">
+                  <p className="text-[11px] text-[#111827] font-medium">
+                    🛍 Nuevo pedido de <strong>Carlos</strong>
+                  </p>
+                  <p className="text-[10px] text-[#6B7280] mt-0.5 font-semibold">
+                    Pollo a la brasa x2 · S/ 48.00
+                  </p>
+                  <span className="block text-[8px] text-[#9CA3AF] text-right mt-1">12:30 PM</span>
                 </div>
               </div>
-              <div className="flex items-end gap-2 justify-end">
-                <div className="bg-[#25D366] rounded-xl rounded-br-sm px-3 py-2 max-w-[180px]">
-                  <p className="text-xs text-white">¡Perfecto! Tu pedido estará listo en 30 min 🍗</p>
+
+              {/* Mensaje 2: Negocio / Respuesta */}
+              {chatStep === 1 && (
+                <div className="flex items-end gap-2 justify-end relative z-10 animate-scale-in">
+                  <div className="bg-[#E2F9CB] rounded-2xl rounded-br-none px-4 py-2.5 shadow-sm">
+                    {/* Bouncing dots typing indicator */}
+                    <div className="flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 bg-[#128C7E] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-1.5 h-1.5 bg-[#128C7E] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-1.5 h-1.5 bg-[#128C7E] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {(chatStep === 2 || chatStep === 3) && (
+                <div className="flex items-end gap-2 justify-end relative z-10 animate-fade-in-up">
+                  <div className="bg-[#E2F9CB] rounded-2xl rounded-br-none px-3.5 py-2 shadow-sm max-w-[200px]">
+                    <p className="text-[11px] text-[#111827] leading-relaxed">
+                      ¡Perfecto Carlos! Tu pedido estará listo en 30 min 🍗
+                    </p>
+                    <span className="block text-[8px] text-[#586366] text-right mt-1">
+                      12:31 PM <i className="ri-double-check-line text-blue-500" />
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Pills */}
             <div className="flex flex-wrap gap-2">
               {['Sin comisiones', 'Instantáneo', 'Sin apps extra'].map(p => (
-                <span key={p} className="text-[11px] font-semibold bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0] px-3 py-1 rounded-full">
+                <span key={p} className="text-[11px] font-semibold bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0] px-3 py-1 rounded-full group-hover:bg-[#15803D] group-hover:text-white group-hover:border-transparent transition-all duration-300">
                   {p}
                 </span>
               ))}

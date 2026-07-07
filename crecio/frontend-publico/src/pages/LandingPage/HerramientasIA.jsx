@@ -60,23 +60,18 @@ function HerramientasIA() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8">
 
         {/* Header */}
-        <div className={`mb-14 md:mb-16 transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-            <div>
-              <span className="inline-block text-xs font-semibold tracking-[0.2em] uppercase text-[#0D9488] mb-3">
-                Inteligencia Artificial
-              </span>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#111827] leading-[1.1] tracking-tight">
-                IA que trabaja
-                <br />
-                <span className="gradient-teal">por ti</span>
-              </h2>
-            </div>
-            <p className="text-[#6B7280] text-sm md:text-base max-w-sm md:text-right">
-              No necesitas ser experto en marketing. Nuestra IA hace el trabajo
-              pesado para que tú te concentres en lo que sabes hacer.
-            </p>
-          </div>
+        <div className={`text-center mb-16 transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <span className="inline-flex items-center rounded-full bg-[#0D9488]/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0D9488] mb-4">
+            Inteligencia Artificial
+          </span>
+          <h2 className="text-4xl md:text-5xl lg:text-[56px] font-extrabold text-[#111827] leading-[1.1] tracking-tight">
+            IA que trabaja
+            <br />
+            <span className="gradient-teal">por ti</span>
+          </h2>
+          <p className="mt-4 max-w-2xl mx-auto text-sm md:text-base text-[#4B5563] leading-relaxed">
+            No necesitas ser experto en marketing. Nuestra IA hace el trabajo pesado para que tú te concentres en lo que sabes hacer.
+          </p>
         </div>
 
         {/* Bento Grid — igual al ref */}

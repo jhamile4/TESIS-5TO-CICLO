@@ -35,18 +35,17 @@ function CTAFinal() {
         <div className="flex flex-col lg:flex-row gap-14 lg:gap-20 items-center">
 
           {/* Izquierda — contenido */}
-          <div className={`flex-1 transition-all duration-1000 ${visible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-12'}`}>
-            <span className="inline-block text-xs font-semibold tracking-[0.2em] uppercase text-[#0D9488] mb-5">
+          <div className={`flex-1 transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <span className="inline-flex items-center rounded-full bg-[#0D9488]/20 border border-[#0D9488]/30 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0D9488] mb-4">
               Empieza hoy
             </span>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.1] mb-6 tracking-tight">
+            <h2 className="text-4xl md:text-5xl lg:text-[56px] font-extrabold text-white leading-[1.1] mb-5 tracking-tight">
               Tu negocio
               <br />
               <span className="gradient-teal">te espera.</span>
             </h2>
-            <p className="text-[#9CA3AF] text-sm md:text-base leading-relaxed mb-10 max-w-md">
-              Más del 70% de los consumidores buscan negocios locales por internet antes de visitarlos.
-              Con CRECIO tu negocio aparece con catálogo, precios, horarios y todo lo que necesitan para decidir.
+            <p className="mt-4 text-sm md:text-base text-white/60 leading-relaxed mb-10 max-w-md">
+              Más del 70% de los consumidores buscan negocios locales por internet antes de visitarlos. Con CRECIO tu negocio aparece con catálogo, precios, horarios y todo lo que necesitan para decidir.
             </p>
 
             {/* Stats */}

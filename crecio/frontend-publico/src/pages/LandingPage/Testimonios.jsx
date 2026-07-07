@@ -82,23 +82,19 @@ function Testimonios() {
     <section ref={sectionRef} className="relative py-20 md:py-28 bg-white overflow-hidden">
 
       {/* ── Header ── */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 mb-12">
-        <div className={`transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-            <div>
-              <span className="inline-block text-xs font-semibold tracking-[0.2em] uppercase text-[#0D9488] mb-3">
-                Testimonios
-              </span>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#111827] leading-[1.1] tracking-tight">
-                Negocios reales.
-                <br />
-                <span className="gradient-teal">Resultados reales.</span>
-              </h2>
-            </div>
-            <p className="text-[#6B7280] text-sm md:text-base max-w-sm md:text-right">
-              Más de 2,400 negocios peruanos ya usan CRECIO para crecer su presencia digital.
-            </p>
-          </div>
+      <div className="max-w-7xl mx-auto px-4 md:px-8 mb-16">
+        <div className={`text-center transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <span className="inline-flex items-center rounded-full bg-[#0D9488]/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0D9488] mb-4">
+            Testimonios
+          </span>
+          <h2 className="text-4xl md:text-5xl lg:text-[56px] font-extrabold text-[#111827] leading-[1.1] tracking-tight">
+            Negocios reales.
+            <br />
+            <span className="gradient-teal">Resultados reales.</span>
+          </h2>
+          <p className="mt-4 max-w-2xl mx-auto text-sm md:text-base text-[#4B5563] leading-relaxed">
+            Más de 2,400 negocios peruanos ya usan CRECIO para crecer su presencia digital.
+          </p>
         </div>
       </div>
 

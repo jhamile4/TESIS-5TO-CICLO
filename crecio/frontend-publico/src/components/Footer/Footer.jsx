@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import logoCrecio from '../../assets/logoCrecio.png'
+import '../Navbar/Navbar.css'
 
 function Footer() {
   const navigate = useNavigate()
@@ -53,13 +53,54 @@ function Footer() {
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-20">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-8">
 
-          {/* Brand + Newsletter */}
           <div className="md:col-span-5">
-            <img
-              src={logoCrecio}
-              alt="CRECIO"
-              className="h-8 w-auto object-contain mb-5"
-            />
+            {/* Logo */}
+            <div 
+              className="logo-container-group flex items-center gap-3.5 cursor-pointer select-none mb-5" 
+              onClick={() => navigate('/')}
+            >
+              {/* 3D Holographic Growth Bars Icon */}
+              <div className="w-6 h-6 relative perspective-sm shrink-0 flex items-end gap-[3px] pb-[1px]">
+                <div className="logo-prism-wrapper w-full h-full relative transform-style-3d">
+                  {/* Back Face (Translucent Teal Glass Bars) */}
+                  <div className="logo-bars-back">
+                    <div className="logo-bar-back-1" />
+                    <div className="logo-bar-back-2" />
+                    <div className="logo-bar-back-3" />
+                  </div>
+                  {/* Front Face (Glowing Teal Gradient Bars) */}
+                  <div className="logo-bars-front">
+                    <div className="logo-bar-front-1" />
+                    <div className="logo-bar-front-2" />
+                    <div className="logo-bar-front-3" />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Bold custom logo text with 3D slot-machine rise */}
+              <div className="logo-text-holder flex items-center h-7 select-none">
+                <span className="logo-word flex items-center tracking-tighter">
+                  <span className="logo-char-wrapper">
+                    <span className="logo-char-3d text-[#111827]">C</span>
+                  </span>
+                  <span className="logo-char-wrapper">
+                    <span className="logo-char-3d text-[#111827]">R</span>
+                  </span>
+                  <span className="logo-char-wrapper">
+                    <span className="logo-char-3d text-[#111827]">E</span>
+                  </span>
+                  <span className="logo-char-wrapper">
+                    <span className="logo-char-3d text-[#0D9488]">C</span>
+                  </span>
+                  <span className="logo-char-wrapper">
+                    <span className="logo-char-3d text-[#0D9488]">I</span>
+                  </span>
+                  <span className="logo-char-wrapper">
+                    <span className="logo-char-3d text-[#0D9488]">O</span>
+                  </span>
+                </span>
+              </div>
+            </div>
             <p className="text-[#6B7280] text-sm leading-relaxed max-w-xs mb-8">
               La plataforma que ayuda a los pequeños negocios a crecer con tecnología,
               catálogos digitales e inteligencia artificial.

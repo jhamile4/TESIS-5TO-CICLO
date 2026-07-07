@@ -31,15 +31,17 @@ function Directorio() {
         <div className="max-w-7xl mx-auto px-4 md:px-8">
 
           {/* Header */}
-          <div className="mb-10 md:mb-12 text-center mx-auto max-w-3xl">
-            <h2 className="text-3xl md:text-4xl lg:text-[42px] font-bold text-[#111827] leading-tight mb-4">
+          <div className="mb-16 text-center mx-auto max-w-3xl">
+            <span className="inline-flex items-center rounded-full bg-[#0D9488]/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0D9488] mb-4">
+              Directorio
+            </span>
+            <h2 className="text-4xl md:text-5xl lg:text-[56px] font-extrabold text-[#111827] leading-[1.1] tracking-tight">
               Descubre negocios
               <br />
-              <span className="text-[#0D9488]">en tu localidad</span>
+              <span className="gradient-teal">en tu localidad</span>
             </h2>
-            <p className="text-[#6B7280] max-w-md mx-auto text-sm md:text-base leading-relaxed">
-              Encuentra tiendas, restaurantes y servicios cerca de ti.
-              Todos verificados y con catálogo digital.
+            <p className="mt-4 max-w-2xl mx-auto text-sm md:text-base text-[#4B5563] leading-relaxed">
+              Encuentra tiendas, restaurantes y servicios cerca de ti. Todos verificados y con catálogo digital.
             </p>
           </div>
 

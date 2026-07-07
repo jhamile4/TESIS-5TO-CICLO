@@ -55,17 +55,16 @@ function Galeria() {
       {/* Header */}
       <div className="mx-auto max-w-7xl px-4 md:px-8">
         <div className="mb-16 flex flex-col items-center text-center">
-          <span className="mb-4 inline-block rounded-full border border-[#E5E7EB] px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#9CA3AF]">
+          <span className="inline-flex items-center rounded-full bg-[#0D9488]/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0D9488] mb-4">
             Galería de negocios
           </span>
-          <h2 className="max-w-3xl text-3xl font-bold leading-tight tracking-tight text-[#111827] md:text-5xl lg:text-6xl">
+          <h2 className="max-w-3xl text-4xl md:text-5xl lg:text-[56px] font-extrabold text-[#111827] leading-[1.1] tracking-tight">
             Cada negocio tiene
             <br />
-            <span className="text-[#0D9488]">su propia identidad</span>
+            <span className="gradient-teal">su propia identidad</span>
           </h2>
-          <p className="mt-5 max-w-lg text-sm leading-relaxed text-[#6B7280] md:text-base">
-            Desde la pollería del barrio hasta la boutique de moda. CRECIO respeta
-            y potencia la esencia de cada emprendimiento.
+          <p className="mt-4 max-w-2xl mx-auto text-sm md:text-base text-[#4B5563] leading-relaxed">
+            Desde la pollería del barrio hasta la boutique de moda. CRECIO respeta y potencia la esencia de cada emprendimiento.
           </p>
         </div>
       </div>
