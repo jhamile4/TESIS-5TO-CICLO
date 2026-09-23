@@ -1,8 +1,14 @@
 const authService = require('../services/authService')
 
+const setPanelCookie = (res, token) => {
+  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : ''
+  res.setHeader('Set-Cookie', `panel_token=${token}; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800${secure}`)
+}
+
 const login = async (req, res, next) => {
   try {
     const data = await authService.login(req.body.email, req.body.password)
+    setPanelCookie(res, data.token)
     res.json(data)
   } catch (err) { next(err) }
 }

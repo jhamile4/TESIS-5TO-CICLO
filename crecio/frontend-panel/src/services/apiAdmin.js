@@ -1,9 +1,10 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+import { API_URL as BASE_URL } from '../config/env'
 
 const request = async (path, options = {}) => {
   const token = localStorage.getItem('crecio_admin_token')
   const response = await fetch(`${BASE_URL}${path}`, {
     ...options,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -18,6 +19,7 @@ const request = async (path, options = {}) => {
 export const iniciarSesion = async (email, password) => {
   const response = await fetch(`${BASE_URL}/auth/login`, {
     method: 'POST',
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   })
