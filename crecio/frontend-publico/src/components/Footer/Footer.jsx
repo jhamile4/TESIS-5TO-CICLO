@@ -151,7 +151,10 @@ function Footer() {
             <ul className="flex flex-col gap-3">
               {['Cómo funciona', 'Precios', 'Herramientas IA', 'Buscador local', 'Panel de admin'].map((l) => (
                 <li key={l}>
-                  <a href="#" className="text-[#6B7280] hover:text-[#0D9488] text-sm transition-colors">{l}</a>
+                  <a
+                    href={l === 'Panel de admin' ? (import.meta.env.VITE_PANEL_URL || 'http://localhost:5174') : '#'}
+                    className="text-[#6B7280] hover:text-[#0D9488] text-sm transition-colors"
+                  >{l}</a>
                 </li>
               ))}
             </ul>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import '../../components/Navbar/Navbar.css'
 
 const BASE_URL = 'http://localhost:3001/api'
+const PANEL_URL = import.meta.env.VITE_PANEL_URL || 'http://localhost:5174'
 
 // ── Modal de búsqueda ──
 function BuscadorModal({ onClose }) {
@@ -225,7 +226,7 @@ function PerfilNavbar({ comprador }) {
               <i className="ri-user-line text-sm text-[#0D9488]" /> Mi cuenta
             </button>
             {comprador?.esEmprendedor && (
-              <button onClick={() => navigate('/panel')}
+              <button onClick={() => window.location.assign(PANEL_URL)}
                 className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold font-sans tracking-wide transition-all cursor-pointer ${
                   scrolled 
                     ? 'text-white/60 hover:text-white hover:bg-white/5' 
@@ -269,7 +270,7 @@ function PerfilNavbar({ comprador }) {
 
             {/* Mi Panel mobile */}
             {comprador?.esEmprendedor && (
-              <button onClick={() => navigate('/panel')}
+              <button onClick={() => window.location.assign(PANEL_URL)}
                 className={`md:hidden flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
                   scrolled 
                     ? 'bg-white/10 hover:bg-white/20 border-white/10 text-white' 
@@ -339,7 +340,7 @@ function PerfilNavbar({ comprador }) {
                   <div className="py-1.5">
                     {[
                       { icon: 'ri-user-line',      label: 'Mis Datos',        sub: 'Perfil y configuración', action: () => { navigate('/perfil'); setMenuOpen(false) } },
-                      ...(comprador?.esEmprendedor ? [{ icon: 'ri-dashboard-line', label: 'Mi Panel', sub: 'Gestiona tu negocio', action: () => { navigate('/panel'); setMenuOpen(false) } }] : []),
+                      ...(comprador?.esEmprendedor ? [{ icon: 'ri-dashboard-line', label: 'Mi Panel', sub: 'Gestiona tu negocio', action: () => { window.location.assign(PANEL_URL); setMenuOpen(false) } }] : []),
                       { icon: 'ri-heart-line',     label: 'Favoritos',        sub: 'Productos guardados',    action: () => { navigate('/perfil'); setMenuOpen(false) } },
                       { icon: 'ri-store-2-line',   label: 'Explorar Tiendas', sub: 'Descubrir negocios',     action: () => { navigate('/tiendas'); setMenuOpen(false) } },
                     ].map((item, i) => (

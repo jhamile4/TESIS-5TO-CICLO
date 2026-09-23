@@ -1,4 +1,8 @@
 const repository = require('./admin.repository')
+const Groq = require('groq-sdk')
+const productoModel = require('../../models/productoModel')
+
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
 const getResumen = async (clienteId) => {
   const negocioResult = await repository.findBusinessByOwner(clienteId)
@@ -47,7 +51,8 @@ const getInventario = async (clienteId) => {
     throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
   }
 
-  const negocioId = negocioResult.rows[0].pk_id
+  const negocio = negocioResult.rows[0]
+  const negocioId = negocio.pk_id
   const [productosResult, metricasResult] = await Promise.all([
     repository.getInventoryProducts(negocioId),
     repository.getInventoryMetrics(negocioId),
@@ -70,4 +75,78 @@ const getInventario = async (clienteId) => {
   }
 }
 
-module.exports = { getResumen, getInventario }
+const createProduct = async (clienteId, datos) => {
+  const negocioResult = await repository.findBusinessByOwner(clienteId)
+  if (negocioResult.rows.length === 0) {
+    throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
+  }
+
+  const { nombre, precio, stock } = datos
+  if (!nombre?.trim() || !Number.isFinite(Number(precio)) || Number(precio) < 0 || !Number.isInteger(Number(stock)) || Number(stock) < 0) {
+    throw { status: 400, message: 'Nombre, precio y stock son obligatorios y deben ser validos' }
+  }
+
+  const result = await repository.createProduct(negocioResult.rows[0].pk_id, {
+    ...datos,
+    nombre: nombre.trim(),
+    precio: Number(precio),
+    stock: Number(stock),
+  })
+  return result.rows[0]
+}
+
+const getVentas = async (clienteId) => {
+  const negocioResult = await repository.findBusinessByOwner(clienteId)
+  if (negocioResult.rows.length === 0) {
+    throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
+  }
+
+  const negocio = negocioResult.rows[0]
+  const ventasResult = await repository.getSales(negocio.pk_id)
+  return {
+    negocio: { id: negocio.pk_id, nombre: negocio.nombre, logoUrl: negocio.logo_url },
+    ventas: ventasResult.rows,
+  }
+}
+
+const getClientes = async (clienteId) => {
+  const negocioResult = await repository.findBusinessByOwner(clienteId)
+  if (negocioResult.rows.length === 0) {
+    throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
+  }
+
+  const negocio = negocioResult.rows[0]
+  const result = await repository.getClients(negocio.pk_id)
+  return {
+    negocio: { id: negocio.pk_id, nombre: negocio.nombre, logoUrl: negocio.logo_url },
+    clientes: result.rows.map((cliente) => ({
+      ...cliente,
+      total_gastado: Number(cliente.total_gastado),
+      activo: new Date(cliente.ultima_compra) >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+    })),
+  }
+}
+
+const generateMarketing = async (clienteId, { tipo = 'Promoción / Oferta', prompt = '', tono = 'Modo Creativo' }) => {
+  const negocioResult = await repository.findBusinessByOwner(clienteId)
+  if (negocioResult.rows.length === 0) {
+    throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
+  }
+  if (!prompt?.trim()) throw { status: 400, message: 'Describe el contenido que deseas generar' }
+
+  const negocio = negocioResult.rows[0]
+  const productosResult = await productoModel.findByNegocio(negocio.pk_id)
+  const productos = productosResult.rows.slice(0, 12).map((producto) => `${producto.nombre} (S/${producto.precio})`).join(', ')
+  const completion = await groq.chat.completions.create({
+    model: 'llama-3.1-8b-instant',
+    messages: [
+      { role: 'system', content: `Eres el asistente de marketing de ${negocio.nombre}, negocio de ${negocio.categoria || 'productos y servicios'} en Peru. Genera contenido listo para redes sociales en espanol. Usa solo este contexto: productos disponibles: ${productos || 'no hay productos cargados'}. No inventes descuentos, precios ni datos que no aparezcan en el pedido.` },
+      { role: 'user', content: `Tipo: ${tipo}. Estilo: ${tono}. Solicitud: ${prompt}. Devuelve un texto atractivo de maximo 500 caracteres, con llamada a la accion y hashtags relevantes.` },
+    ],
+    max_tokens: 260,
+    temperature: 0.7,
+  })
+  return { negocio: { id: negocio.pk_id, nombre: negocio.nombre }, contenido: completion.choices[0].message.content }
+}
+
+module.exports = { getResumen, getInventario, createProduct, getVentas, getClientes, generateMarketing }

@@ -57,6 +57,34 @@ const getRecentOrders = (negocioId) =>
     [negocioId]
   )
 
+const getSales = (negocioId) =>
+  pool.query(
+        `SELECT pp.pk_id, pp.numero_pedido, pp.monto_total, pp.estado,
+          pp.stripe_payment_intent,
+            pp.items, pp.created_at, pp.direccion, pp.ciudad,
+            c.nombre AS cliente_nombre, c.email AS cliente_email
+     FROM pedido_pago pp
+     LEFT JOIN cliente c ON c.pk_id = pp.fk_cliente_id
+     WHERE pp.fk_negocio_id = $1
+     ORDER BY pp.created_at DESC`,
+    [negocioId]
+  )
+
+const getClients = (negocioId) =>
+  pool.query(
+    `SELECT c.pk_id, c.nombre, c.email,
+            COUNT(pp.pk_id)::int AS pedidos,
+            COALESCE(SUM(pp.monto_total) FILTER (WHERE pp.estado = 'pagado'), 0) AS total_gastado,
+            MAX(pp.created_at) AS ultima_compra,
+            COUNT(*) FILTER (WHERE pp.created_at >= date_trunc('month', CURRENT_DATE))::int AS pedidos_mes
+     FROM pedido_pago pp
+     JOIN cliente c ON c.pk_id = pp.fk_cliente_id
+     WHERE pp.fk_negocio_id = $1
+     GROUP BY c.pk_id, c.nombre, c.email
+     ORDER BY ultima_compra DESC`,
+    [negocioId]
+  )
+
 const getBestSellingProducts = (negocioId) =>
   pool.query(
     `SELECT item->>'nombre' AS nombre,
@@ -91,13 +119,25 @@ const getInventoryMetrics = (negocioId) =>
     [negocioId]
   )
 
+const createProduct = (negocioId, { nombre, descripcion, precio, imagenUrl, stock, categoria }) =>
+  pool.query(
+    `INSERT INTO producto
+       (fk_negocio_id, nombre, descripcion, precio, imagen_url, stock, categoria, activo)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,TRUE)
+     RETURNING pk_id, nombre, descripcion, precio, imagen_url, stock, categoria`,
+    [negocioId, nombre, descripcion || '', precio, imagenUrl || '', stock, categoria || 'General']
+  )
+
 module.exports = {
   findBusinessByOwner,
   getMetrics,
   getProductCount,
   getWeeklySales,
   getRecentOrders,
+  getSales,
+  getClients,
   getBestSellingProducts,
   getInventoryProducts,
   getInventoryMetrics,
+  createProduct,
 }

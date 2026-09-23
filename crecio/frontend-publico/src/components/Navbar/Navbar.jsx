@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import './Navbar.css'
 
+const PANEL_URL = import.meta.env.VITE_PANEL_URL || 'http://localhost:5174'
+
 const Navbar = () => {
   const navigate  = useNavigate()
   const location  = useLocation()
@@ -155,7 +157,7 @@ const Navbar = () => {
               <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-[#E5E7EB]/70 py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 {comprador.esEmprendedor && (
                   <button
-                    onClick={() => navigate('/panel')}
+                    onClick={() => window.location.assign(PANEL_URL)}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#374151] hover:bg-[#F0FDF9] hover:text-[#0D9488] transition-colors cursor-pointer"
                   >
                     <i className="ri-dashboard-line text-base text-[#0D9488]" />
@@ -239,7 +241,7 @@ const Navbar = () => {
                 </button>
                 {comprador.esEmprendedor && (
                   <button
-                    onClick={() => { navigate('/panel'); setMenuOpen(false) }}
+                    onClick={() => { window.location.assign(PANEL_URL); setMenuOpen(false) }}
                     className="w-full py-3.5 rounded-xl border border-[#0D9488] text-[#0D9488] font-bold text-sm flex items-center justify-center gap-2 cursor-pointer hover:bg-[#0D9488]/5 transition-colors"
                   >
                     <i className="ri-dashboard-line" />

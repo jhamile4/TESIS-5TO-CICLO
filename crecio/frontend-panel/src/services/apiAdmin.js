@@ -29,3 +29,13 @@ export const iniciarSesion = async (email, password) => {
 
 export const getResumen = () => request('/admin/resumen')
 export const getInventario = () => request('/admin/inventario')
+export const getVentas = () => request('/admin/ventas')
+export const getClientes = () => request('/admin/clientes')
+export const generarMarketing = (contenido) => request('/admin/marketing/generar', {
+  method: 'POST',
+  body: JSON.stringify(contenido),
+})
+export const crearProducto = (producto) => request('/admin/productos', {
+  method: 'POST',
+  body: JSON.stringify(producto),
+})
