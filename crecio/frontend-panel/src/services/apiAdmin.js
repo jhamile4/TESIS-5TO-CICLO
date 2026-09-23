@@ -1,0 +1,31 @@
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+
+const request = async (path, options = {}) => {
+  const token = localStorage.getItem('crecio_admin_token')
+  const response = await fetch(`${BASE_URL}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options.headers,
+    },
+  })
+  const data = await response.json()
+  if (!response.ok) throw new Error(data.message || 'No se pudo procesar la solicitud')
+  return data
+}
+
+export const iniciarSesion = async (email, password) => {
+  const response = await fetch(`${BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  })
+  const data = await response.json()
+  if (!response.ok) throw new Error(data.message || 'No se pudo iniciar sesión')
+  if (!data.roles?.esEmprendedor) throw new Error('Esta cuenta no tiene un negocio registrado')
+  return data
+}
+
+export const getResumen = () => request('/admin/resumen')
+export const getInventario = () => request('/admin/inventario')

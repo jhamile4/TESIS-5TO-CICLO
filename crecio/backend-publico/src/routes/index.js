@@ -12,5 +12,6 @@ router.use('/perfil',    require('./perfilRoutes'))
 router.use('/plan',      require('./planRoutes'))
 router.use('/chat',      require('./chatRoutes'))
 router.use('/cuenta',    require('./cuentaRoutes'))
+router.use('/admin',     require('../modules/admin/admin.routes'))
 
 module.exports = router

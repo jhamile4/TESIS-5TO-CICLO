@@ -52,7 +52,7 @@ function LoginPage() {
         setShowRoles(true)
       } else if (data.roles.esEmprendedor) {
         // Solo emprendedor → panel admin (próximamente)
-        navigate('/panel')
+        window.location.assign('http://localhost:5174')
       } else {
         // Solo comprador → perfil
         navigate('/perfil')
@@ -86,7 +86,7 @@ function LoginPage() {
           <div className="flex flex-col gap-4">
             {/* Opción emprendedor */}
             <button
-              onClick={() => navigate('/panel')}
+              onClick={() => window.location.assign('http://localhost:5174')}
               className="group bg-white border-2 border-[#E5E7EB] hover:border-[#0D9488] rounded-2xl p-6 text-left transition-all cursor-pointer hover:shadow-md"
             >
               <div className="flex items-center gap-4">
