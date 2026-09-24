@@ -54,4 +54,8 @@ const generateMarketing = async (req, res, next) => {
   }
 }
 
-module.exports = { getResumen, getInventario, createProduct, getVentas, getClientes, generateMarketing }
+const getFinanzas = async (req, res, next) => {
+  try { res.json(await adminService.getFinanzas(req.user.id)) } catch (error) { next(error) }
+}
+
+module.exports = { getResumen, getInventario, createProduct, getVentas, getClientes, getFinanzas, generateMarketing }

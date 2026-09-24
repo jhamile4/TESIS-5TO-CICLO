@@ -85,6 +85,28 @@ const getClients = (negocioId) =>
     [negocioId]
   )
 
+const getFinanceSummary = (negocioId) =>
+  pool.query(
+    `SELECT
+       COALESCE(SUM(monto_total) FILTER (WHERE estado = 'pagado' AND created_at::date = CURRENT_DATE), 0) AS ingresos_hoy,
+       COALESCE(SUM(monto_total) FILTER (WHERE estado = 'pagado' AND created_at >= date_trunc('month', CURRENT_DATE)), 0) AS ingresos_mes,
+       COUNT(*) FILTER (WHERE estado = 'pagado' AND created_at::date = CURRENT_DATE) AS operaciones_hoy,
+       COUNT(*) FILTER (WHERE estado = 'pagado' AND created_at >= date_trunc('month', CURRENT_DATE)) AS operaciones_mes,
+       COALESCE(SUM(monto_total) FILTER (WHERE estado = 'pagado' AND stripe_payment_intent IS NOT NULL AND created_at >= date_trunc('month', CURRENT_DATE)), 0) AS ingresos_tarjeta,
+       COALESCE(SUM(monto_total) FILTER (WHERE estado = 'pagado' AND stripe_payment_intent IS NULL AND created_at >= date_trunc('month', CURRENT_DATE)), 0) AS ingresos_efectivo
+     FROM pedido_pago WHERE fk_negocio_id = $1`,
+    [negocioId]
+  )
+
+const getFinanceTransactions = (negocioId) =>
+  pool.query(
+    `SELECT pp.pk_id, pp.numero_pedido, pp.monto_total, pp.estado, pp.stripe_payment_intent,
+            pp.created_at, c.nombre AS cliente_nombre
+     FROM pedido_pago pp LEFT JOIN cliente c ON c.pk_id = pp.fk_cliente_id
+     WHERE pp.fk_negocio_id = $1 ORDER BY pp.created_at DESC LIMIT 8`,
+    [negocioId]
+  )
+
 const getBestSellingProducts = (negocioId) =>
   pool.query(
     `SELECT item->>'nombre' AS nombre,
@@ -136,6 +158,8 @@ module.exports = {
   getRecentOrders,
   getSales,
   getClients,
+  getFinanceSummary,
+  getFinanceTransactions,
   getBestSellingProducts,
   getInventoryProducts,
   getInventoryMetrics,

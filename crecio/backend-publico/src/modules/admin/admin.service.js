@@ -127,6 +127,27 @@ const getClientes = async (clienteId) => {
   }
 }
 
+const getFinanzas = async (clienteId) => {
+  const negocioResult = await repository.findBusinessByOwner(clienteId)
+  if (negocioResult.rows.length === 0) throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
+  const negocio = negocioResult.rows[0]
+  const [summaryResult, transactionsResult] = await Promise.all([
+    repository.getFinanceSummary(negocio.pk_id),
+    repository.getFinanceTransactions(negocio.pk_id),
+  ])
+  const summary = summaryResult.rows[0]
+  return {
+    negocio: { id: negocio.pk_id, nombre: negocio.nombre, logoUrl: negocio.logo_url },
+    resumen: Object.fromEntries(Object.entries(summary).map(([key, value]) => [key, Number(value)])),
+    gastosRegistrados: 0,
+    transacciones: transactionsResult.rows.map((transaction) => ({
+      ...transaction,
+      monto_total: Number(transaction.monto_total),
+      metodo: transaction.stripe_payment_intent ? 'Tarjeta' : 'Efectivo',
+    })),
+  }
+}
+
 const generateMarketing = async (clienteId, { tipo = 'Promoción / Oferta', prompt = '', tono = 'Modo Creativo' }) => {
   const negocioResult = await repository.findBusinessByOwner(clienteId)
   if (negocioResult.rows.length === 0) {
@@ -149,4 +170,4 @@ const generateMarketing = async (clienteId, { tipo = 'Promoción / Oferta', prom
   return { negocio: { id: negocio.pk_id, nombre: negocio.nombre }, contenido: completion.choices[0].message.content }
 }
 
-module.exports = { getResumen, getInventario, createProduct, getVentas, getClientes, generateMarketing }
+module.exports = { getResumen, getInventario, createProduct, getVentas, getClientes, getFinanzas, generateMarketing }
