@@ -38,6 +38,7 @@ function LoginPage() {
     try {
       const res  = await fetch(`${BASE_URL}/auth/login`, {
         method:  'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ email: datos.email, password: datos.contrasena }),
       })

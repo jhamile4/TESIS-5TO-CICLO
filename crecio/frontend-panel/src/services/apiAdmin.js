@@ -31,9 +31,12 @@ export const iniciarSesion = async (email, password) => {
 
 export const getResumen = () => request('/admin/resumen')
 export const getInventario = () => request('/admin/inventario')
+export const getTienda = () => request('/admin/tienda')
+export const actualizarTienda = (tienda) => request('/admin/tienda', { method: 'PUT', body: JSON.stringify(tienda) })
 export const getVentas = () => request('/admin/ventas')
 export const getClientes = () => request('/admin/clientes')
 export const getFinanzas = () => request('/admin/finanzas')
+export const crearGasto = (gasto) => request('/admin/gastos', { method: 'POST', body: JSON.stringify(gasto) })
 export const generarMarketing = (contenido) => request('/admin/marketing/generar', {
   method: 'POST',
   body: JSON.stringify(contenido),

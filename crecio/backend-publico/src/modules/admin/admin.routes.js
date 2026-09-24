@@ -1,6 +1,6 @@
 const express = require('express')
 const verifyToken = require('../../middleware/verifyToken')
-const { getResumen, getInventario, createProduct, getVentas, getClientes, getFinanzas, generateMarketing } = require('./admin.controller')
+const { getResumen, getInventario, getTienda, updateTienda, createProduct, getVentas, getClientes, getFinanzas, createExpense, generateMarketing } = require('./admin.controller')
 
 const router = express.Router()
 
@@ -8,9 +8,12 @@ const router = express.Router()
 // El cliente nunca envía el id del negocio que desea administrar.
 router.get('/resumen', verifyToken, getResumen)
 router.get('/inventario', verifyToken, getInventario)
+router.get('/tienda', verifyToken, getTienda)
+router.put('/tienda', verifyToken, updateTienda)
 router.get('/ventas', verifyToken, getVentas)
 router.get('/clientes', verifyToken, getClientes)
 router.get('/finanzas', verifyToken, getFinanzas)
+router.post('/gastos', verifyToken, createExpense)
 router.post('/marketing/generar', verifyToken, generateMarketing)
 router.post('/productos', verifyToken, createProduct)
 

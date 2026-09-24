@@ -3,7 +3,7 @@ const BASE_URL = 'http://localhost:3001/api'
 const get = async (path, token = null) => {
   const headers = { 'Content-Type': 'application/json' }
   if (token) headers['Authorization'] = `Bearer ${token}`
-  const res  = await fetch(`${BASE_URL}${path}`, { headers })
+  const res  = await fetch(`${BASE_URL}${path}`, { headers, credentials: 'include' })
   const data = await res.json()
   if (!res.ok) throw new Error(data.message || 'Error en la peticion')
   return data
@@ -15,6 +15,7 @@ const post = async (path, body, token = null) => {
   const res  = await fetch(`${BASE_URL}${path}`, {
     method: 'POST',
     headers,
+    credentials: 'include',
     body: JSON.stringify(body),
   })
   const data = await res.json()

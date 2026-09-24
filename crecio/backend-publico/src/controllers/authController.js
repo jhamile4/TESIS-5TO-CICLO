@@ -5,6 +5,20 @@ const setPanelCookie = (res, token) => {
   res.setHeader('Set-Cookie', `panel_token=${token}; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800${secure}`)
 }
 
+const clearPanelCookie = (res) => {
+  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : ''
+  res.setHeader('Set-Cookie', `panel_token=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0${secure}`)
+}
+
+const getSession = (req, res) => {
+  res.json({ cliente: { id: req.user.id, email: req.user.email } })
+}
+
+const logout = (req, res) => {
+  clearPanelCookie(res)
+  res.json({ message: 'Sesion cerrada' })
+}
+
 const login = async (req, res, next) => {
   try {
     const data = await authService.login(req.body.email, req.body.password)
@@ -58,5 +72,5 @@ const verificarEmail = async (req, res, next) => {
 
 module.exports = {
   register, login, registroCompleto, registroComprador,
-  verificarComprador, reenviarCodigo, verificarEmail,
+  verificarComprador, reenviarCodigo, verificarEmail, getSession, logout,
 }

@@ -9,6 +9,24 @@ const findBusinessByOwner = (clienteId) =>
     [clienteId]
   )
 
+const getBusinessForAdmin = (clienteId) =>
+  pool.query(
+    `SELECT pk_id, nombre, categoria, descripcion, logo_url, direccion,
+            distrito, horario, telefono, whatsapp
+     FROM negocio WHERE fk_cliente_id = $1 LIMIT 1`,
+    [clienteId]
+  )
+
+const updateBusiness = (clienteId, datos) =>
+  pool.query(
+    `UPDATE negocio SET nombre = $1, descripcion = $2, logo_url = $3,
+            direccion = $4, whatsapp = $5
+     WHERE fk_cliente_id = $6
+     RETURNING pk_id, nombre, categoria, descripcion, logo_url, direccion,
+               distrito, horario, telefono, whatsapp`,
+    [datos.nombre, datos.descripcion, datos.logoUrl, datos.direccion, datos.whatsapp, clienteId]
+  )
+
 const getMetrics = (negocioId) =>
   pool.query(
     `SELECT
@@ -93,7 +111,9 @@ const getFinanceSummary = (negocioId) =>
        COUNT(*) FILTER (WHERE estado = 'pagado' AND created_at::date = CURRENT_DATE) AS operaciones_hoy,
        COUNT(*) FILTER (WHERE estado = 'pagado' AND created_at >= date_trunc('month', CURRENT_DATE)) AS operaciones_mes,
        COALESCE(SUM(monto_total) FILTER (WHERE estado = 'pagado' AND stripe_payment_intent IS NOT NULL AND created_at >= date_trunc('month', CURRENT_DATE)), 0) AS ingresos_tarjeta,
-       COALESCE(SUM(monto_total) FILTER (WHERE estado = 'pagado' AND stripe_payment_intent IS NULL AND created_at >= date_trunc('month', CURRENT_DATE)), 0) AS ingresos_efectivo
+       COALESCE(SUM(monto_total) FILTER (WHERE estado = 'pagado' AND stripe_payment_intent IS NULL AND created_at >= date_trunc('month', CURRENT_DATE)), 0) AS ingresos_efectivo,
+       COALESCE((SELECT SUM(monto) FROM gasto WHERE fk_negocio_id = $1 AND fecha = CURRENT_DATE), 0) AS gastos_hoy,
+       COALESCE((SELECT SUM(monto) FROM gasto WHERE fk_negocio_id = $1 AND fecha >= date_trunc('month', CURRENT_DATE)::date), 0) AS gastos_mes
      FROM pedido_pago WHERE fk_negocio_id = $1`,
     [negocioId]
   )
@@ -105,6 +125,14 @@ const getFinanceTransactions = (negocioId) =>
      FROM pedido_pago pp LEFT JOIN cliente c ON c.pk_id = pp.fk_cliente_id
      WHERE pp.fk_negocio_id = $1 ORDER BY pp.created_at DESC LIMIT 8`,
     [negocioId]
+  )
+
+const createExpense = (negocioId, { descripcion, categoria, monto, fecha }) =>
+  pool.query(
+    `INSERT INTO gasto (fk_negocio_id, descripcion, categoria, monto, fecha)
+     VALUES ($1, $2, $3, $4, COALESCE($5::date, CURRENT_DATE))
+     RETURNING pk_id, descripcion, categoria, monto, fecha, created_at`,
+    [negocioId, descripcion, categoria, monto, fecha || null]
   )
 
 const getBestSellingProducts = (negocioId) =>
@@ -152,6 +180,8 @@ const createProduct = (negocioId, { nombre, descripcion, precio, imagenUrl, stoc
 
 module.exports = {
   findBusinessByOwner,
+  getBusinessForAdmin,
+  updateBusiness,
   getMetrics,
   getProductCount,
   getWeeklySales,
@@ -160,6 +190,7 @@ module.exports = {
   getClients,
   getFinanceSummary,
   getFinanceTransactions,
+  createExpense,
   getBestSellingProducts,
   getInventoryProducts,
   getInventoryMetrics,
