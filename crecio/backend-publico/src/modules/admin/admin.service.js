@@ -113,6 +113,35 @@ const createProduct = async (clienteId, datos) => {
   return result.rows[0]
 }
 
+const updateProduct = async (clienteId, productoId, datos) => {
+  const negocioResult = await repository.findBusinessByOwner(clienteId)
+  if (negocioResult.rows.length === 0) throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
+
+  const { nombre, precio, stock } = datos
+  if (!nombre?.trim() || !Number.isFinite(Number(precio)) || Number(precio) < 0 || !Number.isInteger(Number(stock)) || Number(stock) < 0) {
+    throw { status: 400, message: 'Nombre, precio y stock son obligatorios y deben ser validos' }
+  }
+
+  const result = await repository.updateProduct(negocioResult.rows[0].pk_id, productoId, {
+    ...datos,
+    nombre: nombre.trim(),
+    precio: Number(precio),
+    stock: Number(stock),
+  })
+  if (result.rows.length === 0) throw { status: 404, message: 'Producto no encontrado' }
+  return result.rows[0]
+}
+
+const deleteProduct = async (clienteId, productoId) => {
+  const negocioResult = await repository.findBusinessByOwner(clienteId)
+  if (negocioResult.rows.length === 0) throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
+
+  const result = await repository.deleteProduct(negocioResult.rows[0].pk_id, productoId)
+  if (result.rows.length === 0) throw { status: 404, message: 'Producto no encontrado' }
+  return { id: productoId, eliminado: true }
+}
+
+
 const getVentas = async (clienteId) => {
   const negocioResult = await repository.findBusinessByOwner(clienteId)
   if (negocioResult.rows.length === 0) {
@@ -201,4 +230,4 @@ const generateMarketing = async (clienteId, { tipo = 'Promoción / Oferta', prom
   return { negocio: { id: negocio.pk_id, nombre: negocio.nombre }, contenido: completion.choices[0].message.content }
 }
 
-module.exports = { getResumen, getInventario, getTienda, updateTienda, createProduct, getVentas, getClientes, getFinanzas, createExpense, generateMarketing }
+module.exports = { getResumen, getInventario, getTienda, updateTienda, createProduct, updateProduct, deleteProduct, getVentas, getClientes, getFinanzas, createExpense, generateMarketing }

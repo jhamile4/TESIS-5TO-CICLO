@@ -45,3 +45,11 @@ export const crearProducto = (producto) => request('/admin/productos', {
   method: 'POST',
   body: JSON.stringify(producto),
 })
+export const actualizarProducto = (id, producto) => request(`/admin/productos/${id}`, {
+  method: 'PUT',
+  body: JSON.stringify(producto),
+})
+export const eliminarProducto = (id) => request(`/admin/productos/${id}`, {
+  method: 'DELETE',
+})
+

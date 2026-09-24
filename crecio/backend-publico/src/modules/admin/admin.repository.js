@@ -178,6 +178,24 @@ const createProduct = (negocioId, { nombre, descripcion, precio, imagenUrl, stoc
     [negocioId, nombre, descripcion || '', precio, imagenUrl || '', stock, categoria || 'General']
   )
 
+const updateProduct = (negocioId, productoId, { nombre, descripcion, precio, imagenUrl, stock, categoria }) =>
+  pool.query(
+    `UPDATE producto
+     SET nombre = $1, descripcion = $2, precio = $3, imagen_url = $4, stock = $5, categoria = $6
+     WHERE pk_id = $7 AND fk_negocio_id = $8 AND activo = TRUE
+     RETURNING pk_id, nombre, descripcion, precio, imagen_url, stock, categoria`,
+    [nombre, descripcion || '', precio, imagenUrl || '', stock, categoria || 'General', productoId, negocioId]
+  )
+
+const deleteProduct = (negocioId, productoId) =>
+  pool.query(
+    `UPDATE producto
+     SET activo = FALSE
+     WHERE pk_id = $1 AND fk_negocio_id = $2
+     RETURNING pk_id`,
+    [productoId, negocioId]
+  )
+
 module.exports = {
   findBusinessByOwner,
   getBusinessForAdmin,
@@ -195,4 +213,7 @@ module.exports = {
   getInventoryProducts,
   getInventoryMetrics,
   createProduct,
+  updateProduct,
+  deleteProduct,
 }
+

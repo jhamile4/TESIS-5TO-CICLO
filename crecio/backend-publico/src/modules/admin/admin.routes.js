@@ -1,6 +1,6 @@
 const express = require('express')
 const verifyToken = require('../../middleware/verifyToken')
-const { getResumen, getInventario, getTienda, updateTienda, createProduct, getVentas, getClientes, getFinanzas, createExpense, generateMarketing } = require('./admin.controller')
+const { getResumen, getInventario, getTienda, updateTienda, createProduct, updateProduct, deleteProduct, getVentas, getClientes, getFinanzas, createExpense, generateMarketing } = require('./admin.controller')
 
 const router = express.Router()
 
@@ -16,5 +16,8 @@ router.get('/finanzas', verifyToken, getFinanzas)
 router.post('/gastos', verifyToken, createExpense)
 router.post('/marketing/generar', verifyToken, generateMarketing)
 router.post('/productos', verifyToken, createProduct)
+router.put('/productos/:id', verifyToken, updateProduct)
+router.delete('/productos/:id', verifyToken, deleteProduct)
 
 module.exports = router
+

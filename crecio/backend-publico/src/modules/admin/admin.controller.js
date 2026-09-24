@@ -70,4 +70,23 @@ const createExpense = async (req, res, next) => {
   try { res.status(201).json(await adminService.createExpense(req.user.id, req.body)) } catch (error) { next(error) }
 }
 
-module.exports = { getResumen, getInventario, getTienda, updateTienda, createProduct, getVentas, getClientes, getFinanzas, createExpense, generateMarketing }
+const updateProduct = async (req, res, next) => {
+  try {
+    const producto = await adminService.updateProduct(req.user.id, req.params.id, req.body)
+    res.json(producto)
+  } catch (error) {
+    next(error)
+  }
+}
+
+const deleteProduct = async (req, res, next) => {
+  try {
+    const resultado = await adminService.deleteProduct(req.user.id, req.params.id)
+    res.json(resultado)
+  } catch (error) {
+    next(error)
+  }
+}
+
+module.exports = { getResumen, getInventario, getTienda, updateTienda, createProduct, updateProduct, deleteProduct, getVentas, getClientes, getFinanzas, createExpense, generateMarketing }
+

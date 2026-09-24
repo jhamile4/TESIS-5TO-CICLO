@@ -1,9 +1,130 @@
 import { useEffect, useState } from 'react'
-import { Bell, ChartNoAxesCombined, Package, Plus, Search, ShoppingBag } from 'lucide-react'
-import { crearProducto, getInventario } from '../services/apiAdmin'
-import { currency } from '../utils/formatters'
+import { getInventario } from '../services/apiAdmin'
 
-function ProductForm({ onClose, onCreated }) { const [form, setForm] = useState({ nombre: '', descripcion: '', precio: '', stock: '', categoria: '', imagenUrl: '' }); const [error, setError] = useState(''); const [saving, setSaving] = useState(false); const update = (key, value) => setForm({ ...form, [key]: value }); const submit = async (event) => { event.preventDefault(); setSaving(true); setError(''); try { await crearProducto(form); onCreated() } catch (err) { setError(err.message) } finally { setSaving(false) } }; return <div className="modal-backdrop" onClick={onClose}><form className="product-form" onSubmit={submit} onClick={(event) => event.stopPropagation()}><div className="card-title"><h3>Agregar producto</h3><button type="button" onClick={onClose}>Cerrar</button></div><label>Nombre<input required value={form.nombre} onChange={(event) => update('nombre', event.target.value)} /></label><label>Descripción<textarea value={form.descripcion} onChange={(event) => update('descripcion', event.target.value)} /></label><div className="form-row"><label>Precio<input required type="number" min="0" step="0.01" value={form.precio} onChange={(event) => update('precio', event.target.value)} /></label><label>Stock<input required type="number" min="0" step="1" value={form.stock} onChange={(event) => update('stock', event.target.value)} /></label></div><label>Categoría<input value={form.categoria} onChange={(event) => update('categoria', event.target.value)} /></label><label>URL de imagen<input type="url" value={form.imagenUrl} onChange={(event) => update('imagenUrl', event.target.value)} /></label>{error && <p className="form-error">{error}</p>}<button className="primary-button" disabled={saving}>{saving ? 'Guardando...' : 'Guardar producto'}</button></form></div> }
+import InventoryHeader from '../components/inventory/InventoryHeader'
+import InventoryMetrics from '../components/inventory/InventoryMetrics'
+import InventoryFilters from '../components/inventory/InventoryFilters'
+import InventoryCard from '../components/inventory/InventoryCard'
+import AddProductModal from '../components/inventory/AddProductModal'
+import EditProductModal from '../components/inventory/EditProductModal'
+import DeleteProductModal from '../components/inventory/DeleteProductModal'
 
-export default function InventoryPage() { const [data, setData] = useState(null); const [query, setQuery] = useState(''); const [category, setCategory] = useState('Todas'); const [error, setError] = useState(''); const [open, setOpen] = useState(false); const load = () => getInventario().then(setData).catch((err) => setError(err.message)); useEffect(() => { load() }, []); const products = data?.productos || []; const categories = ['Todas', ...new Set(products.map((product) => product.categoria || 'Sin categoría'))]; const filtered = products.filter((product) => (category === 'Todas' || product.categoria === category) && product.nombre.toLowerCase().includes(query.toLowerCase())); const metrics = data?.metricas || { totalProductos: 0, alertasStockBajo: 0, unidadesStock: 0, valorInventario: 0 }; return <section className="content inventory-content"><div className="welcome inventory-welcome"><div><h2>{data?.negocio?.nombre || 'Inventario'}</h2><p>Gestiona los productos de tu negocio</p></div><button className="add-product" onClick={() => setOpen(true)}><Plus size={17} />Agregar producto</button></div>{error && <div className="alert">{error}</div>}<div className="metrics"><Metric title="Total productos" value={metrics.totalProductos} icon={Package} /><Metric title="Alertas de stock bajo" value={metrics.alertasStockBajo} icon={Bell} /><Metric title="Unidades en stock" value={metrics.unidadesStock} icon={ShoppingBag} /><Metric title="Valor inventario" value={currency.format(metrics.valorInventario)} icon={ChartNoAxesCombined} /></div><div className="inventory-filters"><label className="search-box"><Search size={19} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar productos..." /></label><div className="category-tabs">{categories.map((item) => <button key={item} onClick={() => setCategory(item)} className={category === item ? 'selected' : ''}>{item}</button>)}</div></div><div className="product-grid">{filtered.map((product) => <article className="inventory-product" key={product.pk_id}><div className="product-image">{product.imagen_url ? <img src={product.imagen_url} alt={product.nombre} /> : <Package size={45} />}</div><div className="inventory-details"><div className="product-line"><div><b>{product.nombre}</b><small>{product.categoria || 'Sin categoría'}</small></div><strong>{currency.format(product.precio)}</strong></div><div className="stock-line"><span>{product.stock} en stock</span><span>Disponible</span></div></div></article>)}</div>{!filtered.length && <p className="empty">No hay productos que coincidan.</p>}{open && <ProductForm onClose={() => setOpen(false)} onCreated={() => { setOpen(false); load() }} />}</section> }
-function Metric({ title, value, icon: Icon }) { return <article className="metric-card"><div><p>{title}</p><h3>{value}</h3><span>Datos reales</span></div><div className="metric-icon"><Icon size={21} /></div></article> }
+export default function InventoryPage() {
+  const [data, setData] = useState(null)
+  const [query, setQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('Todas')
+  const [error, setError] = useState('')
+
+  // Modals state
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [editingProduct, setEditingProduct] = useState(null)
+  const [deletingProduct, setDeletingProduct] = useState(null)
+
+  const loadData = () => {
+    getInventario()
+      .then(setData)
+      .catch((err) => setError(err.message))
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const products = data?.productos || []
+  const metrics = data?.metricas || {
+    totalProductos: 0,
+    alertasStockBajo: 0,
+    unidadesStock: 0,
+    valorInventario: 0
+  }
+
+  // Calculate dynamic category list with badges
+  const categoriesMap = products.reduce((acc, p) => {
+    const cat = p.categoria || 'General'
+    acc[cat] = (acc[cat] || 0) + 1
+    return acc
+  }, {})
+
+  const categoriesWithCount = [
+    { name: 'Todas', count: products.length },
+    ...Object.entries(categoriesMap).map(([name, count]) => ({ name, count }))
+  ]
+
+  // Filter products by search query and category
+  const filteredProducts = products.filter((p) => {
+    const matchesCat = selectedCategory === 'Todas' || p.categoria === selectedCategory
+    const matchesSearch = p.nombre.toLowerCase().includes(query.toLowerCase())
+    return matchesCat && matchesSearch
+  })
+
+  return (
+    <section className="inventory-page-wrapper">
+      <InventoryHeader onAddClick={() => setShowAddModal(true)} />
+
+      {error && <div className="toast-error">{error}</div>}
+
+      <InventoryMetrics metrics={metrics} />
+
+      <InventoryFilters
+        query={query}
+        setQuery={setQuery}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        categoriesWithCount={categoriesWithCount}
+      />
+
+      <div className="inventory-cards-grid">
+        {filteredProducts.map((product) => (
+          <InventoryCard
+            key={product.pk_id}
+            product={product}
+            onClick={() => setEditingProduct(product)}
+          />
+        ))}
+      </div>
+
+      {filteredProducts.length === 0 && (
+        <div className="empty-inventory-box">
+          <p>No se encontraron productos que coincidan con la búsqueda.</p>
+        </div>
+      )}
+
+      {/* MODALS */}
+      {showAddModal && (
+        <AddProductModal
+          onClose={() => setShowAddModal(false)}
+          onCreated={() => {
+            setShowAddModal(false)
+            loadData()
+          }}
+        />
+      )}
+
+      {editingProduct && (
+        <EditProductModal
+          product={editingProduct}
+          onClose={() => setEditingProduct(null)}
+          onUpdated={() => {
+            setEditingProduct(null)
+            loadData()
+          }}
+          onDeleteClick={(prod) => {
+            setEditingProduct(null)
+            setDeletingProduct(prod)
+          }}
+        />
+      )}
+
+      {deletingProduct && (
+        <DeleteProductModal
+          product={deletingProduct}
+          onClose={() => setDeletingProduct(null)}
+          onDeleted={() => {
+            setDeletingProduct(null)
+            loadData()
+          }}
+        />
+      )}
+    </section>
+  )
+}
