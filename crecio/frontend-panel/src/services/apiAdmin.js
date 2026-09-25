@@ -1,4 +1,4 @@
-import { API_URL as BASE_URL } from '../config/env'
+import { API_URL as BASE_URL, PUBLIC_URL } from '../config/env'
 
 const request = async (path, options = {}) => {
   const token = localStorage.getItem('crecio_admin_token')
@@ -7,12 +7,17 @@ const request = async (path, options = {}) => {
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(token && token !== 'null' && token !== 'undefined' ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
   })
   const data = await response.json()
-  if (!response.ok) throw new Error(data.message || 'No se pudo procesar la solicitud')
+  if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem('crecio_admin_token')
+    }
+    throw new Error(data.message || 'No se pudo procesar la solicitud')
+  }
   return data
 }
 
@@ -26,6 +31,9 @@ export const iniciarSesion = async (email, password) => {
   const data = await response.json()
   if (!response.ok) throw new Error(data.message || 'No se pudo iniciar sesión')
   if (!data.roles?.esEmprendedor) throw new Error('Esta cuenta no tiene un negocio registrado')
+  if (data.token) {
+    localStorage.setItem('crecio_admin_token', data.token)
+  }
   return data
 }
 
@@ -52,4 +60,3 @@ export const actualizarProducto = (id, producto) => request(`/admin/productos/${
 export const eliminarProducto = (id) => request(`/admin/productos/${id}`, {
   method: 'DELETE',
 })
-

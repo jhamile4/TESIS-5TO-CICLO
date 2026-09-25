@@ -2,10 +2,10 @@ import { Plus, ArrowDown, Wallet, Percent } from 'lucide-react'
 import { currency } from '../../utils/formatters'
 
 export default function FinanceMetrics({ summary, isMonth }) {
-  const income = isMonth ? (summary.ingresos_mes || 67800) : (summary.ingresos_hoy || 1500)
-  const expenses = isMonth ? (summary.gastos_mes || 23400) : (summary.gastos_hoy || 450)
+  const income = isMonth ? (summary.ingresos_mes ?? 0) : (summary.ingresos_hoy ?? 0)
+  const expenses = isMonth ? (summary.gastos_mes ?? 0) : (summary.gastos_hoy ?? 0)
   const netProfit = Number(income) - Number(expenses)
-  const profitMargin = income > 0 ? ((netProfit / income) * 100).toFixed(1) : '65.5'
+  const profitMargin = income > 0 ? ((netProfit / income) * 100).toFixed(1) : '0.0'
 
   return (
     <div className="finance-metrics-grid">

@@ -76,11 +76,11 @@ export default function Sidebar({ business }) {
               {business?.logoUrl ? (
                 <img src={business.logoUrl} alt="Logo" />
               ) : (
-                (business?.nombre || user?.nombre || 'B').charAt(0).toUpperCase()
+                (business?.nombre || user?.negocioNombre || user?.nombre || 'M').charAt(0).toUpperCase()
               )}
             </div>
             <div className="business-info">
-              <b>{business?.nombre || user?.nombre || 'Barbados Admin'}</b>
+              <b>{business?.nombre || user?.negocioNombre || user?.nombre || 'Mi Negocio'}</b>
               <span>{user?.rol || 'Administrador'}</span>
             </div>
             <button className="business-settings" title="Configuración">

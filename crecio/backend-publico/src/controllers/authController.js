@@ -10,8 +10,13 @@ const clearPanelCookie = (res) => {
   res.setHeader('Set-Cookie', `panel_token=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0${secure}`)
 }
 
-const getSession = (req, res) => {
-  res.json({ cliente: { id: req.user.id, email: req.user.email } })
+const getSession = async (req, res, next) => {
+  try {
+    const cliente = await authService.getSessionData(req.user.id)
+    res.json({ cliente: cliente || { id: req.user.id, email: req.user.email } })
+  } catch (err) {
+    next(err)
+  }
 }
 
 const logout = (req, res) => {

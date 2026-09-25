@@ -1,8 +1,11 @@
 const jwt = require('jsonwebtoken')
 
 const verifyToken = (req, res, next) => {
+  const authHeader = req.headers['authorization']?.split(' ')[1]
+  const validHeaderToken = authHeader && authHeader !== 'null' && authHeader !== 'undefined' ? authHeader : null
   const cookieToken = req.headers.cookie?.split(';').map((cookie) => cookie.trim()).find((cookie) => cookie.startsWith('panel_token='))?.split('=')[1]
-  const token = req.headers['authorization']?.split(' ')[1] || cookieToken
+  const token = validHeaderToken || cookieToken
+
   if (!token)
     return res.status(401).json({ message: 'Token requerido' })
 

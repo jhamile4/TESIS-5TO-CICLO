@@ -40,6 +40,7 @@ const login = async (email, password) => {
 
   const negocioResult = await negocioModel.findByClienteId(cliente.pk_id)
   const tieneNegocio  = negocioResult.rows.length > 0
+  const negocio       = tieneNegocio ? negocioResult.rows[0] : null
 
   const token = jwt.sign(
     { id: cliente.pk_id, email: cliente.email },
@@ -49,7 +50,12 @@ const login = async (email, password) => {
 
   return {
     token,
-    cliente: { id: cliente.pk_id, nombre: cliente.nombre, email: cliente.email },
+    cliente: {
+      id: cliente.pk_id,
+      nombre: cliente.nombre,
+      email: cliente.email,
+      negocioNombre: negocio?.nombre || null
+    },
     roles: { esEmprendedor: tieneNegocio, esComprador: true, ambos: tieneNegocio },
   }
 }
@@ -97,9 +103,11 @@ const registroCompleto = async (datos) => {
 
     await client.query('COMMIT')
 
-    enviarCodigoVerificacion(email, codigo).catch(err =>
-      console.error('Error enviando email:', err.message)
-    )
+    try {
+      await enviarCodigoVerificacion(email, codigo)
+    } catch (err) {
+      console.error('Error enviando email de verificación:', err.message)
+    }
 
     return { message: 'Registro exitoso. Revisa tu correo.' }
   } catch (error) {
@@ -154,4 +162,18 @@ const reenviarCodigo = async (email) => {
   return { message: 'Código reenviado' }
 }
 
-module.exports = { login, register, registroCompleto, registroComprador, verificarEmail, reenviarCodigo }
+const getSessionData = async (clienteId) => {
+  const clienteResult = await clienteModel.findById(clienteId)
+  if (clienteResult.rows.length === 0) return null
+  const cliente = clienteResult.rows[0]
+  const negocioResult = await negocioModel.findByClienteId(clienteId)
+  const negocio = negocioResult.rows.length > 0 ? negocioResult.rows[0] : null
+  return {
+    id: cliente.pk_id,
+    nombre: cliente.nombre,
+    email: cliente.email,
+    negocioNombre: negocio?.nombre || null
+  }
+}
+
+module.exports = { login, register, registroCompleto, registroComprador, verificarEmail, reenviarCodigo, getSessionData }

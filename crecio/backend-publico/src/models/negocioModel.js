@@ -34,7 +34,7 @@ const create = (dbClient, nombre, categoria, descripcion, direccion, whatsapp, l
     `INSERT INTO negocio
        (nombre, categoria, descripcion, logo_url, direccion, distrito, horario, telefono,
         whatsapp, rating, total_resenas, verificado, activo, latitud, longitud, fk_cliente_id)
-     VALUES ($1,$2,$3,'',$4,'','Por confirmar',$5,$5,0,0,FALSE,FALSE,$6,$7,$8)`,
+     VALUES ($1,$2,$3,'',$4,'','Por confirmar',$5,$5,0,0,TRUE,TRUE,$6,$7,$8)`,
     [nombre, categoria, descripcion || '', direccion || '', whatsapp, latitud, longitud, clienteId]
   )
 

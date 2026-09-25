@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import PanelLayout from './components/PanelLayout'
+import ErrorBoundary from './components/common/ErrorBoundary'
 import DashboardPage from './pages/DashboardPage'
 import InventoryPage from './pages/InventoryPage'
 import SalesPage from './pages/SalesPage'
@@ -10,25 +11,23 @@ import MarketingPage from './pages/MarketingPage'
 import FinancePage from './pages/FinancePage'
 import StorePage from './pages/StorePage'
 
-function ComingSoon({ title }) {
-  return <section className="content"><div className="card"><h2>{title}</h2><p className="muted">Este módulo está preparado para la siguiente fase del panel.</p></div></section>
-}
-
 export default function App() {
-  return <AuthProvider>
-    <Routes>
-      <Route element={<ProtectedRoute />}>
-        <Route element={<PanelLayout />}>
-          <Route index element={<DashboardPage />} />
-          <Route path="inventario" element={<InventoryPage />} />
-          <Route path="ventas" element={<SalesPage />} />
-          <Route path="clientes" element={<ClientsPage />} />
-          <Route path="marketing" element={<MarketingPage />} />
-          <Route path="finanzas" element={<FinancePage />} />
-          <Route path="tienda" element={<StorePage />} />
+  return (
+    <AuthProvider>
+      <Routes>
+        <Route element={<ProtectedRoute />}>
+          <Route element={<PanelLayout />}>
+            <Route index element={<ErrorBoundary><DashboardPage /></ErrorBoundary>} />
+            <Route path="inventario" element={<ErrorBoundary><InventoryPage /></ErrorBoundary>} />
+            <Route path="ventas" element={<ErrorBoundary><SalesPage /></ErrorBoundary>} />
+            <Route path="clientes" element={<ErrorBoundary><ClientsPage /></ErrorBoundary>} />
+            <Route path="marketing" element={<ErrorBoundary><MarketingPage /></ErrorBoundary>} />
+            <Route path="finanzas" element={<ErrorBoundary><FinancePage /></ErrorBoundary>} />
+            <Route path="tienda" element={<ErrorBoundary><StorePage /></ErrorBoundary>} />
+          </Route>
         </Route>
-      </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  </AuthProvider>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AuthProvider>
+  )
 }

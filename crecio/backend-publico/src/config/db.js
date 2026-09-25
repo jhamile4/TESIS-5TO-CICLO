@@ -10,6 +10,10 @@ const pool = new Pool({
   ssl:      { rejectUnauthorized: false },
 })
 
+pool.on('error', (err) => {
+  console.error('⚠️ Error en cliente inactivo de PostgreSQL:', err.message)
+})
+
 pool.connect()
   .then(() => console.log('Conectado a PostgreSQL - Supabase'))
   .catch(err => console.error('Error conectando:', err.message))

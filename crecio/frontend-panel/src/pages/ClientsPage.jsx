@@ -1,7 +1,149 @@
 import { useEffect, useState } from 'react'
-import { CircleDollarSign, Search, UserPlus, Users } from 'lucide-react'
+import { DollarSign, Search, Users, UserCheck, ShoppingBag, RefreshCw } from 'lucide-react'
 import { getClientes } from '../services/apiAdmin'
 import { currency } from '../utils/formatters'
 
-export default function ClientsPage() { const [data, setData] = useState(null); const [query, setQuery] = useState(''); const [error, setError] = useState(''); const load = () => getClientes().then(setData).catch((err) => setError(err.message)); useEffect(() => { load() }, []); const clients = data?.clientes || []; const filtered = clients.filter((client) => `${client.nombre} ${client.email}`.toLowerCase().includes(query.toLowerCase())); const spent = clients.reduce((sum, client) => sum + client.total_gastado, 0); const active = clients.filter((client) => client.activo).length; return <section className="content clients-content"><div className="clients-heading"><div><h2>Clientes</h2><p>Gestiona la base de clientes de {data?.negocio?.nombre || 'tu negocio'}</p></div><button className="refresh-sales" onClick={load}><UserPlus size={15} />Actualizar clientes</button></div>{error && <div className="alert">{error}</div>}<div className="client-metrics"><ClientMetric label="Total clientes" value={clients.length} tone="green" /><ClientMetric label="Nuevos este mes" value={`+${clients.filter((client) => client.pedidos_mes > 0).length}`} tone="purple" /><ClientMetric label="Activos" value={active} tone="mint" /><ClientMetric label="Compra promedio" value={currency.format(clients.length ? spent / clients.length : 0)} tone="blue" /></div><label className="client-search"><Search size={17} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar clientes por nombre o email..." /></label><div className="client-grid">{filtered.map((client) => <article className="client-card" key={client.pk_id}><div className="client-header"><div className="client-avatar">{client.nombre?.charAt(0)?.toUpperCase() || '?'}</div><div><strong>{client.nombre}</strong><small>{client.email}</small></div></div><div className="client-stats"><div><small>Órdenes</small><b>{client.pedidos}</b></div><div><small>Gastado</small><b>{currency.format(client.total_gastado)}</b></div></div><div className="client-footer"><small>Última: {new Date(client.ultima_compra).toLocaleDateString('es-PE')}</small><span className={client.activo ? 'client-active' : 'client-inactive'}>{client.activo ? 'activo' : 'inactivo'}</span></div></article>)}</div>{!filtered.length && <p className="empty">No hay clientes que coincidan.</p>}</section> }
-function ClientMetric({ label, value, tone }) { return <article className={`client-metric ${tone}`}><div className="client-metric-icon">{tone === 'blue' ? <CircleDollarSign size={16} /> : <Users size={16} />}</div><p>{label}</p><h3>{value}</h3></article> }
+export default function ClientsPage() {
+  const [data, setData] = useState(null)
+  const [query, setQuery] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const loadData = () => {
+    setLoading(true)
+    getClientes()
+      .then((res) => {
+        setData(res)
+        setError('')
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const clients = data?.clientes || []
+  const filtered = clients.filter((client) =>
+    `${client.nombre || ''} ${client.email || ''}`.toLowerCase().includes(query.toLowerCase())
+  )
+
+  const totalSpent = clients.reduce((sum, client) => sum + Number(client.total_gastado || 0), 0)
+  const activeCount = clients.filter((client) => client.activo).length
+  const avgOrder = clients.length ? totalSpent / clients.length : 0
+
+  return (
+    <section className="clients-page-wrapper">
+      {/* Header */}
+      <div className="clients-heading-bar">
+        <div>
+          <h2>Gestión de Clientes</h2>
+          <p>Base de clientes de {data?.negocio?.nombre || 'tu negocio'}</p>
+        </div>
+        <button className="btn-refresh-clients" onClick={loadData} disabled={loading}>
+          <RefreshCw size={14} className={loading ? 'spin-icon' : ''} />
+          {loading ? 'Cargando...' : 'Actualizar'}
+        </button>
+      </div>
+
+      {error && <div className="toast-error">{error}</div>}
+
+      {/* Metrics Row */}
+      <div className="client-metrics-grid">
+        <article className="client-metric-card green">
+          <div className="metric-icon-box">
+            <Users size={18} />
+          </div>
+          <div>
+            <span className="metric-label">Total Clientes</span>
+            <h3 className="metric-val">{clients.length}</h3>
+          </div>
+        </article>
+
+        <article className="client-metric-card purple">
+          <div className="metric-icon-box">
+            <ShoppingBag size={18} />
+          </div>
+          <div>
+            <span className="metric-label">Nuevos este mes</span>
+            <h3 className="metric-val">+{clients.filter((c) => c.pedidos_mes > 0).length}</h3>
+          </div>
+        </article>
+
+        <article className="client-metric-card mint">
+          <div className="metric-icon-box">
+            <UserCheck size={18} />
+          </div>
+          <div>
+            <span className="metric-label">Clientes Activos</span>
+            <h3 className="metric-val">{activeCount}</h3>
+          </div>
+        </article>
+
+        <article className="client-metric-card blue">
+          <div className="metric-icon-box">
+            <DollarSign size={18} />
+          </div>
+          <div>
+            <span className="metric-label">Compra Promedio</span>
+            <h3 className="metric-val">{currency.format(avgOrder)}</h3>
+          </div>
+        </article>
+      </div>
+
+      {/* Search Input */}
+      <div className="client-search-bar">
+        <Search size={16} className="search-icon" />
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Buscar clientes por nombre o correo electrónico..."
+        />
+      </div>
+
+      {/* Clients Grid */}
+      <div className="clients-card-grid">
+        {filtered.map((client) => {
+          const firstChar = client.nombre?.charAt(0)?.toUpperCase() || 'C'
+          return (
+            <article className="client-item-card" key={client.pk_id}>
+              <div className="client-card-header">
+                <div className="client-avatar-badge">{firstChar}</div>
+                <div className="client-info-main">
+                  <strong>{client.nombre}</strong>
+                  <small>{client.email}</small>
+                </div>
+              </div>
+
+              <div className="client-stats-row">
+                <div className="stat-col">
+                  <small>Pedidos</small>
+                  <b>{client.pedidos || 0}</b>
+                </div>
+                <div className="stat-col">
+                  <small>Total Gastado</small>
+                  <b>{currency.format(Number(client.total_gastado || 0))}</b>
+                </div>
+              </div>
+
+              <div className="client-card-footer">
+                <small>Última compra: {new Date(client.ultima_compra || Date.now()).toLocaleDateString('es-PE')}</small>
+                <span className={`client-status-tag ${client.activo ? 'active' : 'inactive'}`}>
+                  {client.activo ? 'Activo' : 'Inactivo'}
+                </span>
+              </div>
+            </article>
+          )
+        })}
+      </div>
+
+      {filtered.length === 0 && (
+        <div className="empty-clients-box">
+          <p>No se encontraron clientes que coincidan con el término buscado.</p>
+        </div>
+      )}
+    </section>
+  )
+}
