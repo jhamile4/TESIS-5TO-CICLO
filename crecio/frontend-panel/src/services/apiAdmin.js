@@ -62,6 +62,24 @@ export const actualizarProducto = (id, producto) => request(`/admin/productos/${
   method: 'PUT',
   body: JSON.stringify(producto),
 })
+export const generarImagenProducto = (payload) => request('/admin/productos/generar-imagen', {
+  method: 'POST',
+  body: JSON.stringify(payload),
+})
 export const eliminarProducto = (id) => request(`/admin/productos/${id}`, {
   method: 'DELETE',
+})
+export const getPublicacionesMarketing = (estado) => request(`/admin/marketing/publicaciones${estado ? `?estado=${estado}` : ''}`)
+export const guardarPublicacionMarketing = (postData) => request('/admin/marketing/publicaciones', {
+  method: 'POST',
+  body: JSON.stringify(postData),
+})
+export const publicarDirectoMarketing = (postData) => request('/admin/marketing/publicar-directo', {
+  method: 'POST',
+  body: JSON.stringify(postData),
+})
+export const getRedesSociales = () => request('/admin/marketing/redes')
+export const conectarRedSocial = (cuentaData) => request('/admin/marketing/redes', {
+  method: 'POST',
+  body: JSON.stringify(cuentaData),
 })

@@ -97,5 +97,82 @@ const deleteProduct = async (req, res, next) => {
   }
 }
 
-module.exports = { getResumen, getInventario, getTienda, updateTienda, createProduct, updateProduct, deleteProduct, getVentas, createSale, getClientes, getFinanzas, createExpense, generateMarketing }
+const getMarketingPosts = async (req, res, next) => {
+  try {
+    const posts = await adminService.getMarketingPosts(req.user.id, req.query.estado)
+    res.json(posts)
+  } catch (error) {
+    next(error)
+  }
+}
+
+const saveMarketingPost = async (req, res, next) => {
+  try {
+    const post = await adminService.saveMarketingPost(req.user.id, req.body)
+    res.status(201).json(post)
+  } catch (error) {
+    next(error)
+  }
+}
+
+const publishDirectlyMarketing = async (req, res, next) => {
+  try {
+    const resultado = await adminService.publishDirectlyMarketing(req.user.id, req.body)
+    res.json(resultado)
+  } catch (error) {
+    next(error)
+  }
+}
+
+const getSocialAccounts = async (req, res, next) => {
+  try {
+    const cuentas = await adminService.getSocialAccounts(req.user.id)
+    res.json(cuentas)
+  } catch (error) {
+    next(error)
+  }
+}
+
+const connectSocialAccount = async (req, res, next) => {
+  try {
+    const cuenta = await adminService.connectSocialAccount(req.user.id, req.body)
+    res.json(cuenta)
+  } catch (error) {
+    next(error)
+  }
+}
+
+const generateProductImage = async (req, res, next) => {
+  try {
+    const resultado = await adminService.generateProductImage(req.user.id, req.body)
+    res.json(resultado)
+  } catch (error) {
+    next(error)
+  }
+}
+
+
+module.exports = {
+  getResumen,
+  getInventario,
+  getTienda,
+  updateTienda,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  getVentas,
+  createSale,
+  getClientes,
+  getFinanzas,
+  createExpense,
+  generateMarketing,
+  generateProductImage,
+  getMarketingPosts,
+  saveMarketingPost,
+  publishDirectlyMarketing,
+  getSocialAccounts,
+  connectSocialAccount,
+}
+
+
 

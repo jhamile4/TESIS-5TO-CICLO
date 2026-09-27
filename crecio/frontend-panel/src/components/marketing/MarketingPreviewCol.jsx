@@ -1,4 +1,5 @@
-import { Video as VideoIcon, Play, Copy, Check, RotateCw, Send, CalendarDays, Clock } from 'lucide-react'
+import { useState } from 'react'
+import { Video as VideoIcon, Play, Copy, Check, RotateCw, Send, CalendarDays, Clock, Film, Music, Sparkles } from 'lucide-react'
 import { InstagramIcon, FacebookIcon } from '../common/SocialIcons'
 
 export default function MarketingPreviewCol({
@@ -8,6 +9,7 @@ export default function MarketingPreviewCol({
   business,
   uploadedImage,
   content,
+  guionVideo,
   copied,
   copyText,
   generate,
@@ -18,14 +20,19 @@ export default function MarketingPreviewCol({
   scheduleTime,
   setScheduleTime,
   activeAccountsList,
-  handlePublishOrSchedule
+  handlePublishOrSchedule,
+  publishing
 }) {
+  const [viewTab, setViewTab] = useState('post') // 'post' o 'guion'
+  const isVideo = contentType === 'Video' || contentType === 'Reels / Short'
+  const isStory = contentType === 'Story'
+
   return (
     <div className="marketing-col-right">
       {/* Vista Previa del Post */}
       <div className="m-card">
         <div className="preview-top-header">
-          <h3>Vista Previa del Post</h3>
+          <h3>Vista Previa del Contenido</h3>
           <div className="social-icons-preview">
             <InstagramIcon size={14} className="icon-ig" />
             <FacebookIcon size={14} className="icon-fb" />
@@ -45,59 +52,109 @@ export default function MarketingPreviewCol({
           ))}
         </div>
 
-        {/* Real Post Card Simulation */}
-        <div className="post-mockup-card">
-          <div className="mockup-header">
-            <div className="mockup-avatar">
-              {business?.logoUrl ? <img src={business.logoUrl} alt="Logo" /> : 'MT'}
+        {isVideo && (
+          <div className="video-subtabs-row">
+            <button
+              className={`subtab-btn ${viewTab === 'post' ? 'active' : ''}`}
+              onClick={() => setViewTab('post')}
+            >
+              <Film size={13} /> Vista previa Reel
+            </button>
+            <button
+              className={`subtab-btn ${viewTab === 'guion' ? 'active' : ''}`}
+              onClick={() => setViewTab('guion')}
+            >
+              <Sparkles size={13} /> Guión de Producción IA
+            </button>
+          </div>
+        )}
+
+        {/* MOCKUP VISUAL */}
+        {viewTab === 'post' || !isVideo ? (
+          <div className={`post-mockup-card ${isStory ? 'story-format-vertical' : ''}`}>
+            <div className="mockup-header">
+              <div className="mockup-avatar">
+                {business?.logoUrl ? <img src={business.logoUrl} alt="Logo" /> : 'MT'}
+              </div>
+              <div>
+                <strong>{business?.nombre || 'Mi Tienda Crecio'}</strong>
+                <small>Patrocinado · Ahora</small>
+              </div>
             </div>
-            <div>
-              <strong>{business?.nombre || 'Mi Tienda Crecio'}</strong>
-              <small>Patrocinado · Ahora</small>
+
+            <div className="mockup-media-container">
+              {uploadedImage ? (
+                <img src={uploadedImage} alt="Post media" className="mockup-img" />
+              ) : isVideo ? (
+                <div className="mockup-video-placeholder">
+                  <div className="video-tag-badge">
+                    <VideoIcon size={12} /> REEL / SHORT GENERADO POR IA
+                  </div>
+                  <div className="play-button-overlay">
+                    <div className="audio-wave-pulse"></div>
+                    <Play size={26} fill="#fff" />
+                    <span>Reproducir Reel · 0:30</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="mockup-default-graphic">
+                  <div className="flash-sale-banner">
+                    <span className="star-decoration">★</span>
+                    <h2>PROMO IA</h2>
+                    <span className="percent-badge">%</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="mockup-caption-area">
+              <p className="editable-caption">
+                {content || (
+                  isVideo
+                    ? '📹 Reel generado por IA listo para publicar. #reels #viral'
+                    : '🎉 ¡OFERTA ESPECIAL! 20% OFF en todos nuestros productos. ¡Compra ahora!'
+                )}
+              </p>
+              <small className="edit-hint">Contenido 100% generado y editable</small>
             </div>
           </div>
+        ) : (
+          /* VISTA DE GUIÓN DE PRODUCCIÓN DE VIDEO IA */
+          <div className="guion-ia-container">
+            <div className="guion-header-badge">
+              <Film size={16} />
+              <h4>Guión y Producción de Reel por IA</h4>
+            </div>
 
-          <div className="mockup-media-container">
-            {uploadedImage ? (
-              <img src={uploadedImage} alt="Post media" className="mockup-img" />
-            ) : contentType === 'Video' ? (
-              <div className="mockup-video-placeholder">
-                <div className="video-tag-badge">
-                  <VideoIcon size={12} /> VIDEO
-                </div>
-                <div className="play-button-overlay">
-                  <Play size={24} fill="#fff" />
-                  <span>Video · 0:60</span>
-                </div>
-              </div>
-            ) : (
-              <div className="mockup-default-graphic">
-                <div className="flash-sale-banner">
-                  <span className="star-decoration">★</span>
-                  <h2>FLASH SALE</h2>
-                  <span className="percent-badge">%</span>
-                </div>
+            <div className="guion-step-card hook-step">
+              <div className="step-time">0 - 3 Seg (Gancho de Impacto)</div>
+              <p>{guionVideo?.gancho || '🔥 ¡Atención! Mira cómo este producto cambia por completo tu día a día.'}</p>
+            </div>
+
+            <div className="guion-step-card body-step">
+              <div className="step-time">3 - 15 Seg (Demostración / Valor)</div>
+              <p>{guionVideo?.desarrollo || 'Muestra de cerca los detalles, acabados y textura del producto en alta definición.'}</p>
+            </div>
+
+            <div className="guion-step-card cta-step">
+              <div className="step-time">15 - 30 Seg (Cierre / Llamada a Acción)</div>
+              <p>{guionVideo?.cta || '🛒 Haz clic en el enlace del perfil y obtén tu 20% OFF con envío gratis hoy.'}</p>
+            </div>
+
+            {guionVideo?.audio_sugerido && (
+              <div className="guion-audio-badge">
+                <Music size={14} />
+                <span>Audio recomendado: <strong>{guionVideo.audio_sugerido}</strong></span>
               </div>
             )}
           </div>
-
-          <div className="mockup-caption-area">
-            <p className="editable-caption">
-              {content || (
-                contentType === 'Video'
-                  ? '📹 Mira cómo nuestro producto transforma tu día a día. ¡Dale play! Guión generado por IA. #video #viral'
-                  : '🎉 ¡OFERTA ESPECIAL! 20% OFF en todos nuestros productos. ¡Compra ahora! #Descuento #Venta #negocio #emprendimiento #calidad'
-              )}
-            </p>
-            <small className="edit-hint">Clic en el texto para editar</small>
-          </div>
-        </div>
+        )}
 
         {/* Action buttons below mockup */}
         <div className="post-actions-row">
           <button className="copy-text-btn" onClick={copyText}>
             {copied ? <Check size={14} /> : <Copy size={14} />}
-            {copied ? 'Texto copiado' : 'Copiar texto'}
+            {copied ? 'Texto copiado' : 'Copiar texto completo'}
           </button>
           <button className="refresh-btn" onClick={generate} title="Regenerar con IA">
             <RotateCw size={15} />
@@ -107,7 +164,7 @@ export default function MarketingPreviewCol({
 
       {/* ¿Cuándo publicar? */}
       <div className="m-card">
-        <h3>¿Cuándo publicar?</h3>
+        <h3>¿Cuándo publicar en Redes Sociales?</h3>
 
         <div className="publish-mode-toggle">
           <button
@@ -148,13 +205,13 @@ export default function MarketingPreviewCol({
               </div>
             </div>
             <small className="recommendation-text">
-              <Clock size={12} /> Horarios recomendados basados en tus plataformas seleccionadas.
+              <Clock size={12} /> Horarios de máxima interacción según tus redes conectadas.
             </small>
           </div>
         )}
 
         <div className="target-platforms-row">
-          <span>Se publicará en:</span>
+          <span>Se enviará a:</span>
           {activeAccountsList.length > 0 ? (
             activeAccountsList.map((acc) => (
               <span key={acc.id} className="platform-pill-badge">
@@ -162,22 +219,24 @@ export default function MarketingPreviewCol({
               </span>
             ))
           ) : (
-            <small className="no-platforms-warn">Ninguna red seleccionada</small>
+            <small className="no-platforms-warn">Selecciona al menos una red</small>
           )}
         </div>
 
         <button
           className="main-publish-cta-btn"
-          disabled={activeAccountsList.length === 0}
+          disabled={activeAccountsList.length === 0 || publishing}
           onClick={handlePublishOrSchedule}
         >
-          {publishMode === 'ahora' ? (
+          {publishing ? (
+            'Procesando con la API...'
+          ) : publishMode === 'ahora' ? (
             <>
-              <Send size={16} /> Publicar Ahora
+              <Send size={16} /> Publicar Ahora Directamente
             </>
           ) : (
             <>
-              <CalendarDays size={16} /> Programar Publicación
+              <CalendarDays size={16} /> Programar Publicación Automática
             </>
           )}
         </button>
@@ -185,3 +244,4 @@ export default function MarketingPreviewCol({
     </div>
   )
 }
+

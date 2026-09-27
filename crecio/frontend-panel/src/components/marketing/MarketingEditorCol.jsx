@@ -1,4 +1,11 @@
-import { Sparkles, ImagePlus, WandSparkles, Check } from 'lucide-react'
+import { Sparkles, ImagePlus, WandSparkles, Check, RefreshCw, Palette } from 'lucide-react'
+
+const quickPrompts = [
+  '🔥 Oferta relámpago con 20% de descuento',
+  '🛍️ Presentación de nuevo producto estrella',
+  '🎬 Reel tutorial de 3 formas de usar el producto',
+  '⭐ Testimonio real de un cliente satisfecho'
+]
 
 export default function MarketingEditorCol({
   templates,
@@ -8,6 +15,8 @@ export default function MarketingEditorCol({
   setPrompt,
   uploadedImage,
   handleImageUpload,
+  generateImageIa,
+  loadingImage,
   tones,
   tono,
   setTono,
@@ -44,6 +53,22 @@ export default function MarketingEditorCol({
           <h3>Prompt de IA</h3>
         </div>
 
+        <div className="quick-prompts-row">
+          <small>Sugerencias rápidas:</small>
+          <div className="quick-pills">
+            {quickPrompts.map((qp, idx) => (
+              <button
+                key={idx}
+                type="button"
+                className="quick-pill-btn"
+                onClick={() => setPrompt(qp)}
+              >
+                {qp}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="prompt-area-wrap">
           <textarea
             value={prompt}
@@ -54,11 +79,23 @@ export default function MarketingEditorCol({
           <span className="prompt-counter">{prompt.length}/500</span>
         </div>
 
-        <label className="image-upload-dashed">
-          <ImagePlus size={16} />
-          <span>{uploadedImage ? 'Cambiar imagen subida' : 'Subir imagen propia (opcional)'}</span>
-          <input type="file" accept="image/*" onChange={handleImageUpload} />
-        </label>
+        <div className="image-action-box">
+          <label className="image-upload-dashed">
+            <ImagePlus size={16} />
+            <span>{uploadedImage ? 'Cambiar imagen subida' : 'Subir imagen propia (opcional)'}</span>
+            <input type="file" accept="image/*" onChange={handleImageUpload} />
+          </label>
+
+          <button
+            type="button"
+            className="ai-gen-img-btn"
+            disabled={loadingImage || loading}
+            onClick={generateImageIa}
+          >
+            {loadingImage ? <RefreshCw size={14} className="spin" /> : <Palette size={14} />}
+            {loadingImage ? 'Generando Imagen IA...' : 'Generar Imagen Publicitaria con IA'}
+          </button>
+        </div>
 
         <div className="tone-pills-row">
           {tones.map((item) => (
@@ -73,12 +110,18 @@ export default function MarketingEditorCol({
         </div>
 
         <button
-          className={`generate-cta-btn ${contentType === 'Video' ? 'video-mode' : ''}`}
+          className={`generate-cta-btn ${contentType?.includes('Video') || contentType?.includes('Reel') ? 'video-mode' : ''}`}
           disabled={loading}
           onClick={generate}
         >
           <WandSparkles size={16} />
-          {loading ? 'Generando...' : contentType === 'Video' ? 'Generar Guión + Video' : 'Generar con IA'}
+          {loading
+            ? 'Generando todo con IA...'
+            : contentType?.includes('Video') || contentType?.includes('Reel')
+            ? 'Generar Guión + Audio + Post con IA'
+            : contentType === 'Story'
+            ? 'Generar Story 9:16 con IA'
+            : 'Generar Publicación Completa con IA'}
         </button>
 
         {error && <p className="m-error-msg">{error}</p>}
@@ -117,3 +160,4 @@ export default function MarketingEditorCol({
     </div>
   )
 }
+

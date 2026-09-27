@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { X, Camera, Trash2 } from 'lucide-react'
-import { actualizarProducto } from '../../services/apiAdmin'
+import { X, Camera, Trash2, Sparkles, Wand2, Upload, RefreshCw } from 'lucide-react'
+import { actualizarProducto, generarImagenProducto } from '../../services/apiAdmin'
 
 const categoryOptions = ['Ropa', 'Accesorios', 'Hogar', 'Electrónica', 'Papelería', 'General']
 
@@ -14,10 +14,67 @@ export default function EditProductModal({ product, onClose, onUpdated, onDelete
     imagenUrl: product.imagen_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&auto=format&fit=crop&q=80'
   })
 
+  const [imgMode, setImgMode] = useState('subir')
+  const [aiPrompt, setAiPrompt] = useState('')
+  const [generatingAi, setGeneratingAi] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   const update = (key, val) => setForm({ ...form, [key]: val })
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setForm((prev) => ({ ...prev, imagenUrl: reader.result }))
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleEnhanceWithAI = async () => {
+    setGeneratingAi(true)
+    setError('')
+    try {
+      const res = await generarImagenProducto({
+        mode: 'enhance',
+        prompt: form.nombre || 'Producto e-commerce',
+        nombre: form.nombre,
+        categoria: form.categoria,
+      })
+      if (res?.imageUrl) {
+        setForm((prev) => ({ ...prev, imagenUrl: res.imageUrl }))
+      }
+    } catch (err) {
+      setError(err.message || 'Error al mejorar la imagen con IA')
+    } finally {
+      setGeneratingAi(false)
+    }
+  }
+
+  const handleGenerateFromPrompt = async () => {
+    if (!aiPrompt.trim() && !form.nombre.trim()) {
+      setError('Escribe una descripción del producto para que la IA genere la imagen.')
+      return
+    }
+    setGeneratingAi(true)
+    setError('')
+    try {
+      const res = await generarImagenProducto({
+        mode: 'prompt',
+        prompt: aiPrompt.trim() || form.nombre,
+        nombre: form.nombre,
+        categoria: form.categoria,
+      })
+      if (res?.imageUrl) {
+        setForm((prev) => ({ ...prev, imagenUrl: res.imageUrl }))
+      }
+    } catch (err) {
+      setError(err.message || 'Error al generar la imagen por IA')
+    } finally {
+      setGeneratingAi(false)
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -59,12 +116,83 @@ export default function EditProductModal({ product, onClose, onUpdated, onDelete
           </button>
         </div>
 
-        {/* Product Image Section */}
-        <div className="img-preview-box edit-mode-img">
-          <img src={form.imagenUrl} alt={form.nombre} />
-          <button className="change-photo-btn">
-            <Camera size={13} /> Cambiar foto
+        {/* AI Image Mode Selector Pills */}
+        <div className="ai-image-mode-pills">
+          <button
+            type="button"
+            className={`ai-mode-pill-btn ${imgMode === 'subir' ? 'active' : ''}`}
+            onClick={() => setImgMode('subir')}
+          >
+            <Upload size={13} /> Subir / Mejorar Foto
           </button>
+          <button
+            type="button"
+            className={`ai-mode-pill-btn ${imgMode === 'ia_prompt' ? 'active' : ''}`}
+            onClick={() => setImgMode('ia_prompt')}
+          >
+            <Sparkles size={13} /> Generar con IA (Descripción)
+          </button>
+        </div>
+
+        {/* AI Image Section */}
+        <div className="ai-image-preview-block">
+          <div className="img-preview-box edit-mode-img">
+            <img src={form.imagenUrl} alt={form.nombre} />
+
+            {generatingAi && (
+              <div className="ai-loading-overlay">
+                <RefreshCw size={24} className="spin-icon" style={{ color: '#0d9488' }} />
+                <span>La IA está procesando la fotografía de tu producto...</span>
+              </div>
+            )}
+
+            <span className="ia-processed-badge">
+              <Sparkles size={11} /> IA habilitada
+            </span>
+
+            {imgMode === 'subir' && (
+              <label className="change-photo-btn">
+                <Camera size={13} /> Cambiar foto
+                <input type="file" accept="image/*" onChange={handleFileUpload} style={{ display: 'none' }} />
+              </label>
+            )}
+          </div>
+
+          {/* Action Row Based on Selected Mode */}
+          {imgMode === 'subir' ? (
+            <div style={{ marginTop: '10px', display: 'flex', gap: '8px' }}>
+              <button
+                type="button"
+                className="btn-sparkle-generate"
+                style={{ width: '100%' }}
+                onClick={handleEnhanceWithAI}
+                disabled={generatingAi}
+              >
+                <Wand2 size={14} /> {generatingAi ? 'Mejorando con IA...' : 'Mejorar Foto con IA (Iluminación & Estudio)'}
+              </button>
+            </div>
+          ) : (
+            <div className="ai-prompt-generator-box" style={{ marginTop: '10px' }}>
+              <input
+                type="text"
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                placeholder="Describir imagen (ej: Zapatillas de cuero blanco en estudio de lujo)"
+              />
+              <button
+                type="button"
+                className="btn-sparkle-generate"
+                onClick={handleGenerateFromPrompt}
+                disabled={generatingAi}
+              >
+                <Sparkles size={14} /> {generatingAi ? 'Generando Fotografía...' : 'Generar Imagen con IA'}
+              </button>
+            </div>
+          )}
+
+          <div className="ai-green-note">
+            <Wand2 size={14} /> La IA optimiza el encuadre y fondo fotográfico.
+          </div>
         </div>
 
         {error && <div className="modal-error">{error}</div>}
@@ -126,15 +254,6 @@ export default function EditProductModal({ product, onClose, onUpdated, onDelete
             />
           </div>
 
-          {/* Status bar */}
-          <div className="status-sales-note-bar">
-            <span>
-              <span className="dot-green"></span> Estado: <strong>Activo</strong>
-            </span>
-            <small>{product.ventas || 45} ventas registradas</small>
-          </div>
-
-          {/* Modal Action Footer */}
           <div className="modal-actions-footer edit-footer">
             <button
               type="button"
@@ -143,12 +262,15 @@ export default function EditProductModal({ product, onClose, onUpdated, onDelete
             >
               <Trash2 size={14} /> Eliminar
             </button>
-            <button type="button" className="btn-modal-cancel" onClick={onClose}>
-              Cancelar
-            </button>
-            <button type="submit" className="btn-modal-submit" disabled={loading}>
-              {loading ? 'Guardando...' : 'Guardar cambios'}
-            </button>
+
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button type="button" className="btn-modal-cancel" onClick={onClose}>
+                Cancelar
+              </button>
+              <button type="submit" className="btn-modal-submit" disabled={loading || generatingAi}>
+                {loading ? 'Guardando...' : 'Guardar Cambios'}
+              </button>
+            </div>
           </div>
         </form>
       </div>

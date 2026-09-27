@@ -244,6 +244,69 @@ const deleteProduct = (negocioId, productoId) =>
     [productoId, negocioId]
   )
 
+
+const getMarketingPosts = (negocioId, estado) => {
+  if (estado) {
+    return pool.query(
+      `SELECT pk_id, tipo_contenido, plantilla, tono, prompt_usado, caption, guion_video, media_url, plataformas, estado, fecha_programada, fecha_publicada, likes, comments, shares, created_at
+       FROM publicacion_marketing
+       WHERE fk_negocio_id = $1 AND estado = $2
+       ORDER BY created_at DESC`,
+      [negocioId, estado]
+    )
+  }
+  return pool.query(
+    `SELECT pk_id, tipo_contenido, plantilla, tono, prompt_usado, caption, guion_video, media_url, plataformas, estado, fecha_programada, fecha_publicada, likes, comments, shares, created_at
+     FROM publicacion_marketing
+     WHERE fk_negocio_id = $1
+     ORDER BY created_at DESC`,
+    [negocioId]
+  )
+}
+
+const createMarketingPost = (negocioId, { tipoContenido, plantilla, tono, promptUsado, caption, guionVideo, mediaUrl, plataformas, estado, fechaProgramada }) =>
+  pool.query(
+    `INSERT INTO publicacion_marketing
+       (fk_negocio_id, tipo_contenido, plantilla, tono, prompt_usado, caption, guion_video, media_url, plataformas, estado, fecha_programada)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+     RETURNING *`,
+    [negocioId, tipoContenido, plantilla || '', tono || '', promptUsado || '', caption, guionVideo ? JSON.stringify(guionVideo) : null, mediaUrl || '', plataformas || [], estado || 'borrador', fechaProgramada || null]
+  )
+
+const updateMarketingPostStatus = (negocioId, postId, estado, resultadoPublicacion = null) =>
+  pool.query(
+    `UPDATE publicacion_marketing
+     SET estado = $1, fecha_publicada = CASE WHEN $1 = 'publicado' THEN NOW() ELSE fecha_publicada END, resultado_publicacion = $2
+     WHERE pk_id = $3 AND fk_negocio_id = $4
+     RETURNING *`,
+    [estado, resultadoPublicacion ? JSON.stringify(resultadoPublicacion) : null, postId, negocioId]
+  )
+
+const deleteMarketingPost = (negocioId, postId) =>
+  pool.query(
+    `DELETE FROM publicacion_marketing
+     WHERE pk_id = $1 AND fk_negocio_id = $2
+     RETURNING pk_id`,
+    [postId, negocioId]
+  )
+
+const getSocialAccounts = (negocioId) =>
+  pool.query(
+    `SELECT pk_id, plataforma, cuenta_id_externa, nombre_cuenta, handle, estado, created_at
+     FROM red_social_cuenta
+     WHERE fk_negocio_id = $1
+     ORDER BY created_at ASC`,
+    [negocioId]
+  )
+
+const upsertSocialAccount = (negocioId, { plataforma, cuentaIdExterna, nombreCuenta, handle, accessToken, estado }) =>
+  pool.query(
+    `INSERT INTO red_social_cuenta (fk_negocio_id, plataforma, cuenta_id_externa, nombre_cuenta, handle, access_token, estado)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     RETURNING *`,
+    [negocioId, plataforma, cuentaIdExterna || '', nombreCuenta, handle || '', accessToken || '', estado || 'conectado']
+  )
+
 module.exports = {
   findBusinessByOwner,
   getBusinessForAdmin,
@@ -264,5 +327,12 @@ module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
+  getMarketingPosts,
+  createMarketingPost,
+  updateMarketingPostStatus,
+  deleteMarketingPost,
+  getSocialAccounts,
+  upsertSocialAccount,
 }
+
 

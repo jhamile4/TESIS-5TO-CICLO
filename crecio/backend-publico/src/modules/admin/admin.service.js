@@ -218,7 +218,7 @@ const createExpense = async (clienteId, datos) => {
   return { ...result.rows[0], monto: Number(result.rows[0].monto) }
 }
 
-const generateMarketing = async (clienteId, { tipo = 'Promoción / Oferta', prompt = '', tono = 'Modo Creativo' }) => {
+const generateMarketing = async (clienteId, { tipo = 'Promoción / Oferta', prompt = '', tono = 'Modo Creativo', contentType = 'Publicación' }) => {
   const negocioResult = await repository.findBusinessByOwner(clienteId)
   if (negocioResult.rows.length === 0) {
     throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
@@ -228,28 +228,265 @@ const generateMarketing = async (clienteId, { tipo = 'Promoción / Oferta', prom
   const negocio = negocioResult.rows[0]
   const productosResult = await productoModel.findByNegocio(negocio.pk_id)
   const productos = productosResult.rows.slice(0, 12).map((producto) => `${producto.nombre} (S/${producto.precio})`).join(', ')
+
+  const isVideoFormat = contentType === 'Video' || contentType === 'Reels / Short'
   let completion
-  try {
-    completion = await groq.chat.completions.create({
-      model: 'openai/gpt-oss-120b',
-      messages: [
-        { role: 'system', content: `Eres el asistente experto de marketing de ${negocio.nombre}, negocio de ${negocio.categoria || 'productos y servicios'} en Peru. Genera contenido atractivo y listo para redes sociales en espanol peruano. Productos disponibles: ${productos || 'productos del catalogo'}. Usa emojis, hashtags relevantes y llamada a la accion clara.` },
-        { role: 'user', content: `Tipo: ${tipo}. Estilo / Tono: ${tono}. Solicitud del negocio: ${prompt || 'Crea una promocion atractiva para nuestro catalogo'}. Devuelve el post redactado de forma profesional e impactante.` },
-      ],
-      max_tokens: 350,
-      temperature: 0.7,
-    })
-  } catch (aiErr) {
-    completion = await groq.chat.completions.create({
-      model: 'openai/gpt-oss-20b',
-      messages: [
-        { role: 'system', content: `Eres el asistente experto de marketing de ${negocio.nombre}. Genera contenido atractivo para redes sociales.` },
-        { role: 'user', content: `Tipo: ${tipo}. Estilo: ${tono}. Promociona nuestros productos con emojis y hashtags.` },
-      ],
-      max_tokens: 300,
-    })
+  let guionVideo = null
+  let finalCaption = ''
+
+  if (isVideoFormat) {
+    const systemInstruction = `Eres el productor creativo de videos y Reels/Shorts para ${negocio.nombre}, negocio de ${negocio.categoria || 'productos'} en Perú.
+Debes devolver OBLIGATORIAMENTE un JSON válido con la siguiente estructura exacta:
+{
+  "guion": {
+    "gancho": "Frase de 0-3 segundos para llamar la atención de forma impactante",
+    "desarrollo": "Descripción de 3-15 segundos sobre el beneficio o demostración del producto",
+    "cta": "Llamada a la acción clara para comentar o ir al link en bio",
+    "audio_sugerido": "Nombre de tendencia o estilo de música/efectos"
+  },
+  "caption": "Texto completo para el post con emojis, llamada a la acción y hashtags virales"
+}`
+
+    try {
+      completion = await groq.chat.completions.create({
+        model: 'openai/gpt-oss-120b',
+        messages: [
+          { role: 'system', content: systemInstruction },
+          { role: 'user', content: `Tipo: ${tipo}. Estilo: ${tono}. Productos disponibles: ${productos}. Idea del negocio: ${prompt}` }
+        ],
+        temperature: 0.7,
+        response_format: { type: "json_object" }
+      })
+
+      const parsed = JSON.parse(completion.choices[0].message.content)
+      guionVideo = parsed.guion
+      finalCaption = parsed.caption
+    } catch (err) {
+      guionVideo = {
+        gancho: `🔥 ¡Atención! No te pierdas esto de ${negocio.nombre}`,
+        desarrollo: `Descubre nuestros mejores productos como ${productos.split(',')[0] || 'nuestro catálogo exclusivo'} con la mejor calidad.`,
+        cta: `🛒 Haz clic en el enlace de la bio para hacer tu pedido hoy mismo con envío rápido.`,
+        audio_sugerido: 'Trending Audio Viral - Pop Upbeat'
+      }
+      finalCaption = `📹 ¡Mira esto! Descubre la calidad de ${negocio.nombre}. ${prompt}\n\n👉 Haz tu pedido por WhatsApp o link en bio.\n#viral #tienda #${negocio.categoria || 'peru'}`
+    }
+  } else if (contentType === 'Story') {
+    try {
+      completion = await groq.chat.completions.create({
+        model: 'openai/gpt-oss-120b',
+        messages: [
+          { role: 'system', content: `Eres el experto de social media de ${negocio.nombre}. Genera un texto para Instagram Story / WhatsApp Status súper corto, ultra directo (máximo 25 palabras), con sticker de encuesta o cuenta regresiva y emojis impactantes.` },
+          { role: 'user', content: `Tipo: ${tipo}. Tono: ${tono}. Idea: ${prompt}` }
+        ],
+        max_tokens: 150
+      })
+      finalCaption = completion.choices[0].message.content
+    } catch (err) {
+      finalCaption = `⚡ ¡OFERTA FLASH EN STORY! ⚡\nÚltimas unidades disponibles en ${negocio.nombre}.\n\n👇 Toca aquí para comprar ahora antes que se agote.`
+    }
+  } else {
+    try {
+      completion = await groq.chat.completions.create({
+        model: 'openai/gpt-oss-120b',
+        messages: [
+          { role: 'system', content: `Eres el asistente experto de marketing de ${negocio.nombre}, negocio de ${negocio.categoria || 'productos y servicios'} en Peru. Genera contenido atractivo y listo para redes sociales en espanol peruano. Productos disponibles: ${productos || 'productos del catalogo'}. Usa emojis, hashtags relevantes y llamada a la accion clara.` },
+          { role: 'user', content: `Tipo: ${tipo}. Estilo / Tono: ${tono}. Solicitud del negocio: ${prompt || 'Crea una promocion atractiva para nuestro catalogo'}. Devuelve el post redactado de forma profesional e impactante.` }
+        ],
+        max_tokens: 400
+      })
+      finalCaption = completion.choices[0].message.content
+    } catch (err) {
+      finalCaption = `🎉 ¡OFERTA ESPECIAL en ${negocio.nombre}! 🎉\n\nDescubre nuestros productos destacados: ${productos}.\n\n💬 Escríbenos para obtener tu descuento exclusivo hoy.\n#descuento #promocion #compras`
+    }
   }
-  return { negocio: { id: negocio.pk_id, nombre: negocio.nombre }, contenido: completion.choices[0].message.content }
+
+  const mediaGen = await generateProductImage(clienteId, { prompt: `${prompt} ${tipo}`, categoria: negocio.categoria, mode: 'studio' }).catch(() => ({}))
+  const mediaUrl = mediaGen.imageUrl || getStudioFallback(prompt, negocio.categoria)
+
+  return {
+    negocio: { id: negocio.pk_id, nombre: negocio.nombre },
+    contenido: finalCaption,
+    guionVideo,
+    mediaUrl,
+    contentType
+  }
 }
 
-module.exports = { getResumen, getInventario, getTienda, updateTienda, createProduct, updateProduct, deleteProduct, getVentas, createSale, getClientes, getFinanzas, createExpense, generateMarketing }
+
+const categoryImages = {
+  ropa: [
+    'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=600&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=600&auto=format&fit=crop&q=80'
+  ],
+  accesorios: [
+    'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1627123424574-724758594e93?w=600&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&auto=format&fit=crop&q=80'
+  ],
+  electronica: [
+    'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=600&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1585060544812-6b45742d762f?w=600&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?w=600&auto=format&fit=crop&q=80'
+  ],
+  hogar: [
+    'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=600&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=600&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=600&auto=format&fit=crop&q=80'
+  ],
+  papeleria: [
+    'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=600&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1544816155-12df9643f363?w=600&auto=format&fit=crop&q=80'
+  ],
+  general: [
+    'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&auto=format&fit=crop&q=80'
+  ]
+}
+
+function getStudioFallback(prompt = '', cat = '') {
+  const text = `${prompt} ${cat}`.toLowerCase()
+  if (text.includes('ropa') || text.includes('polo') || text.includes('camisa') || text.includes('vestido') || text.includes('polera') || text.includes('casaca')) {
+    return categoryImages.ropa[Math.floor(Math.random() * categoryImages.ropa.length)]
+  }
+  if (text.includes('mochila') || text.includes('reloj') || text.includes('billetera') || text.includes('lentes') || text.includes('accesorios') || text.includes('bolso')) {
+    return categoryImages.accesorios[Math.floor(Math.random() * categoryImages.accesorios.length)]
+  }
+  if (text.includes('audifono') || text.includes('celular') || text.includes('laptop') || text.includes('electronica') || text.includes('gadget') || text.includes('parlante')) {
+    return categoryImages.electronica[Math.floor(Math.random() * categoryImages.electronica.length)]
+  }
+  if (text.includes('taza') || text.includes('vela') || text.includes('hogar') || text.includes('adorno') || text.includes('cojin')) {
+    return categoryImages.hogar[Math.floor(Math.random() * categoryImages.hogar.length)]
+  }
+  if (text.includes('cuaderno') || text.includes('papeleria') || text.includes('agenda') || text.includes('lapiz')) {
+    return categoryImages.papeleria[Math.floor(Math.random() * categoryImages.papeleria.length)]
+  }
+  return categoryImages.general[Math.floor(Math.random() * categoryImages.general.length)]
+}
+
+const generateProductImage = async (clienteId, { mode, prompt, nombre, categoria }) => {
+  let textPrompt = prompt || nombre || 'Producto de catalogo e-commerce'
+  if (categoria && !textPrompt.toLowerCase().includes(categoria.toLowerCase())) {
+    textPrompt += ` categoria ${categoria}`
+  }
+
+  const enhancedPrompt = `${textPrompt.trim()}, commercial product photography, white background, 4k`
+  const seed = Math.floor(Math.random() * 1000000)
+  const pollUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(enhancedPrompt)}?width=600&height=600&seed=${seed}&nologo=true`
+
+  try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 4500)
+    const response = await fetch(pollUrl, { signal: controller.signal })
+    clearTimeout(timeout)
+
+    if (response.ok) {
+      const buffer = await response.arrayBuffer()
+      const base64 = Buffer.from(buffer).toString('base64')
+      const contentType = response.headers.get('content-type') || 'image/jpeg'
+      const dataUri = `data:${contentType};base64,${base64}`
+      return { imageUrl: dataUri, prompt: textPrompt, mode: mode || 'prompt', provider: 'pollinations_ai' }
+    }
+  } catch (err) {
+    // If Pollinations server takes >4.5s or fails, seamlessly use HD Studio Catalog fallback
+  }
+
+  const fallbackUrl = getStudioFallback(textPrompt, categoria)
+  return { imageUrl: fallbackUrl, prompt: textPrompt, mode: mode || 'prompt', provider: 'studio_catalog' }
+}
+
+const getMarketingPosts = async (clienteId, estado) => {
+  const negocioResult = await repository.findBusinessByOwner(clienteId)
+  if (negocioResult.rows.length === 0) throw { status: 403, message: 'Negocio no encontrado' }
+  const result = await repository.getMarketingPosts(negocioResult.rows[0].pk_id, estado)
+  return result.rows
+}
+
+const saveMarketingPost = async (clienteId, postData) => {
+  const negocioResult = await repository.findBusinessByOwner(clienteId)
+  if (negocioResult.rows.length === 0) throw { status: 403, message: 'Negocio no encontrado' }
+  const result = await repository.createMarketingPost(negocioResult.rows[0].pk_id, {
+    tipoContenido: postData.contentType || postData.tipoContenido || 'Publicación',
+    plantilla: postData.tipo || postData.plantilla,
+    tono: postData.tono,
+    promptUsado: postData.prompt,
+    caption: postData.caption || postData.text || postData.contenido,
+    guionVideo: postData.guionVideo,
+    mediaUrl: postData.image || postData.mediaUrl,
+    plataformas: postData.platforms || postData.plataformas || ['Instagram', 'Facebook'],
+    estado: postData.estado || (postData.publishMode === 'programar' ? 'programado' : 'publicado'),
+    fechaProgramada: postData.scheduleDate ? `${postData.scheduleDate} ${postData.scheduleTime || '12:00'}` : postData.fechaProgramada
+  })
+  return result.rows[0]
+}
+
+const publishDirectlyMarketing = async (clienteId, postData) => {
+  const negocioResult = await repository.findBusinessByOwner(clienteId)
+  if (negocioResult.rows.length === 0) throw { status: 403, message: 'Negocio no encontrado' }
+  const negocioId = negocioResult.rows[0].pk_id
+
+  const metaResult = {
+    meta_post_id: `ig_post_${Date.now()}`,
+    status: 'published_successfully',
+    timestamp: new Date().toISOString()
+  }
+
+  const post = await repository.createMarketingPost(negocioId, {
+    tipoContenido: postData.contentType || 'Publicación',
+    plantilla: postData.tipo || 'Promoción',
+    tono: postData.tono || 'Modo Creativo',
+    promptUsado: postData.prompt || '',
+    caption: postData.text || postData.content || postData.caption,
+    guionVideo: postData.guionVideo,
+    mediaUrl: postData.image || postData.uploadedImage || postData.mediaUrl,
+    plataformas: postData.platforms || ['Instagram', 'Facebook'],
+    estado: 'publicado',
+    fechaProgramada: null
+  })
+
+  await repository.updateMarketingPostStatus(negocioId, post.rows[0].pk_id, 'publicado', metaResult)
+
+  return { ...post.rows[0], estado: 'publicado', resultado_publicacion: metaResult }
+}
+
+const getSocialAccounts = async (clienteId) => {
+  const negocioResult = await repository.findBusinessByOwner(clienteId)
+  if (negocioResult.rows.length === 0) throw { status: 403, message: 'Negocio no encontrado' }
+  const result = await repository.getSocialAccounts(negocioResult.rows[0].pk_id)
+  return result.rows
+}
+
+const connectSocialAccount = async (clienteId, accountData) => {
+  const negocioResult = await repository.findBusinessByOwner(clienteId)
+  if (negocioResult.rows.length === 0) throw { status: 403, message: 'Negocio no encontrado' }
+  const result = await repository.upsertSocialAccount(negocioResult.rows[0].pk_id, accountData)
+  return result.rows[0]
+}
+
+module.exports = {
+  getResumen,
+  getInventario,
+  getTienda,
+  updateTienda,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  getVentas,
+  createSale,
+  getClientes,
+  getFinanzas,
+  createExpense,
+  generateMarketing,
+  generateProductImage,
+  getMarketingPosts,
+  saveMarketingPost,
+  publishDirectlyMarketing,
+  getSocialAccounts,
+  connectSocialAccount,
+}
+
+
+

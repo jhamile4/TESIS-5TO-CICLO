@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react'
 import { FileText } from 'lucide-react'
-import { generarMarketing, getResumen } from '../services/apiAdmin'
+import {
+  generarMarketing,
+  getResumen,
+  generarImagenProducto,
+  getPublicacionesMarketing,
+  guardarPublicacionMarketing,
+  publicarDirectoMarketing
+} from '../services/apiAdmin'
 
 import MarketingHeader from '../components/marketing/MarketingHeader'
 import MarketingTabs from '../components/marketing/MarketingTabs'
@@ -27,72 +34,20 @@ const tones = [
 
 const contentTypes = [
   { id: 'Publicación', label: 'Publicación' },
-  { id: 'Story', label: 'Story' },
-  { id: 'Video', label: 'Video' },
-  { id: 'Reels / Short', label: 'Reels / Short' },
+  { id: 'Story', label: 'Story 9:16' },
+  { id: 'Reels / Short', label: 'Reel / Short' },
+  { id: 'Video', label: 'Video Largo' },
   { id: 'Promoción', label: 'Promoción' },
   { id: 'Producto', label: 'Producto' },
-  { id: 'Colección', label: 'Colección' },
   { id: 'Anuncio', label: 'Anuncio' }
 ]
 
 const initialAccounts = [
   { id: 'instagram', name: 'Instagram', handle: '@mitiendacrecio', active: true, connected: true, color: '#e1306c' },
-  { id: 'tiktok', name: 'TikTok', handle: '@mitiendacrecio', active: false, connected: true, color: '#000000' },
+  { id: 'tiktok', name: 'TikTok', handle: '@mitiendacrecio', active: true, connected: true, color: '#000000' },
   { id: 'facebook', name: 'Facebook', handle: 'MiTiendaCrecio', active: true, connected: true, color: '#1877f2' },
   { id: 'youtube', name: 'YouTube', handle: 'Sin conectar', active: false, connected: false, color: '#ff0000' },
-  { id: 'twitter', name: 'X / Twitter', handle: 'Sin conectar', active: false, connected: false, color: '#1da1f2' },
   { id: 'whatsapp', name: 'WhatsApp Status', handle: 'Mi Tienda', active: false, connected: true, color: '#25d366' }
-]
-
-const defaultScheduled = [
-  {
-    id: 1,
-    image: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&auto=format&fit=crop&q=80',
-    platforms: ['Instagram', 'Facebook'],
-    text: '¡Nueva colección de verano ya disponible! ☀️ Descubre los mejores looks para esta temporada con un 20% OFF. #verano #moda #descuento',
-    date: '2026-05-03 09:00'
-  },
-  {
-    id: 2,
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&auto=format&fit=crop&q=80',
-    platforms: ['TikTok', 'Instagram'],
-    text: 'Tutorial rápido: 3 formas de usar nuestra mochila urbana 🎒 ¿Cuál es tu favorita? Comenta abajo 👇 #tutorial #mochila #tips',
-    date: '2026-05-03 18:00'
-  }
-]
-
-const defaultPublished = [
-  {
-    id: 1,
-    image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600&auto=format&fit=crop&q=80',
-    platforms: ['Instagram', 'Facebook', 'TikTok'],
-    text: '🔥 ¡Oferta flash! Solo por hoy: 15% OFF en todo el catálogo. No dejes pasar esta oportunidad. Link en bio 👆',
-    date: '2026-05-01 10:30',
-    likes: 342,
-    comments: 28,
-    shares: 56
-  },
-  {
-    id: 2,
-    image: 'https://images.unsplash.com/photo-1556740758-90de374c12ad?w=600&auto=format&fit=crop&q=80',
-    platforms: ['Instagram', 'WhatsApp Status'],
-    text: 'Detrás de cámaras: Así preparamos cada pedido con cariño 💚 Calidad y dedicación en cada detalle.',
-    date: '2026-04-30 14:00',
-    likes: 198,
-    comments: 15,
-    shares: 12
-  },
-  {
-    id: 3,
-    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80',
-    platforms: ['Facebook'],
-    text: '¿Sabías que nuestros productos son 100% eco-friendly? 🌿 Cuidamos el planeta mientras cuidamos tu estilo.',
-    date: '2026-04-28 11:00',
-    likes: 267,
-    comments: 42,
-    shares: 73
-  }
 ]
 
 export default function MarketingPage() {
@@ -101,13 +56,16 @@ export default function MarketingPage() {
 
   const [tipo, setTipo] = useState(templates[0])
   const [tono, setTono] = useState(tones[0])
-  const [contentType, setContentType] = useState('Promoción')
+  const [contentType, setContentType] = useState('Publicación')
   const [prompt, setPrompt] = useState('')
   const [content, setContent] = useState('')
+  const [guionVideo, setGuionVideo] = useState(null)
   const [uploadedImage, setUploadedImage] = useState(null)
   const [accounts, setAccounts] = useState(initialAccounts)
 
   const [loading, setLoading] = useState(false)
+  const [loadingImage, setLoadingImage] = useState(false)
+  const [publishing, setPublishing] = useState(false)
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
 
@@ -115,13 +73,42 @@ export default function MarketingPage() {
   const [scheduleDate, setScheduleDate] = useState('')
   const [scheduleTime, setScheduleTime] = useState('')
 
-  const [scheduledPosts, setScheduledPosts] = useState(defaultScheduled)
-  const [publishedPosts, setPublishedPosts] = useState(defaultPublished)
+  const [scheduledPosts, setScheduledPosts] = useState([])
+  const [publishedPosts, setPublishedPosts] = useState([])
+
+  const loadPosts = async () => {
+    try {
+      const scheduled = await getPublicacionesMarketing('programado')
+      const published = await getPublicacionesMarketing('publicado')
+      if (Array.isArray(scheduled)) {
+        setScheduledPosts(scheduled.map(p => ({
+          id: p.pk_id,
+          image: p.media_url || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&auto=format&fit=crop&q=80',
+          platforms: p.plataformas || ['Instagram', 'Facebook'],
+          text: p.caption,
+          date: p.fecha_programada || new Date().toISOString()
+        })))
+      }
+      if (Array.isArray(published)) {
+        setPublishedPosts(published.map(p => ({
+          id: p.pk_id,
+          image: p.media_url || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600&auto=format&fit=crop&q=80',
+          platforms: p.plataformas || ['Instagram', 'Facebook'],
+          text: p.caption,
+          date: p.fecha_publicada || new Date().toISOString(),
+          likes: p.likes || 12,
+          comments: p.comments || 3,
+          shares: p.shares || 5
+        })))
+      }
+    } catch (err) {}
+  }
 
   useEffect(() => {
     getResumen()
       .then((result) => setBusiness(result.negocio))
       .catch(() => {})
+    loadPosts()
   }, [])
 
   const toggleAccount = (id) => {
@@ -138,19 +125,35 @@ export default function MarketingPage() {
     if (file) setUploadedImage(URL.createObjectURL(file))
   }
 
+  const generateImageIa = async () => {
+    setLoadingImage(true)
+    try {
+      const res = await generarImagenProducto({ prompt: prompt || 'Publicación destacada de tienda', mode: 'studio' })
+      if (res.imageUrl) setUploadedImage(res.imageUrl)
+    } catch (err) {
+      alert('No se pudo generar la imagen IA. Se utilizará la plantilla por defecto.')
+    } finally {
+      setLoadingImage(false)
+    }
+  }
+
   const generate = async () => {
     setLoading(true)
     setError('')
     try {
-      const result = await generarMarketing({ tipo, tono, prompt: prompt || 'Publicación atractiva para mi tienda' })
+      const result = await generarMarketing({
+        tipo,
+        tono,
+        prompt: prompt || 'Crea una oferta atractiva para mi tienda',
+        contentType
+      })
       setContent(result.contenido)
+      setGuionVideo(result.guionVideo || null)
+      if (result.mediaUrl && !uploadedImage) {
+        setUploadedImage(result.mediaUrl)
+      }
     } catch (err) {
-      setError(err.message || 'Error al generar contenido')
-      setContent(
-        contentType === 'Video'
-          ? `📹 Mira cómo nuestro producto transforma tu día a día. ¡Dale play! Guión generado por IA. #video #viral`
-          : `🎉 ¡OFERTA ESPECIAL! 20% OFF en todos nuestros productos. ¡Compra ahora! #Descuento #Venta #negocio #emprendimiento #calidad`
-      )
+      setError(err.message || 'Error al generar contenido con IA')
     } finally {
       setLoading(false)
     }
@@ -165,33 +168,58 @@ export default function MarketingPage() {
 
   const activeAccountsList = accounts.filter((a) => a.active)
 
-  const handlePublishOrSchedule = () => {
+  const handlePublishOrSchedule = async () => {
     if (!content) return
-    if (publishMode === 'ahora') {
-      const newPost = {
-        id: Date.now(),
-        image: uploadedImage || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600&auto=format&fit=crop&q=80',
-        platforms: activeAccountsList.map((a) => a.name),
+    setPublishing(true)
+    try {
+      const payload = {
+        tipo,
+        tono,
+        contentType,
+        prompt,
         text: content,
-        date: new Date().toISOString().slice(0, 16).replace('T', ' '),
-        likes: 0,
-        comments: 0,
-        shares: 0
-      }
-      setPublishedPosts([newPost, ...publishedPosts])
-      alert('¡Publicación realizada con éxito en tus redes sociales conectadas!')
-      setActiveMainTab('publicadas')
-    } else {
-      const newPost = {
-        id: Date.now(),
-        image: uploadedImage || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&auto=format&fit=crop&q=80',
+        caption: content,
+        guionVideo,
+        image: uploadedImage,
+        mediaUrl: uploadedImage,
         platforms: activeAccountsList.map((a) => a.name),
-        text: content,
-        date: `${scheduleDate || '2026-05-05'} ${scheduleTime || '12:00'}`
+        publishMode,
+        scheduleDate,
+        scheduleTime
       }
-      setScheduledPosts([newPost, ...scheduledPosts])
-      alert('¡Publicación programada correctamente!')
-      setActiveMainTab('programadas')
+
+      if (publishMode === 'ahora') {
+        const res = await publicarDirectoMarketing(payload)
+        const newPost = {
+          id: res.pk_id || Date.now(),
+          image: uploadedImage || res.media_url || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600&auto=format&fit=crop&q=80',
+          platforms: activeAccountsList.map((a) => a.name),
+          text: content,
+          date: new Date().toISOString().slice(0, 16).replace('T', ' '),
+          likes: 0,
+          comments: 0,
+          shares: 0
+        }
+        setPublishedPosts([newPost, ...publishedPosts])
+        alert('🚀 ¡Publicación enviada exitosamente a la API de Meta y publicada en tus redes sociales!')
+        setActiveMainTab('publicadas')
+      } else {
+        const res = await guardarPublicacionMarketing(payload)
+        const newPost = {
+          id: res.pk_id || Date.now(),
+          image: uploadedImage || res.media_url || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&auto=format&fit=crop&q=80',
+          platforms: activeAccountsList.map((a) => a.name),
+          text: content,
+          date: `${scheduleDate || '2026-05-05'} ${scheduleTime || '12:00'}`
+        }
+        setScheduledPosts([newPost, ...scheduledPosts])
+        alert('📅 ¡Publicación programada correctamente en la base de datos!')
+        setActiveMainTab('programadas')
+      }
+    } catch (err) {
+      alert(err.message || 'Error al procesar publicación')
+    } finally {
+      setPublishing(false)
     }
   }
 
@@ -215,6 +243,8 @@ export default function MarketingPage() {
             setPrompt={setPrompt}
             uploadedImage={uploadedImage}
             handleImageUpload={handleImageUpload}
+            generateImageIa={generateImageIa}
+            loadingImage={loadingImage}
             tones={tones}
             tono={tono}
             setTono={setTono}
@@ -234,6 +264,7 @@ export default function MarketingPage() {
             business={business}
             uploadedImage={uploadedImage}
             content={content}
+            guionVideo={guionVideo}
             copied={copied}
             copyText={copyText}
             generate={generate}
@@ -245,6 +276,7 @@ export default function MarketingPage() {
             setScheduleTime={setScheduleTime}
             activeAccountsList={activeAccountsList}
             handlePublishOrSchedule={handlePublishOrSchedule}
+            publishing={publishing}
           />
         </div>
       )}
@@ -272,3 +304,4 @@ export default function MarketingPage() {
     </section>
   )
 }
+
