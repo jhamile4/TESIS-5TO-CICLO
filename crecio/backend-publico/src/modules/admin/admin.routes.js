@@ -1,6 +1,6 @@
 const express = require('express')
 const verifyToken = require('../../middleware/verifyToken')
-const { getResumen, getInventario, getTienda, updateTienda, createProduct, updateProduct, deleteProduct, getVentas, getClientes, getFinanzas, createExpense, generateMarketing } = require('./admin.controller')
+const { getResumen, getInventario, getTienda, updateTienda, createProduct, updateProduct, deleteProduct, getVentas, createSale, getClientes, getFinanzas, createExpense, generateMarketing } = require('./admin.controller')
 
 const router = express.Router()
 
@@ -11,6 +11,7 @@ router.get('/inventario', verifyToken, getInventario)
 router.get('/tienda', verifyToken, getTienda)
 router.put('/tienda', verifyToken, updateTienda)
 router.get('/ventas', verifyToken, getVentas)
+router.post('/ventas', verifyToken, createSale)
 router.get('/clientes', verifyToken, getClientes)
 router.get('/finanzas', verifyToken, getFinanzas)
 router.post('/gastos', verifyToken, createExpense)

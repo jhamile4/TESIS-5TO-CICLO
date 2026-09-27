@@ -44,6 +44,15 @@ const getVentas = async (req, res, next) => {
   }
 }
 
+const createSale = async (req, res, next) => {
+  try {
+    const venta = await adminService.createSale(req.user.id, req.body)
+    res.status(201).json(venta)
+  } catch (error) {
+    next(error)
+  }
+}
+
 const getClientes = async (req, res, next) => {
   try {
     const clientes = await adminService.getClientes(req.user.id)
@@ -88,5 +97,5 @@ const deleteProduct = async (req, res, next) => {
   }
 }
 
-module.exports = { getResumen, getInventario, getTienda, updateTienda, createProduct, updateProduct, deleteProduct, getVentas, getClientes, getFinanzas, createExpense, generateMarketing }
+module.exports = { getResumen, getInventario, getTienda, updateTienda, createProduct, updateProduct, deleteProduct, getVentas, createSale, getClientes, getFinanzas, createExpense, generateMarketing }
 

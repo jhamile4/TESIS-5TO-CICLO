@@ -10,6 +10,7 @@ import ClientsPage from './pages/ClientsPage'
 import MarketingPage from './pages/MarketingPage'
 import FinancePage from './pages/FinancePage'
 import StorePage from './pages/StorePage'
+import ConfigPage from './pages/ConfigPage'
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
             <Route path="marketing" element={<ErrorBoundary><MarketingPage /></ErrorBoundary>} />
             <Route path="finanzas" element={<ErrorBoundary><FinancePage /></ErrorBoundary>} />
             <Route path="tienda" element={<ErrorBoundary><StorePage /></ErrorBoundary>} />
+            <Route path="configuracion" element={<ErrorBoundary><ConfigPage /></ErrorBoundary>} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

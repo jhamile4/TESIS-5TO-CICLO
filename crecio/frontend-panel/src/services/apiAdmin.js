@@ -42,6 +42,11 @@ export const getInventario = () => request('/admin/inventario')
 export const getTienda = () => request('/admin/tienda')
 export const actualizarTienda = (tienda) => request('/admin/tienda', { method: 'PUT', body: JSON.stringify(tienda) })
 export const getVentas = () => request('/admin/ventas')
+export const crearVenta = (venta) => request('/admin/ventas', {
+  method: 'POST',
+  body: JSON.stringify(venta),
+})
+
 export const getClientes = () => request('/admin/clientes')
 export const getFinanzas = () => request('/admin/finanzas')
 export const crearGasto = (gasto) => request('/admin/gastos', { method: 'POST', body: JSON.stringify(gasto) })

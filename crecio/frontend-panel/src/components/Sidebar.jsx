@@ -11,7 +11,7 @@ import {
   Users,
   LogOut
 } from 'lucide-react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { PUBLIC_URL } from '../config/env'
 
@@ -22,11 +22,12 @@ const navigation = [
   [Sparkles, 'Marketing IA', '/marketing'],
   [Users, 'Clientes', '/clientes'],
   [CircleDollarSign, 'Finanzas', '/finanzas'],
-  [Store, 'Mi tienda', '/tienda']
+  [Store, 'Mi tienda', '/tienda'],
 ]
 
 export default function Sidebar({ business }) {
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
 
   const handleLogout = async () => {
     await logout()
@@ -80,10 +81,14 @@ export default function Sidebar({ business }) {
               )}
             </div>
             <div className="business-info">
-              <b>{business?.nombre || user?.negocioNombre || user?.nombre || 'Mi Negocio'}</b>
-              <span>{user?.rol || 'Administrador'}</span>
+              <b>{business?.nombre || user?.negocioNombre || 'Mi Negocio'}</b>
+              <span>{user?.nombre || 'Administrador'}</span>
             </div>
-            <button className="business-settings" title="Configuración">
+            <button
+              className="business-settings"
+              title="Configuración"
+              onClick={() => navigate('/configuracion')}
+            >
               <Settings size={17} />
             </button>
           </div>

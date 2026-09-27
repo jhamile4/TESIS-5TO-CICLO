@@ -156,6 +156,16 @@ const getVentas = async (clienteId) => {
   }
 }
 
+const createSale = async (clienteId, data) => {
+  const negocioResult = await repository.findBusinessByOwner(clienteId)
+  if (negocioResult.rows.length === 0) {
+    throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
+  }
+  const negocio = negocioResult.rows[0]
+  const result = await repository.createSale(negocio.pk_id, data)
+  return result.rows[0]
+}
+
 const getClientes = async (clienteId) => {
   const negocioResult = await repository.findBusinessByOwner(clienteId)
   if (negocioResult.rows.length === 0) {
@@ -218,16 +228,28 @@ const generateMarketing = async (clienteId, { tipo = 'Promoción / Oferta', prom
   const negocio = negocioResult.rows[0]
   const productosResult = await productoModel.findByNegocio(negocio.pk_id)
   const productos = productosResult.rows.slice(0, 12).map((producto) => `${producto.nombre} (S/${producto.precio})`).join(', ')
-  const completion = await groq.chat.completions.create({
-    model: 'llama-3.1-8b-instant',
-    messages: [
-      { role: 'system', content: `Eres el asistente de marketing de ${negocio.nombre}, negocio de ${negocio.categoria || 'productos y servicios'} en Peru. Genera contenido listo para redes sociales en espanol. Usa solo este contexto: productos disponibles: ${productos || 'no hay productos cargados'}. No inventes descuentos, precios ni datos que no aparezcan en el pedido.` },
-      { role: 'user', content: `Tipo: ${tipo}. Estilo: ${tono}. Solicitud: ${prompt}. Devuelve un texto atractivo de maximo 500 caracteres, con llamada a la accion y hashtags relevantes.` },
-    ],
-    max_tokens: 260,
-    temperature: 0.7,
-  })
+  let completion
+  try {
+    completion = await groq.chat.completions.create({
+      model: 'openai/gpt-oss-120b',
+      messages: [
+        { role: 'system', content: `Eres el asistente experto de marketing de ${negocio.nombre}, negocio de ${negocio.categoria || 'productos y servicios'} en Peru. Genera contenido atractivo y listo para redes sociales en espanol peruano. Productos disponibles: ${productos || 'productos del catalogo'}. Usa emojis, hashtags relevantes y llamada a la accion clara.` },
+        { role: 'user', content: `Tipo: ${tipo}. Estilo / Tono: ${tono}. Solicitud del negocio: ${prompt || 'Crea una promocion atractiva para nuestro catalogo'}. Devuelve el post redactado de forma profesional e impactante.` },
+      ],
+      max_tokens: 350,
+      temperature: 0.7,
+    })
+  } catch (aiErr) {
+    completion = await groq.chat.completions.create({
+      model: 'openai/gpt-oss-20b',
+      messages: [
+        { role: 'system', content: `Eres el asistente experto de marketing de ${negocio.nombre}. Genera contenido atractivo para redes sociales.` },
+        { role: 'user', content: `Tipo: ${tipo}. Estilo: ${tono}. Promociona nuestros productos con emojis y hashtags.` },
+      ],
+      max_tokens: 300,
+    })
+  }
   return { negocio: { id: negocio.pk_id, nombre: negocio.nombre }, contenido: completion.choices[0].message.content }
 }
 
-module.exports = { getResumen, getInventario, getTienda, updateTienda, createProduct, updateProduct, deleteProduct, getVentas, getClientes, getFinanzas, createExpense, generateMarketing }
+module.exports = { getResumen, getInventario, getTienda, updateTienda, createProduct, updateProduct, deleteProduct, getVentas, createSale, getClientes, getFinanzas, createExpense, generateMarketing }

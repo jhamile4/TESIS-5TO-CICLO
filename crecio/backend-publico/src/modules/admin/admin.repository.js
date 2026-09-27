@@ -12,19 +12,36 @@ const findBusinessByOwner = (clienteId) =>
 const getBusinessForAdmin = (clienteId) =>
   pool.query(
     `SELECT pk_id, nombre, categoria, descripcion, logo_url, direccion,
-            distrito, horario, telefono, whatsapp
+            distrito, horario, telefono, whatsapp, email_contacto, redes_sociales
      FROM negocio WHERE fk_cliente_id = $1 LIMIT 1`,
     [clienteId]
   )
 
 const updateBusiness = (clienteId, datos) =>
   pool.query(
-    `UPDATE negocio SET nombre = $1, descripcion = $2, logo_url = $3,
-            direccion = $4, whatsapp = $5
-     WHERE fk_cliente_id = $6
+    `UPDATE negocio SET
+       nombre = COALESCE($1, nombre),
+       descripcion = COALESCE($2, descripcion),
+       logo_url = COALESCE($3, logo_url),
+       direccion = COALESCE($4, direccion),
+       whatsapp = COALESCE($5, whatsapp),
+       categoria = COALESCE($6, categoria),
+       email_contacto = COALESCE($7, email_contacto),
+       redes_sociales = COALESCE($8::jsonb, redes_sociales)
+     WHERE fk_cliente_id = $9
      RETURNING pk_id, nombre, categoria, descripcion, logo_url, direccion,
-               distrito, horario, telefono, whatsapp`,
-    [datos.nombre, datos.descripcion, datos.logoUrl, datos.direccion, datos.whatsapp, clienteId]
+               distrito, horario, telefono, whatsapp, email_contacto, redes_sociales`,
+    [
+      datos.nombre || null,
+      datos.descripcion || null,
+      datos.logoUrl || null,
+      datos.direccion || null,
+      datos.whatsapp || null,
+      datos.categoria || null,
+      datos.emailContacto || datos.email || null,
+      datos.redesSociales ? JSON.stringify(datos.redesSociales) : null,
+      clienteId
+    ]
   )
 
 const getMetrics = (negocioId) =>
@@ -77,15 +94,46 @@ const getRecentOrders = (negocioId) =>
 
 const getSales = (negocioId) =>
   pool.query(
-        `SELECT pp.pk_id, pp.numero_pedido, pp.monto_total, pp.estado,
-          pp.stripe_payment_intent,
-            pp.items, pp.created_at, pp.direccion, pp.ciudad,
-            c.nombre AS cliente_nombre, c.email AS cliente_email
+    `SELECT pp.pk_id, pp.numero_pedido, pp.monto_total, pp.estado,
+            pp.stripe_payment_intent, pp.metodo_pago, pp.comprobante_url,
+            pp.telefono_cliente, pp.items, pp.notas, pp.created_at, pp.direccion, pp.ciudad,
+            COALESCE(c.nombre, 'Cliente Directo') AS cliente_nombre,
+            c.email AS cliente_email
      FROM pedido_pago pp
      LEFT JOIN cliente c ON c.pk_id = pp.fk_cliente_id
      WHERE pp.fk_negocio_id = $1
      ORDER BY pp.created_at DESC`,
     [negocioId]
+  )
+
+const createSale = (negocioId, { clienteNombre, clienteTelefono, metodoPago, comprobanteUrl, items, nota, montoTotal }) =>
+  pool.query(
+    `INSERT INTO pedido_pago (
+       fk_negocio_id, numero_pedido, monto_total, estado, metodo_pago,
+       comprobante_url, telefono_cliente, items, notas, created_at
+     )
+     VALUES (
+       $1,
+       'VTA-' || LPAD(FLOOR(RANDOM() * 9000 + 1000)::text, 4, '0'),
+       $2,
+       'pagado',
+       $3,
+       $4,
+       $5,
+       $6::jsonb,
+       $7,
+       NOW()
+     )
+     RETURNING pk_id, numero_pedido, monto_total, estado, metodo_pago, comprobante_url, telefono_cliente, items, notas, created_at`,
+    [
+      negocioId,
+      Number(montoTotal) || 0,
+      metodoPago || 'Efectivo',
+      comprobanteUrl || null,
+      clienteTelefono || null,
+      JSON.stringify(items || []),
+      nota || null
+    ]
   )
 
 const getClients = (negocioId) =>
@@ -205,6 +253,7 @@ module.exports = {
   getWeeklySales,
   getRecentOrders,
   getSales,
+  createSale,
   getClients,
   getFinanceSummary,
   getFinanceTransactions,
