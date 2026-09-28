@@ -1,9 +1,10 @@
-import { Bell, Search } from 'lucide-react'
+import { Bell, Search, Globe } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import NotificationDropdown from './common/NotificationDropdown'
 import { getResumen } from '../services/apiAdmin'
+import { PUBLIC_URL } from '../config/env'
 
 const titles = {
   '/': 'Inicio',
@@ -35,6 +36,15 @@ export default function PanelLayout() {
           <h1>{titles[location.pathname] || 'Panel de Control'}</h1>
 
           <div className="topbar-actions">
+            <a
+              href={`${PUBLIC_URL}/perfil`}
+              className="go-public-btn"
+              title="Ir a mi Perfil Público / Directorio"
+            >
+              <Globe size={16} />
+              <span>Sitio Público / Mi Perfil</span>
+            </a>
+
             <button className="icon-button" title="Buscar">
               <Search size={19} />
             </button>

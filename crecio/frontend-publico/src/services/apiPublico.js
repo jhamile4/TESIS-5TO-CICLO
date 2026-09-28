@@ -36,12 +36,28 @@ const tiempoRelativo = (fechaISO) => {
   return `${Math.floor(dias / 30)} meses atras`
 }
 
+const defaultCategoryImages = {
+  'Restaurante': 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&auto=format&fit=crop&q=80',
+  'Moda': 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&auto=format&fit=crop&q=80',
+  'Tecnologia': 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80',
+  'Flores': 'https://images.unsplash.com/photo-1563245372-f21724e3856d?w=600&auto=format&fit=crop&q=80',
+  'Ferreteria': 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=80',
+  'Panaderia': 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80'
+}
+
+const getValidImageUrl = (url, cat) => {
+  if (url && typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:image'))) {
+    return url
+  }
+  return defaultCategoryImages[cat] || 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&auto=format&fit=crop&q=80'
+}
+
 const normalizarNegocio = (n) => ({
   id:        n.pk_id,
   nombre:    n.nombre,
   categoria: n.categoria,
   desc:      n.descripcion,
-  img:       n.logo_url,
+  img:       getValidImageUrl(n.logo_url, n.categoria),
   rating:    String(n.rating),
   resenas:   String(n.total_resenas),
   direccion: n.direccion,
@@ -53,6 +69,7 @@ const normalizarNegocio = (n) => ({
   latitud:   n.latitud  ? Number(n.latitud)  : null,
   longitud:  n.longitud ? Number(n.longitud) : null,
 })
+
 
 const normalizarProducto = (p) => ({
   pk_id:     p.pk_id,

@@ -1,17 +1,31 @@
 import { Outlet } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import PanelLoginForm from './PanelLoginForm'
+import { PUBLIC_URL } from '../config/env'
 
 export default function ProtectedRoute() {
   const { user, loading } = useAuth()
 
   if (loading) {
     return (
-      <main className="login-shell">
-        <p className="muted font-semibold text-slate-600">Verificando sesión...</p>
-      </main>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        background: '#f8fafc',
+        color: '#0d9488',
+        fontWeight: '700',
+        fontSize: '15px'
+      }}>
+        Cargando sesión de Crecio...
+      </div>
     )
   }
 
-  return user ? <Outlet /> : <PanelLoginForm />
+  if (!user) {
+    window.location.replace(`${PUBLIC_URL}/login`)
+    return null
+  }
+
+  return <Outlet />
 }

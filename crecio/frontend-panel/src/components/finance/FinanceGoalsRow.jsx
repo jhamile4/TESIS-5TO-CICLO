@@ -1,7 +1,95 @@
-import { Calendar, ShieldCheck, Package, MoreHorizontal } from 'lucide-react'
+import { Calendar, ShieldCheck, Package, DollarSign } from 'lucide-react'
+import { currency } from '../../utils/formatters'
 
-export default function FinanceGoalsRow({ summary }) {
-  const actualVentas = summary?.ingresos_mes ?? 0
+export default function FinanceGoalsRow({ summary, isMonth }) {
+  if (!isMonth) {
+    // Vista Caja del Día
+    const ingresosHoy = Number(summary?.ingresos_hoy || 0)
+    const gastosHoy = Number(summary?.gastos_hoy || 0)
+    const saldoCaja = ingresosHoy - gastosHoy
+
+    return (
+      <div className="fin-goals-grid">
+        {/* Card 1: Balance de Caja */}
+        <div className="fin-card fin-goal-card">
+          <div className="fin-goal-header">
+            <div>
+              <h3 className="fin-card-title">Balance de Caja Hoy</h3>
+              <p className="fin-card-subtitle">
+                Efectivo y ventas registradas durante el turno de hoy.
+              </p>
+            </div>
+            <span className="fin-badge badge-teal">Caja Abierta</span>
+          </div>
+
+          <div className="fin-goal-body" style={{ marginTop: '12px' }}>
+            <div className="goal-stats-col" style={{ width: '100%', display: 'flex', gap: '16px' }}>
+              <div className="stat-box" style={{ flex: 1 }}>
+                <span className="stat-box-label">Ingresos de Hoy</span>
+                <strong className="stat-box-val text-teal">{currency.format(ingresosHoy)}</strong>
+              </div>
+              <div className="stat-box" style={{ flex: 1 }}>
+                <span className="stat-box-label">Gastos de Hoy</span>
+                <strong className="stat-box-val" style={{ color: '#ef4444' }}>{currency.format(gastosHoy)}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div className="fin-goal-footer" style={{ marginTop: '16px' }}>
+            <DollarSign size={14} />
+            <span>Balance neto disponible hoy: <strong>{currency.format(saldoCaja)}</strong></span>
+          </div>
+        </div>
+
+        {/* Card 2: Ventas por Canal Digital Hoy */}
+        <div className="fin-card fin-goal-card flex-between-card">
+          <div>
+            <div className="fin-goal-icon-header">
+              <div className="goal-icon-box green">
+                <ShieldCheck size={18} />
+              </div>
+              <div className="goal-title-flex">
+                <h3 className="fin-card-title">Cobros Digitales Hoy</h3>
+                <p className="fin-card-subtitle">Pagos procesados por tarjeta / Stripe hoy.</p>
+              </div>
+            </div>
+
+            <div className="emergency-fund-content" style={{ marginTop: '14px' }}>
+              <div className="emergency-val-row">
+                <strong className="emerg-curr">{currency.format(summary?.ingresos_tarjeta_hoy || 0)}</strong>
+                <span className="emerg-target">{summary?.operaciones_hoy || 0} cobros</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Cobros en Efectivo Hoy */}
+        <div className="fin-card fin-goal-card flex-between-card">
+          <div>
+            <div className="fin-goal-icon-header">
+              <div className="goal-icon-box teal">
+                <Package size={18} />
+              </div>
+              <div className="goal-title-flex">
+                <h3 className="fin-card-title">Cobros en Efectivo Hoy</h3>
+                <p className="fin-card-subtitle">Dinero físico ingresado a caja el día de hoy.</p>
+              </div>
+            </div>
+
+            <div className="inventory-expansion-content" style={{ marginTop: '14px' }}>
+              <div className="emergency-val-row">
+                <strong className="emerg-curr" style={{ color: '#0d9488' }}>{currency.format(summary?.ingresos_efectivo_hoy || 0)}</strong>
+                <span className="emerg-target">En física</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Vista Resumen Mensual
+  const actualVentas = Number(summary?.ingresos_mes ?? 0)
   const metaVentas = 80000
   const pctVentas = Math.min(100, Math.round((actualVentas / metaVentas) * 100))
   const remanenteVentas = Math.max(0, metaVentas - actualVentas)
@@ -14,23 +102,16 @@ export default function FinanceGoalsRow({ summary }) {
           <div>
             <h3 className="fin-card-title">Meta de Ventas Mensual</h3>
             <p className="fin-card-subtitle">
-              Objetivo: Generar S/ 80.000 en ventas netas antes del fin de mes.
+              Objetivo: Generar S/ 80,000 en ventas netas antes del fin de mes.
             </p>
           </div>
           <span className="fin-badge badge-teal">En Progreso</span>
         </div>
 
         <div className="fin-goal-body">
-          {/* Radial Donut Progress */}
           <div className="radial-progress-wrapper">
             <svg className="radial-progress-svg" viewBox="0 0 100 100">
-              <circle
-                cx="50"
-                cy="50"
-                r="40"
-                className="radial-bg"
-                strokeWidth="8"
-              />
+              <circle cx="50" cy="50" r="40" className="radial-bg" strokeWidth="8" />
               <circle
                 cx="50"
                 cy="50"
@@ -47,22 +128,21 @@ export default function FinanceGoalsRow({ summary }) {
             </div>
           </div>
 
-          {/* Breakdown Boxes */}
           <div className="goal-stats-col">
             <div className="stat-box">
               <span className="stat-box-label">Actual</span>
-              <strong className="stat-box-val">S/ {(actualVentas / 1000).toFixed(1)}k</strong>
+              <strong className="stat-box-val">{currency.format(actualVentas)}</strong>
             </div>
             <div className="stat-box">
               <span className="stat-box-label">Remanente</span>
-              <strong className="stat-box-val">S/ {(remanenteVentas / 1000).toFixed(1)}k</strong>
+              <strong className="stat-box-val">{currency.format(remanenteVentas)}</strong>
             </div>
           </div>
         </div>
 
         <div className="fin-goal-footer">
           <Calendar size={13} />
-          <span>Quedan 6 días para finalizar el periodo</span>
+          <span>Resumen de metas del mes en curso</span>
         </div>
       </div>
 
@@ -75,11 +155,8 @@ export default function FinanceGoalsRow({ summary }) {
             </div>
             <div className="goal-title-flex">
               <h3 className="fin-card-title">Fondo de Emergencia</h3>
-              <p className="fin-card-subtitle">Reserva de capital para contingencias.</p>
+              <p className="fin-card-subtitle">Reserva acumulada para contingencias.</p>
             </div>
-            <button className="icon-btn-ghost">
-              <MoreHorizontal size={16} />
-            </button>
           </div>
 
           <div className="emergency-fund-content">
@@ -107,7 +184,7 @@ export default function FinanceGoalsRow({ summary }) {
             </div>
             <div className="goal-title-flex">
               <h3 className="fin-card-title">Expansión de Inventario</h3>
-              <p className="fin-card-subtitle">Adquisición de nueva línea de productos.</p>
+              <p className="fin-card-subtitle">Adquisición acumulada en el mes.</p>
             </div>
             <span className="fin-badge badge-teal">Casi Completado</span>
           </div>
@@ -119,8 +196,8 @@ export default function FinanceGoalsRow({ summary }) {
 
             <div className="expansion-three-stats">
               <div className="exp-stat-col">
-                <span className="exp-label">Días restantes</span>
-                <strong className="exp-val">5 días</strong>
+                <span className="exp-label">Estado</span>
+                <strong className="exp-val">En proceso</strong>
               </div>
               <div className="exp-stat-col">
                 <span className="exp-label">Invertido</span>

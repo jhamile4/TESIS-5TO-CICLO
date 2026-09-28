@@ -1,11 +1,11 @@
-import { DollarSign, ShoppingBag, Users, Package, TrendingUp } from 'lucide-react'
+import { DollarSign, ShoppingBag, Users, Package } from 'lucide-react'
 import { currency } from '../../utils/formatters'
 
 export default function DashboardMetricsRow({ metrics }) {
-  const ventas = metrics?.ventasTotales ? currency.format(metrics.ventasTotales) : 'S/ 24.580'
-  const ordenes = metrics?.ordenes || 156
-  const clientes = metrics?.clientes || 89
-  const productos = metrics?.productos || 45
+  const ventas = metrics && metrics.ventasTotales !== undefined ? currency.format(metrics.ventasTotales) : 'S/ 0.00'
+  const ordenes = metrics?.ordenes ?? 0
+  const clientes = metrics?.clientes ?? 0
+  const productos = metrics?.productos ?? 0
 
   return (
     <div className="dash-metrics-grid">
@@ -15,8 +15,7 @@ export default function DashboardMetricsRow({ metrics }) {
           <span className="dash-metric-label">Ventas Totales</span>
           <strong className="dash-metric-val">{ventas}</strong>
           <div className="dash-metric-trend green">
-            <TrendingUp size={13} />
-            <span>12.5% vs mes pasado</span>
+            <span>Total acumulado</span>
           </div>
         </div>
         <div className="dash-icon-box green">
@@ -30,8 +29,7 @@ export default function DashboardMetricsRow({ metrics }) {
           <span className="dash-metric-label">Órdenes</span>
           <strong className="dash-metric-val">{ordenes}</strong>
           <div className="dash-metric-trend green">
-            <TrendingUp size={13} />
-            <span>8.3% vs mes pasado</span>
+            <span>Registradas</span>
           </div>
         </div>
         <div className="dash-icon-box green">
@@ -45,8 +43,7 @@ export default function DashboardMetricsRow({ metrics }) {
           <span className="dash-metric-label">Clientes</span>
           <strong className="dash-metric-val">{clientes}</strong>
           <div className="dash-metric-trend green">
-            <TrendingUp size={13} />
-            <span>15.2% vs mes pasado</span>
+            <span>Compradores</span>
           </div>
         </div>
         <div className="dash-icon-box green">
@@ -60,8 +57,7 @@ export default function DashboardMetricsRow({ metrics }) {
           <span className="dash-metric-label">Productos</span>
           <strong className="dash-metric-val">{productos}</strong>
           <div className="dash-metric-trend green">
-            <TrendingUp size={13} />
-            <span>5.1% vs mes pasado</span>
+            <span>En inventario</span>
           </div>
         </div>
         <div className="dash-icon-box green">
@@ -71,3 +67,4 @@ export default function DashboardMetricsRow({ metrics }) {
     </div>
   )
 }
+

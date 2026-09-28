@@ -1,6 +1,5 @@
 import {
   Boxes,
-  ChartNoAxesCombined,
   ChevronRight,
   CircleDollarSign,
   LayoutDashboard,
@@ -36,14 +35,51 @@ export default function Sidebar({ business }) {
 
   return (
     <aside className="sidebar">
-      {/* Brand Header */}
-      <div className="sidebar-brand">
-        <div className="brand-mark small">
-          <ChartNoAxesCombined size={21} />
+      {/* Brand Header — Con el Logo 3D Animado de Crecio */}
+      <div 
+        className="sidebar-brand logo-container-group cursor-pointer select-none" 
+        onClick={() => navigate('/')}
+        style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '18px 20px' }}
+      >
+        <div className="w-7 h-7 relative perspective-sm shrink-0 flex items-end gap-[3.5px] pb-[1px]">
+          <div className="logo-prism-wrapper w-full h-full relative transform-style-3d">
+            <div className="logo-bars-back">
+              <div className="logo-bar-back-1" />
+              <div className="logo-bar-back-2" />
+              <div className="logo-bar-back-3" />
+            </div>
+            <div className="logo-bars-front">
+              <div className="logo-bar-front-1" />
+              <div className="logo-bar-front-2" />
+              <div className="logo-bar-front-3" />
+            </div>
+          </div>
         </div>
-        <div>
-          <strong>Crecio</strong>
-          <span>Panel de Control</span>
+        
+        <div className="logo-text-holder flex flex-col justify-center select-none">
+          <div className="logo-word flex items-center tracking-tighter" style={{ fontSize: '25px' }}>
+            <span className="logo-char-wrapper" style={{ height: '28px' }}>
+              <span className="logo-char-3d text-[#111827]">C</span>
+            </span>
+            <span className="logo-char-wrapper" style={{ height: '28px' }}>
+              <span className="logo-char-3d text-[#111827]">R</span>
+            </span>
+            <span className="logo-char-wrapper" style={{ height: '28px' }}>
+              <span className="logo-char-3d text-[#111827]">E</span>
+            </span>
+            <span className="logo-char-wrapper" style={{ height: '28px' }}>
+              <span className="logo-char-3d text-[#0D9488]">C</span>
+            </span>
+            <span className="logo-char-wrapper" style={{ height: '28px' }}>
+              <span className="logo-char-3d text-[#0D9488]">I</span>
+            </span>
+            <span className="logo-char-wrapper" style={{ height: '28px' }}>
+              <span className="logo-char-3d text-[#0D9488]">O</span>
+            </span>
+          </div>
+          <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', marginTop: '-1px', letterSpacing: '0.2px' }}>
+            Panel de Control
+          </span>
         </div>
       </div>
 

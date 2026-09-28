@@ -4,17 +4,11 @@ import { API_URL } from '../config/env'
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('crecio_admin_user'))
-    } catch {
-      return null
-    }
-  })
+  const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const token = localStorage.getItem('crecio_admin_token')
+    const token = localStorage.getItem('crecio_admin_token') || localStorage.getItem('token')
     const headers =
       token && token !== 'null' && token !== 'undefined'
         ? { Authorization: `Bearer ${token}` }
@@ -27,18 +21,20 @@ export function AuthProvider({ children }) {
       .then((response) => (response.ok ? response.json() : null))
       .then((data) => {
         if (data?.cliente) {
-          const current = JSON.parse(localStorage.getItem('crecio_admin_user') || '{}')
-          const sessionUser = { ...current, ...data.cliente }
+          const sessionUser = { ...data.cliente }
           localStorage.setItem('crecio_admin_user', JSON.stringify(sessionUser))
+          if (token) {
+            localStorage.setItem('crecio_admin_token', token)
+          }
           setUser(sessionUser)
         } else {
-          const localUser = JSON.parse(localStorage.getItem('crecio_admin_user') || 'null')
-          setUser(localUser)
+          localStorage.removeItem('crecio_admin_user')
+          localStorage.removeItem('crecio_admin_token')
+          setUser(null)
         }
       })
       .catch(() => {
-        const localUser = JSON.parse(localStorage.getItem('crecio_admin_user') || 'null')
-        setUser(localUser)
+        setUser(null)
       })
       .finally(() => setLoading(false))
   }, [])
@@ -46,6 +42,7 @@ export function AuthProvider({ children }) {
   const login = (data) => {
     if (data?.token) {
       localStorage.setItem('crecio_admin_token', data.token)
+      localStorage.setItem('token', data.token)
     }
     if (data?.cliente) {
       localStorage.setItem('crecio_admin_user', JSON.stringify(data.cliente))
@@ -57,6 +54,10 @@ export function AuthProvider({ children }) {
     await fetch(`${API_URL}/auth/logout`, { method: 'POST', credentials: 'include' }).catch(() => {})
     localStorage.removeItem('crecio_admin_user')
     localStorage.removeItem('crecio_admin_token')
+    localStorage.removeItem('token')
+    localStorage.removeItem('cliente')
+    localStorage.removeItem('token_comprador')
+    localStorage.removeItem('comprador')
     setUser(null)
   }
 

@@ -160,6 +160,8 @@ const getFinanceSummary = (negocioId) =>
        COUNT(*) FILTER (WHERE estado = 'pagado' AND created_at >= date_trunc('month', CURRENT_DATE)) AS operaciones_mes,
        COALESCE(SUM(monto_total) FILTER (WHERE estado = 'pagado' AND stripe_payment_intent IS NOT NULL AND created_at >= date_trunc('month', CURRENT_DATE)), 0) AS ingresos_tarjeta,
        COALESCE(SUM(monto_total) FILTER (WHERE estado = 'pagado' AND stripe_payment_intent IS NULL AND created_at >= date_trunc('month', CURRENT_DATE)), 0) AS ingresos_efectivo,
+       COALESCE(SUM(monto_total) FILTER (WHERE estado = 'pagado' AND stripe_payment_intent IS NOT NULL AND created_at::date = CURRENT_DATE), 0) AS ingresos_tarjeta_hoy,
+       COALESCE(SUM(monto_total) FILTER (WHERE estado = 'pagado' AND stripe_payment_intent IS NULL AND created_at::date = CURRENT_DATE), 0) AS ingresos_efectivo_hoy,
        COALESCE((SELECT SUM(monto) FROM gasto WHERE fk_negocio_id = $1 AND fecha = CURRENT_DATE), 0) AS gastos_hoy,
        COALESCE((SELECT SUM(monto) FROM gasto WHERE fk_negocio_id = $1 AND fecha >= date_trunc('month', CURRENT_DATE)::date), 0) AS gastos_mes
      FROM pedido_pago WHERE fk_negocio_id = $1`,

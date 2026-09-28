@@ -2,10 +2,10 @@ import { Package, AlertCircle, ShoppingCart, FileText } from 'lucide-react'
 import { currency } from '../../utils/formatters'
 
 export default function InventoryMetrics({ metrics }) {
-  const total = metrics?.totalProductos ?? 8
-  const alertas = metrics?.alertasStockBajo ?? 2
-  const ventas = metrics?.unidadesStock ?? 125
-  const valor = metrics?.valorInventario ?? 47500
+  const total = metrics?.totalProductos ?? 0
+  const alertas = metrics?.alertasStockBajo ?? 0
+  const ventas = metrics?.unidadesStock ?? 0
+  const valor = metrics?.valorInventario ?? 0
 
   return (
     <div className="inventory-metrics-grid">

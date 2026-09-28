@@ -100,8 +100,13 @@ function Directorio() {
                     <img
                       src={n.img}
                       alt={n.nombre}
+                      onError={(e) => {
+                        e.target.onerror = null
+                        e.target.src = 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&auto=format&fit=crop&q=80'
+                      }}
                       className="w-full h-44 object-cover object-top group-hover:scale-105 transition-transform duration-500"
                     />
+
                     <div className="absolute top-3 left-3">
                       <span className="bg-white/90 text-[#374151] text-xs font-medium px-2.5 py-1 rounded">
                         {n.categoria}

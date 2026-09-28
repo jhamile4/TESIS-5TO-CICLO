@@ -38,9 +38,10 @@ function NegocioCard({ n }) {
     >
       <div className="relative h-48 overflow-hidden bg-[#F3F4F6] shrink-0">
         {n.img
-          ? <img src={n.img} alt={n.nombre} className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500" />
+          ? <img src={n.img} alt={n.nombre} onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&auto=format&fit=crop&q=80' }} className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500" />
           : <div className="w-full h-full flex items-center justify-center"><i className="ri-store-2-line text-5xl text-[#D1D5DB]" /></div>
         }
+
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
         <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[#374151] text-[10px] font-semibold px-2.5 py-1 rounded-full">
           {n.categoria}

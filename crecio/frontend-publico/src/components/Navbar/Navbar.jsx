@@ -137,10 +137,9 @@ const Navbar = () => {
         <div className="hidden md:flex items-center gap-4">
           {comprador ? (
             <div className="relative group">
-              {/* Clic en avatar → perfil */}
-              <button
-                onClick={() => navigate('/perfil')}
-                className="flex items-center gap-2.5 cursor-pointer"
+              {/* Avatar e info de usuario — ya NO navega al hacer clic */}
+              <div
+                className="flex items-center gap-2.5 cursor-pointer py-1"
               >
                 <div className="w-9 h-9 rounded-full bg-[#0D9488] hover:bg-[#0F766E] flex items-center justify-center shadow-sm hover:shadow-md transition-all shrink-0">
                   <span className="text-sm font-bold text-white">
@@ -151,10 +150,10 @@ const Navbar = () => {
                   <p className="text-xs font-bold leading-none">{comprador.nombre}</p>
                   <p className="text-[10px] opacity-60 mt-0.5">Mi cuenta ▾</p>
                 </div>
-              </button>
+              </div>
 
-              {/* Dropdown aparece al hacer hover */}
-              <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-[#E5E7EB]/70 py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              {/* Dropdown que aparece al pasar o hacer clic sobre el menú */}
+              <div className="absolute right-0 top-full mt-1 w-52 bg-white rounded-xl shadow-xl border border-[#E5E7EB]/70 py-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 {comprador.esEmprendedor && (
                   <button
                     onClick={() => window.location.assign(PANEL_URL)}
@@ -170,6 +169,13 @@ const Navbar = () => {
                 >
                   <i className="ri-shopping-bag-line text-base text-[#0D9488]" />
                   Comprar algo
+                </button>
+                <button
+                  onClick={() => navigate('/perfil')}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#374151] hover:bg-[#F0FDF9] hover:text-[#0D9488] transition-colors cursor-pointer"
+                >
+                  <i className="ri-user-3-line text-base text-[#0D9488]" />
+                  Mis compras
                 </button>
                 <div className="border-t border-[#E5E7EB]/70 my-1" />
                 <button
@@ -237,7 +243,7 @@ const Navbar = () => {
                   className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#0D9488] to-[#14B8A6] text-white font-bold text-sm flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-[#0D9488]/10 hover:shadow-lg transition-all"
                 >
                   <i className="ri-user-line" />
-                  Mi perfil — {comprador.nombre}
+                  Mis compras — {comprador.nombre}
                 </button>
                 {comprador.esEmprendedor && (
                   <button
