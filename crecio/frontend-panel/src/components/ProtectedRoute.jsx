@@ -23,7 +23,7 @@ export default function ProtectedRoute() {
   }
 
   if (!user) {
-    window.location.replace(`${PUBLIC_URL}/login`)
+    window.location.replace(`${PUBLIC_URL}`)
     return null
   }
 

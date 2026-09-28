@@ -30,7 +30,7 @@ export default function Sidebar({ business }) {
 
   const handleLogout = async () => {
     await logout()
-    window.location.assign(`${PUBLIC_URL}/login`)
+    window.location.assign(`${PUBLIC_URL}`)
   }
 
   return (
