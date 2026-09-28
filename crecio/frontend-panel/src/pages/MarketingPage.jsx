@@ -111,6 +111,27 @@ export default function MarketingPage() {
     loadPosts()
   }, [])
 
+  const handleConnectAccount = async (accountData) => {
+    try {
+      await conectarRedSocial(accountData)
+      setAccounts((prev) =>
+        prev.map((acc) => {
+          if (acc.id === accountData.plataforma) {
+            return {
+              ...acc,
+              handle: accountData.handle,
+              connected: true,
+              active: true
+            }
+          }
+          return acc
+        })
+      )
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
   const toggleAccount = (id) => {
     setAccounts((prev) =>
       prev.map((acc) => {
@@ -136,6 +157,7 @@ export default function MarketingPage() {
       setLoadingImage(false)
     }
   }
+
 
   const generate = async () => {
     setLoading(true)
@@ -255,7 +277,10 @@ export default function MarketingPage() {
             accounts={accounts}
             activeAccountsList={activeAccountsList}
             toggleAccount={toggleAccount}
+            onConnectAccount={handleConnectAccount}
+            business={business}
           />
+
 
           <MarketingPreviewCol
             contentTypes={contentTypes}

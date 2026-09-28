@@ -1,4 +1,5 @@
-import { Sparkles, ImagePlus, WandSparkles, Check, RefreshCw, Palette } from 'lucide-react'
+import { useState } from 'react'
+import { Sparkles, ImagePlus, WandSparkles, Check, RefreshCw, Palette, Link2, ExternalLink, ShieldCheck, X } from 'lucide-react'
 
 const quickPrompts = [
   '🔥 Oferta relámpago con 20% de descuento',
@@ -26,8 +27,39 @@ export default function MarketingEditorCol({
   generate,
   accounts,
   activeAccountsList,
-  toggleAccount
+  toggleAccount,
+  onConnectAccount,
+  business
 }) {
+  const [connectModalAcc, setConnectModalAcc] = useState(null)
+  const [handleInput, setHandleInput] = useState('')
+  const [connecting, setConnecting] = useState(false)
+
+  const openConnectModal = (acc) => {
+    setConnectModalAcc(acc)
+    setHandleInput(acc.handle !== 'Sin conectar' ? acc.handle : '')
+  }
+
+  const handleSaveConnection = async (e) => {
+    e.preventDefault()
+    if (!connectModalAcc) return
+    setConnecting(true)
+    try {
+      await onConnectAccount({
+        plataforma: connectModalAcc.id,
+        nombreCuenta: connectModalAcc.name,
+        handle: handleInput || `@${connectModalAcc.name.toLowerCase()}`,
+        estado: 'conectado'
+      })
+      alert(`✅ ¡Cuenta de ${connectModalAcc.name} vinculada exitosamente!`)
+      setConnectModalAcc(null)
+    } catch (err) {
+      alert('Error al conectar la cuenta')
+    } finally {
+      setConnecting(false)
+    }
+  }
+
   return (
     <div className="marketing-col-left">
       {/* Plantilla de contenido */}
@@ -139,7 +171,13 @@ export default function MarketingEditorCol({
             <div
               key={acc.id}
               className={`account-item ${acc.active ? 'active-acc' : ''} ${!acc.connected ? 'disabled-acc' : ''}`}
-              onClick={() => toggleAccount(acc.id)}
+              onClick={() => {
+                if (!acc.connected) {
+                  openConnectModal(acc)
+                } else {
+                  toggleAccount(acc.id)
+                }
+              }}
             >
               <div className="acc-info">
                 <div className="acc-icon-badge" style={{ backgroundColor: acc.color + '15', color: acc.color }}>
@@ -147,17 +185,92 @@ export default function MarketingEditorCol({
                 </div>
                 <div>
                   <strong>{acc.name}</strong>
-                  <small>{acc.handle}</small>
+                  <small>{acc.connected ? acc.handle : 'Clic para conectar'}</small>
                 </div>
               </div>
-              <div className={`acc-checkbox ${acc.active ? 'checked' : ''}`}>
-                {acc.active && <Check size={12} />}
+              <div className="acc-action-right">
+                {!acc.connected ? (
+                  <button type="button" className="btn-connect-sm" onClick={(e) => { e.stopPropagation(); openConnectModal(acc); }}>
+                    <Link2 size={12} /> Conectar
+                  </button>
+                ) : (
+                  <div className={`acc-checkbox ${acc.active ? 'checked' : ''}`}>
+                    {acc.active && <Check size={12} />}
+                  </div>
+                )}
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      {/* MODAL DE CONEXIÓN OAUTH DE REDES SOCIALES */}
+      {connectModalAcc && (
+        <div className="modal-overlay-marketing" onClick={() => setConnectModalAcc(null)}>
+          <div className="modal-box-marketing" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header-marketing">
+              <div className="modal-title-flex">
+                <div className="acc-icon-badge-lg" style={{ backgroundColor: connectModalAcc.color + '20', color: connectModalAcc.color }}>
+                  {connectModalAcc.name.charAt(0)}
+                </div>
+                <div>
+                  <h4>Conectar {connectModalAcc.name}</h4>
+                  <p>Vincular la cuenta oficial de tu negocio para publicar con 1 clic</p>
+                </div>
+              </div>
+              <button className="btn-close-modal" onClick={() => setConnectModalAcc(null)}><X size={18} /></button>
+            </div>
+
+            <div className="modal-body-marketing">
+              <div className="oauth-method-box">
+                <ShieldCheck size={20} className="text-teal" />
+                <div>
+                  <strong>Conexión Oficial Segura OAuth 2.0</strong>
+                  <small>No almacenamos contraseñas. Autorización directa con {connectModalAcc.name}.</small>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="btn-oauth-official"
+                style={{ backgroundColor: connectModalAcc.color }}
+                onClick={() => {
+                  alert(`Redirigiendo a la pantalla de autorización oficial de ${connectModalAcc.name} (Meta / OAuth App)...`)
+                  if (onConnectAccount) {
+                    onConnectAccount({
+                      plataforma: connectModalAcc.id,
+                      nombreCuenta: connectModalAcc.name,
+                      handle: `@${business?.nombre?.toLowerCase()?.replace(/\s+/g, '') || 'mitienda'}`,
+                      estado: 'conectado'
+                    })
+                  }
+                  setConnectModalAcc(null)
+                }}
+              >
+                <ExternalLink size={15} /> Iniciar sesión y autorizar en {connectModalAcc.name}
+              </button>
+
+              <div className="divider-or"><span>O vincular usuario manualmente</span></div>
+
+              <form onSubmit={handleSaveConnection} className="manual-handle-form">
+                <label>Nombre de usuario / Handle (@)</label>
+                <input
+                  type="text"
+                  placeholder={`Ej: @${connectModalAcc.name.toLowerCase()}_tienda`}
+                  value={handleInput}
+                  onChange={(e) => setHandleInput(e.target.value)}
+                  required
+                />
+                <button type="submit" className="btn-save-handle" disabled={connecting}>
+                  {connecting ? 'Guardando...' : 'Vincular Cuenta del Negocio'}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
+
 

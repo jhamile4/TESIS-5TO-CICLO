@@ -87,11 +87,34 @@ const updateTienda = async (clienteId, datos) => {
   const required = ['nombre', 'descripcion', 'direccion', 'whatsapp']
   if (required.some((field) => typeof datos[field] !== 'string')) throw { status: 400, message: 'Completa los datos de la tienda' }
   const result = await repository.updateBusiness(clienteId, {
-    nombre: datos.nombre.trim(), descripcion: datos.descripcion.trim(), direccion: datos.direccion.trim(), whatsapp: datos.whatsapp.trim(), logoUrl: (datos.logoUrl || '').trim(),
+    nombre: datos.nombre.trim(),
+    descripcion: datos.descripcion.trim(),
+    direccion: datos.direccion.trim(),
+    whatsapp: datos.whatsapp.trim(),
+    logoUrl: (datos.logoUrl || '').trim(),
+    categoria: datos.categoria || 'Ropa y Accesorios',
+    redesSociales: datos.redesSociales || {}
   })
   if (result.rows.length === 0) throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
+
+  // Sincronizar automáticamente cada red social ingresada en Configuración con red_social_cuenta
+  if (datos.redesSociales && typeof datos.redesSociales === 'object') {
+    const negocioId = result.rows[0].pk_id
+    for (const [plataforma, handle] of Object.entries(datos.redesSociales)) {
+      if (handle && typeof handle === 'string' && handle.trim()) {
+        await repository.upsertSocialAccount(negocioId, {
+          plataforma,
+          nombreCuenta: plataforma.charAt(0).toUpperCase() + plataforma.slice(1),
+          handle: handle.trim(),
+          estado: 'conectado'
+        }).catch(() => {})
+      }
+    }
+  }
+
   return { negocio: result.rows[0] }
 }
+
 
 const createProduct = async (clienteId, datos) => {
   const negocioResult = await repository.findBusinessByOwner(clienteId)
