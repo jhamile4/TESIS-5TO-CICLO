@@ -1,0 +1,92 @@
+/* --- BASE & GLOBAL RESETS --- */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family-base);
+  color: var(--color-text-body);
+  background-color: var(--color-surface-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* --- UNIFIED PAGE HEADER & TOP SPACING SYSTEM --- */
+.welcome,
+.inventory-heading-flex,
+.sales-heading-bar,
+.clients-heading-bar,
+.marketing-header,
+.finance-heading,
+.store-page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: 0;
+  margin-bottom: var(--space-6);
+  padding-top: var(--space-1);
+}
+
+.welcome h2,
+.inventory-heading-flex h2,
+.sales-heading-bar h2,
+.clients-heading-bar h2,
+.marketing-header h2,
+.finance-heading h2,
+.store-page-header h2 {
+  font-family: var(--font-family-heading);
+  font-size: var(--font-2xl);
+  font-weight: 800;
+  color: var(--color-text-main);
+  margin: 0;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.welcome p,
+.inventory-heading-flex p,
+.sales-heading-bar p,
+.clients-heading-bar p,
+.marketing-header p,
+.finance-heading p,
+.store-page-header p {
+  color: var(--color-text-muted);
+  font-size: var(--font-sm);
+  margin: var(--space-1) 0 0;
+  line-height: 1.4;
+}
+
+.inventory-page-wrapper,
+.sales-page-wrapper,
+.clients-page-wrapper,
+.marketing-page-wrapper,
+.store-page-wrapper,
+.finance-content,
+.marketing-content {
+  padding-top: 0;
+}
+
+/* Toasts */
+.toast-success {
+  background: var(--color-success-bg);
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+  font-size: var(--font-sm);
+  font-weight: 600;
+}
+
+.toast-error {
+  background: var(--color-danger-bg);
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+  font-size: var(--font-sm);
+  font-weight: 600;
+}

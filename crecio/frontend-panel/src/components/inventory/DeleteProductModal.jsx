@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { eliminarProducto } from '../../services/apiAdmin'
+import ModalShell from '../common/ModalShell'
 
 export default function DeleteProductModal({ product, onClose, onDeleted }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  if (!product) return null
 
   const handleDelete = async () => {
     setLoading(true)
@@ -19,32 +22,37 @@ export default function DeleteProductModal({ product, onClose, onDeleted }) {
     }
   }
 
+  const footerActions = (
+    <>
+      <button className="btn-ui-outline" onClick={onClose} disabled={loading}>
+        Cancelar
+      </button>
+      <button className="btn-confirm-delete-red" onClick={handleDelete} disabled={loading}>
+        {loading ? 'Eliminando...' : 'Sí, eliminar'}
+      </button>
+    </>
+  )
+
   return (
-    <div className="modal-backdrop">
-      <div className="inv-modal-card delete-confirm-card">
+    <ModalShell
+      isOpen={!!product}
+      onClose={onClose}
+      title="Eliminar producto"
+      maxWidth="420px"
+      footer={footerActions}
+    >
+      <div className="delete-confirm-content">
         <div className="delete-icon-circle">
           <Trash2 size={24} className="text-red" />
         </div>
-
-        <h3>Eliminar producto</h3>
         <p className="delete-confirm-text">
-          ¿Estás seguro que quieres eliminar{' '}
-          <strong>"{product.nombre}"</strong>?
+          ¿Estás seguro que quieres eliminar <strong>"{product.nombre}"</strong>?
           <br />
           <small>Esta acción no se puede deshacer.</small>
         </p>
 
         {error && <div className="modal-error">{error}</div>}
-
-        <div className="delete-modal-actions">
-          <button className="btn-modal-cancel" onClick={onClose} disabled={loading}>
-            Cancelar
-          </button>
-          <button className="btn-confirm-delete-red" onClick={handleDelete} disabled={loading}>
-            {loading ? 'Eliminando...' : 'Sí, eliminar'}
-          </button>
-        </div>
       </div>
-    </div>
+    </ModalShell>
   )
 }

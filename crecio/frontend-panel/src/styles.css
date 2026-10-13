@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import './styles/index.css';
+
 
 /* --- UNIFIED PAGE HEADER & TOP SPACING SYSTEM --- */
 .welcome,
@@ -2225,8 +2226,6 @@ input:checked + .slider { background-color: #10b981; }
   text-decoration: none;
   transition: all 0.2s ease;
 }
-
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@800;900&display=swap');
 
 /* ── Custom Animated Logo (3D Holographic Prism & Flip-Roll Concept) ── */
 .logo-word {

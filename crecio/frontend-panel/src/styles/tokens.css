@@ -1,0 +1,121 @@
+/* --- DESIGN TOKENS & SYSTEM VARIABLES --- */
+:root {
+  /* Colors - Core Palette */
+  --color-primary: #0d9488;
+  --color-primary-hover: #0f766e;
+  --color-primary-active: #115e59;
+  --color-primary-light: #f0fdfa;
+  --color-primary-subtle: #ccfbf1;
+  --color-primary-border: #99f6e4;
+  
+  --color-dark: #0f172a;
+  --color-dark-muted: #1e293b;
+
+  --color-surface-page: #f8fafc;
+  --color-surface-card: #ffffff;
+  --color-surface-hover: #f1f5f9;
+
+  --color-text-main: #0f172a;
+  --color-text-body: #334155;
+  --color-text-muted: #64748b;
+  --color-text-subtle: #94a3b8;
+
+  --color-border: #e2e8f0;
+  --color-border-hover: #cbd5e1;
+
+  --color-success: #10b981;
+  --color-success-bg: #ecfdf5;
+  --color-warning: #f59e0b;
+  --color-warning-bg: #fffbe6;
+  --color-danger: #ef4444;
+  --color-danger-bg: #fef2f2;
+  --color-info: #3b82f6;
+  --color-info-bg: #eff6ff;
+
+  /* Typography */
+  --font-family-base: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-family-heading: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+
+  /* Font Sizes */
+  --font-xs: 0.75rem;     /* 12px */
+  --font-sm: 0.8125rem;  /* 13px */
+  --font-base: 0.875rem;   /* 14px */
+  --font-lg: 1rem;       /* 16px */
+  --font-xl: 1.25rem;    /* 20px */
+  --font-2xl: 1.5rem;    /* 24px */
+  --font-3xl: 1.875rem;  /* 30px */
+
+  /* Spacing Scale (4px grid) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Border Radii */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px 0 rgb(15 23 42 / 0.04);
+  --shadow-sm: 0 1px 3px 0 rgb(15 23 42 / 0.08), 0 1px 2px -1px rgb(15 23 42 / 0.08);
+  --shadow-md: 0 4px 6px -1px rgb(15 23 42 / 0.08), 0 2px 4px -2px rgb(15 23 42 / 0.05);
+  --shadow-lg: 0 10px 15px -3px rgb(15 23 42 / 0.08), 0 4px 6px -4px rgb(15 23 42 / 0.04);
+
+  /* Transitions */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Common UI Utility Classes */
+.btn-ui-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 9px 16px;
+  background: var(--color-primary);
+  color: #ffffff;
+  font-family: var(--font-family-base);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+  box-shadow: var(--shadow-xs);
+}
+.btn-ui-primary:hover {
+  background: var(--color-primary-hover);
+}
+.btn-ui-primary:active {
+  transform: translateY(1px);
+}
+
+.btn-ui-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 9px 14px;
+  background: var(--color-surface-card);
+  color: var(--color-text-body);
+  font-family: var(--font-family-base);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.btn-ui-outline:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-border-hover);
+  color: var(--color-text-main);
+}

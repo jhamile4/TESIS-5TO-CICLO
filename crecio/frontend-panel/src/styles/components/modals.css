@@ -1,0 +1,200 @@
+/* --- MODAL SYSTEM STYLES --- */
+.modal-backdrop-ui {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: var(--space-4);
+  animation: fadeIn var(--transition-fast);
+}
+
+.modal-box-ui {
+  background: var(--color-surface-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-border);
+  width: 100%;
+  max-width: 520px;
+  overflow: hidden;
+  animation: scaleUp var(--transition-fast);
+}
+
+.modal-header-ui {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-card);
+}
+
+.modal-title-ui {
+  font-family: var(--font-family-heading);
+  font-size: var(--font-lg);
+  font-weight: 700;
+  color: var(--color-text-main);
+  margin: 0;
+}
+
+.modal-subtitle-ui {
+  font-size: var(--font-xs);
+  color: var(--color-text-muted);
+  margin: 2px 0 0;
+}
+
+.modal-close-btn-ui {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.modal-close-btn-ui:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text-main);
+}
+
+.modal-body-ui {
+  padding: var(--space-6);
+  max-height: calc(85vh - 130px);
+  overflow-y: auto;
+}
+
+.modal-footer-ui {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6);
+  background: var(--color-surface-page);
+  border-top: 1px solid var(--color-border);
+}
+
+/* Voucher & Sale Details Specifics */
+.voucher-preview-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-page);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--color-border-hover);
+  min-height: 180px;
+}
+
+.voucher-preview-img {
+  width: 100%;
+  max-height: 440px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+}
+
+.voucher-empty-text {
+  color: var(--color-text-muted);
+  font-size: var(--font-sm);
+  margin: var(--space-4) 0;
+  text-align: center;
+}
+
+.sale-details-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.sale-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  background: var(--color-surface-page);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.sale-info-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.sale-info-label {
+  font-size: var(--font-xs);
+  color: var(--color-text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sale-info-val {
+  color: var(--color-text-main);
+  font-size: var(--font-base);
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.sale-info-sub {
+  color: var(--color-text-muted);
+  font-size: var(--font-xs);
+}
+
+.sale-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.sale-section-label {
+  font-size: var(--font-xs);
+  font-weight: 700;
+  color: var(--color-text-body);
+}
+
+.sale-items-table {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-surface-card);
+}
+
+.sale-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-sm);
+  border-bottom: 1px solid var(--color-surface-hover);
+}
+
+.sale-item-row:last-child {
+  border-bottom: none;
+}
+
+.sale-notes-text {
+  background: var(--color-surface-page);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-xs);
+  color: var(--color-text-body);
+  margin: 0;
+  border-left: 3px solid var(--color-primary);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes scaleUp {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
