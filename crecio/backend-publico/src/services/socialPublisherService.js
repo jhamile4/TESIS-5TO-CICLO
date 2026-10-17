@@ -268,10 +268,101 @@ async function publishToAllNetworks({
   }
 }
 
+/**
+ * Genera la URL de inicio de sesión de Meta para vincular Instagram y Facebook
+ */
+function getMetaAuthUrl(redirectUri) {
+  const appId = process.env.META_APP_ID
+  if (!appId) throw new Error('META_APP_ID no configurado en .env')
+  
+  const scopes = [
+    'pages_show_list',
+    'pages_read_engagement',
+    'pages_manage_posts',
+    'instagram_basic',
+    'instagram_content_publish'
+  ].join(',')
+
+  return `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}&response_type=code`
+}
+
+/**
+ * Intercambia el código de autorización por un Access Token de larga duración (60 días)
+ */
+async function exchangeMetaCode({ code, redirectUri }) {
+  const appId = process.env.META_APP_ID
+  const appSecret = process.env.META_APP_SECRET
+  if (!appId || !appSecret) throw new Error('Credenciales de Meta incompletas en .env')
+
+  // 1. Obtener Token de corta duración
+  const tokenUrl = `https://graph.facebook.com/v19.0/oauth/access_token?client_id=${appId}&redirect_uri=${encodeURIComponent(redirectUri)}&client_secret=${appSecret}&code=${code}`
+  const shortRes = await fetch(tokenUrl)
+  const shortData = await shortRes.json()
+
+  if (!shortRes.ok || !shortData.access_token) {
+    throw new Error(shortData.error?.message || 'Error al obtener access_token de Meta')
+  }
+
+  // 2. Canjear por Token de larga duración (60 días)
+  const longTokenUrl = `https://graph.facebook.com/v19.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${appId}&client_secret=${appSecret}&fb_exchange_token=${shortData.access_token}`
+  const longRes = await fetch(longTokenUrl)
+  const longData = await longRes.json()
+
+  const finalToken = longData.access_token || shortData.access_token
+  return finalToken
+}
+
+/**
+ * Obtiene las Páginas de Facebook y las cuentas vinculadas de Instagram Business del usuario
+ */
+async function fetchMetaAccounts(userAccessToken) {
+  const accountsUrl = `https://graph.facebook.com/v19.0/me/accounts?fields=id,name,access_token,instagram_business_account{id,username,name}&access_token=${userAccessToken}`
+  const res = await fetch(accountsUrl)
+  const data = await res.json()
+
+  if (!res.ok) {
+    throw new Error(data.error?.message || 'Error al obtener cuentas de Facebook e Instagram')
+  }
+
+  const pages = data.data || []
+  const accounts = []
+
+  pages.forEach(page => {
+    // Cuenta de Facebook Page
+    accounts.push({
+      plataforma: 'facebook',
+      cuentaIdExterna: page.id,
+      nombreCuenta: page.name,
+      handle: `facebook.com/${page.id}`,
+      accessToken: page.access_token,
+      estado: 'conectado'
+    })
+
+    // Cuenta de Instagram vinculada a esa Page
+    if (page.instagram_business_account) {
+      const ig = page.instagram_business_account
+      accounts.push({
+        plataforma: 'instagram',
+        cuentaIdExterna: ig.id,
+        nombreCuenta: ig.name || ig.username || page.name,
+        handle: ig.username ? `@${ig.username}` : `@${page.name}`,
+        accessToken: page.access_token, // Para Instagram Graph API se usa el Page Access Token
+        estado: 'conectado'
+      })
+    }
+  })
+
+  return accounts
+}
+
 module.exports = {
   publishToInstagramPhoto,
   publishToInstagramReel,
   publishToFacebookPage,
   publishToTikTok,
-  publishToAllNetworks
+  publishToAllNetworks,
+  getMetaAuthUrl,
+  exchangeMetaCode,
+  fetchMetaAccounts
 }
+

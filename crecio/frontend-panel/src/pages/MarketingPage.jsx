@@ -6,7 +6,12 @@ import {
   generarImagenProducto,
   getPublicacionesMarketing,
   guardarPublicacionMarketing,
-  publicarDirectoMarketing
+  publicarDirectoMarketing,
+  getRedesSociales,
+  conectarRedSocial,
+  getMetaAuthUrl,
+  enviarMetaCallback,
+  conectarMetaToken
 } from '../services/apiAdmin'
 
 import MarketingHeader from '../components/marketing/MarketingHeader'
@@ -42,12 +47,12 @@ const contentTypes = [
   { id: 'Anuncio', label: 'Anuncio' }
 ]
 
-const initialAccounts = [
-  { id: 'instagram', name: 'Instagram', handle: '@mitiendacrecio', active: true, connected: true, color: '#e1306c' },
-  { id: 'tiktok', name: 'TikTok', handle: '@mitiendacrecio', active: true, connected: true, color: '#000000' },
-  { id: 'facebook', name: 'Facebook', handle: 'MiTiendaCrecio', active: true, connected: true, color: '#1877f2' },
-  { id: 'youtube', name: 'YouTube', handle: 'Sin conectar', active: false, connected: false, color: '#ff0000' },
-  { id: 'whatsapp', name: 'WhatsApp Status', handle: 'Mi Tienda', active: false, connected: true, color: '#25d366' }
+const defaultAccounts = [
+  { id: 'instagram', name: 'Instagram', handle: 'Sin vincular', active: true, connected: false, color: '#e1306c' },
+  { id: 'facebook', name: 'Facebook', handle: 'Sin vincular', active: true, connected: false, color: '#1877f2' },
+  { id: 'tiktok', name: 'TikTok', handle: 'Sin vincular', active: false, connected: false, color: '#000000' },
+  { id: 'whatsapp', name: 'WhatsApp Status', handle: 'Disponible', active: false, connected: true, color: '#25d366' },
+  { id: 'youtube', name: 'YouTube', handle: 'Sin vincular', active: false, connected: false, color: '#ff0000' }
 ]
 
 export default function MarketingPage() {
@@ -61,7 +66,7 @@ export default function MarketingPage() {
   const [content, setContent] = useState('')
   const [guionVideo, setGuionVideo] = useState(null)
   const [uploadedImage, setUploadedImage] = useState(null)
-  const [accounts, setAccounts] = useState(initialAccounts)
+  const [accounts, setAccounts] = useState(defaultAccounts)
 
   const [loading, setLoading] = useState(false)
   const [loadingImage, setLoadingImage] = useState(false)
@@ -75,6 +80,30 @@ export default function MarketingPage() {
 
   const [scheduledPosts, setScheduledPosts] = useState([])
   const [publishedPosts, setPublishedPosts] = useState([])
+
+  const loadAccounts = async () => {
+    try {
+      const realAccounts = await getRedesSociales()
+      if (Array.isArray(realAccounts) && realAccounts.length > 0) {
+        setAccounts((prev) =>
+          prev.map((acc) => {
+            const found = realAccounts.find((r) => r.plataforma.toLowerCase() === acc.id.toLowerCase())
+            if (found) {
+              return {
+                ...acc,
+                handle: found.handle || found.nombre_cuenta || `@${found.plataforma}`,
+                connected: true,
+                active: true
+              }
+            }
+            return acc
+          })
+        )
+      }
+    } catch (err) {
+      console.warn('No se pudieron cargar cuentas sociales:', err.message)
+    }
+  }
 
   const loadPosts = async () => {
     try {
@@ -109,7 +138,49 @@ export default function MarketingPage() {
       .then((result) => setBusiness(result.negocio))
       .catch(() => {})
     loadPosts()
+    loadAccounts()
+
+    // Detectar retorno de autorización de Meta OAuth
+    const urlParams = new URLSearchParams(window.location.search)
+    const metaCode = urlParams.get('code')
+    if (metaCode) {
+      const redirectUri = window.location.origin + window.location.pathname
+      enviarMetaCallback(metaCode, redirectUri)
+        .then(() => {
+          alert('✅ ¡Meta API conectada exitosamente! Cuentas de Instagram y Facebook sincronizadas.')
+          window.history.replaceState({}, document.title, window.location.pathname)
+          loadAccounts()
+        })
+        .catch((err) => {
+          console.error(err)
+          alert('Aviso al procesar autorización de Meta: ' + (err.message || 'Error desconocido'))
+        })
+    }
   }, [])
+
+  const handleStartMetaAuth = async () => {
+    try {
+      const redirectUri = window.location.origin + '/marketing'
+      const res = await getMetaAuthUrl(redirectUri)
+      if (res?.url) {
+        window.location.href = res.url
+      }
+    } catch (err) {
+      alert('Error al iniciar conexión con Meta: ' + err.message)
+    }
+  }
+
+  const handleManualTokenConnect = async () => {
+    const token = prompt('Pega tu Access Token de Meta (User o Page Access Token generado en Meta for Developers):')
+    if (!token) return
+    try {
+      await conectarMetaToken(token.trim())
+      alert('✅ ¡Cuentas vinculadas exitosamente con Meta API!')
+      await loadAccounts()
+    } catch (err) {
+      alert('Error al vincular token: ' + err.message)
+    }
+  }
 
   const handleConnectAccount = async (accountData) => {
     try {
@@ -135,7 +206,7 @@ export default function MarketingPage() {
   const toggleAccount = (id) => {
     setAccounts((prev) =>
       prev.map((acc) => {
-        if (acc.id === id && acc.connected) return { ...acc, active: !acc.active }
+        if (acc.id === id) return { ...acc, active: !acc.active }
         return acc
       })
     )
@@ -147,27 +218,41 @@ export default function MarketingPage() {
   }
 
   const generateImageIa = async () => {
+    if (!prompt?.trim()) {
+      alert('Por favor escribe primero en el cuadro de texto el producto o idea para generar la imagen.')
+      return
+    }
     setLoadingImage(true)
     try {
-      const res = await generarImagenProducto({ prompt: prompt || 'Publicación destacada de tienda', mode: 'studio' })
-      if (res.imageUrl) setUploadedImage(res.imageUrl)
+      const res = await generarImagenProducto({
+        prompt: prompt.trim(),
+        categoria: business?.categoria,
+        mode: 'studio'
+      })
+      if (res?.imageUrl) {
+        setUploadedImage(res.imageUrl)
+      }
     } catch (err) {
-      alert('No se pudo generar la imagen IA. Se utilizará la plantilla por defecto.')
+      alert('No se pudo generar la imagen IA. Puedes subir una foto propia o intentarlo de nuevo.')
     } finally {
       setLoadingImage(false)
     }
   }
 
-
   const generate = async () => {
+    if (!prompt?.trim()) {
+      setError('Escribe una breve descripción o idea de lo que deseas publicar')
+      return
+    }
     setLoading(true)
     setError('')
     try {
       const result = await generarMarketing({
         tipo,
         tono,
-        prompt: prompt || 'Crea una oferta atractiva para mi tienda',
-        contentType
+        prompt: prompt.trim(),
+        contentType,
+        generateImage: !uploadedImage // Solo genera imagen si no hay una ya establecida
       })
       setContent(result.contenido)
       setGuionVideo(result.guionVideo || null)
@@ -223,7 +308,12 @@ export default function MarketingPage() {
           shares: 0
         }
         setPublishedPosts([newPost, ...publishedPosts])
-        alert('🚀 ¡Publicación enviada exitosamente a la API de Meta y publicada en tus redes sociales!')
+        const isRealMeta = res?.resultado_publicacion?.meta_post_id && !String(res.resultado_publicacion.meta_post_id).startsWith('ig_post_')
+        if (isRealMeta) {
+          alert('🚀 ¡Publicación enviada exitosamente a la API oficial de Meta y publicada en tus redes sociales!')
+        } else {
+          alert('🚀 ¡Publicación procesada exitosamente!\nRegistrada en tu base de datos y disponible en tu historial (Modo Demostración / Tesis activo).')
+        }
         setActiveMainTab('publicadas')
       } else {
         const res = await guardarPublicacionMarketing(payload)
@@ -278,6 +368,8 @@ export default function MarketingPage() {
             activeAccountsList={activeAccountsList}
             toggleAccount={toggleAccount}
             onConnectAccount={handleConnectAccount}
+            onStartMetaAuth={handleStartMetaAuth}
+            onManualTokenConnect={handleManualTokenConnect}
             business={business}
           />
 
@@ -289,6 +381,7 @@ export default function MarketingPage() {
             business={business}
             uploadedImage={uploadedImage}
             content={content}
+            setContent={setContent}
             guionVideo={guionVideo}
             copied={copied}
             copyText={copyText}

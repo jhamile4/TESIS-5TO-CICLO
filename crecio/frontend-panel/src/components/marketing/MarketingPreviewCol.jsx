@@ -9,6 +9,7 @@ export default function MarketingPreviewCol({
   business,
   uploadedImage,
   content,
+  setContent,
   guionVideo,
   copied,
   copyText,
@@ -108,14 +109,21 @@ export default function MarketingPreviewCol({
             </div>
 
             <div className="mockup-caption-area">
-              <p className="editable-caption">
-                {content || (
+              <textarea
+                className="editable-caption-textarea"
+                value={content}
+                onChange={(e) => setContent?.(e.target.value)}
+                placeholder={
                   isVideo
-                    ? '📹 Reel generado por IA listo para publicar. #reels #viral'
-                    : '🎉 ¡OFERTA ESPECIAL! 20% OFF en todos nuestros productos. ¡Compra ahora!'
-                )}
-              </p>
-              <small className="edit-hint">Contenido 100% generado y editable</small>
+                    ? '📹 Escribe o edita el texto de tu Reel aquí...'
+                    : '🎉 Escribe o edita el texto de tu publicación aquí...'
+                }
+                rows={4}
+              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
+                <small className="edit-hint">✏️ Puedes editar el texto directamente aquí</small>
+                <small style={{ fontSize: '11px', color: '#94a3b8' }}>{content?.length || 0} caracteres</small>
+              </div>
             </div>
           </div>
         ) : (
@@ -229,7 +237,7 @@ export default function MarketingPreviewCol({
           onClick={handlePublishOrSchedule}
         >
           {publishing ? (
-            'Procesando con la API...'
+            'Publicando en tus redes...'
           ) : publishMode === 'ahora' ? (
             <>
               <Send size={16} /> Publicar Ahora Directamente

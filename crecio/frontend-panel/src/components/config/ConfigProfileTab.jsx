@@ -1,4 +1,6 @@
-import { Share2, Upload } from 'lucide-react'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { Share2, Upload, Sparkles } from 'lucide-react'
 import {
   InstagramIcon,
   FacebookIcon,
@@ -16,6 +18,7 @@ export default function ConfigProfileTab({
   handleSave,
   setMessage
 }) {
+
   return (
     <div className="config-content-stack">
       {/* Card 1: Logo del Negocio */}
@@ -127,44 +130,17 @@ export default function ConfigProfileTab({
         </form>
       </div>
 
-      {/* Card 3: Redes Sociales */}
+      {/* Card 3: Redes de Contacto de tu Negocio */}
       <div className="config-card">
         <div className="config-card-header-with-sub">
           <div>
             <h4 className="config-card-title flex-title">
-              <Share2 size={18} className="title-icon-green" /> Redes Sociales
+              <Share2 size={18} className="title-icon-green" /> Redes de Contacto de tu Negocio
             </h4>
             <p className="config-card-subtitle">
-              Conecta tus cuentas para publicar directamente desde Marketing IA
+              Escribe tus usuarios o números para que los clientes que entren a tu tienda virtual puedan seguirte y escribirte.
             </p>
           </div>
-        </div>
-
-        <div className="meta-oauth-banner">
-          <div className="meta-oauth-info">
-            <strong>🔗 Conexión Oficial Meta API (Instagram & Facebook)</strong>
-            <p>Vincula la cuenta de Facebook o Instagram Business de tu negocio para activar publicaciones automáticas en 1 clic.</p>
-          </div>
-          <button
-            type="button"
-            className="btn-connect-meta-api"
-            onClick={() => {
-              alert('🔗 Redirigiendo al flujo de autorización seguro de Meta for Developers (Instagram Graph API)...')
-              const handleAuto = `@${form.nombre ? form.nombre.toLowerCase().replace(/\s+/g, '') : 'tunegocio'}`
-              setForm(prev => ({
-                ...prev,
-                redesSociales: {
-                  ...prev.redesSociales,
-                  instagram: prev.redesSociales.instagram || handleAuto,
-                  facebook: prev.redesSociales.facebook || `facebook.com/${handleAuto.replace('@', '')}`
-                }
-              }))
-              setMessage('✅ ¡Autenticación con Meta API completada! Instagram y Facebook han sido vinculados.')
-              setTimeout(() => setMessage(''), 4000)
-            }}
-          >
-            Vincular Meta API
-          </button>
         </div>
 
         <div className="social-networks-list">
@@ -179,12 +155,12 @@ export default function ConfigProfileTab({
                 type="text"
                 value={form.redesSociales.instagram}
                 onChange={(e) => handleSocialChange('instagram', e.target.value)}
-                placeholder="@tunegocio"
+                placeholder="@tunegocio o instagram.com/tunegocio"
               />
             </div>
             <div className="social-toggle-col">
-              <span className="status-active-badge">
-                {form.redesSociales.instagram ? 'Conectado API' : 'Activo'}
+              <span className="status-active-badge" style={{ color: form.toggles.instagram ? '#0d9488' : '#94a3b8' }}>
+                {form.toggles.instagram ? 'Visible en tienda' : 'Oculto'}
               </span>
               <label className="switch-toggle">
                 <input
@@ -212,7 +188,9 @@ export default function ConfigProfileTab({
               />
             </div>
             <div className="social-toggle-col">
-              <span className="status-active-badge">Activo</span>
+              <span className="status-active-badge" style={{ color: form.toggles.facebook ? '#0d9488' : '#94a3b8' }}>
+                {form.toggles.facebook ? 'Visible en tienda' : 'Oculto'}
+              </span>
               <label className="switch-toggle">
                 <input
                   type="checkbox"
@@ -235,11 +213,13 @@ export default function ConfigProfileTab({
                 type="text"
                 value={form.redesSociales.tiktok}
                 onChange={(e) => handleSocialChange('tiktok', e.target.value)}
-                placeholder="@tunegocio"
+                placeholder="@tunegocio o tiktok.com/@tunegocio"
               />
             </div>
             <div className="social-toggle-col">
-              <span className="status-active-badge">Activo</span>
+              <span className="status-active-badge" style={{ color: form.toggles.tiktok ? '#0d9488' : '#94a3b8' }}>
+                {form.toggles.tiktok ? 'Visible en tienda' : 'Oculto'}
+              </span>
               <label className="switch-toggle">
                 <input
                   type="checkbox"
@@ -266,7 +246,9 @@ export default function ConfigProfileTab({
               />
             </div>
             <div className="social-toggle-col">
-              <span className="status-active-badge">Activo</span>
+              <span className="status-active-badge" style={{ color: form.toggles.youtube ? '#0d9488' : '#94a3b8' }}>
+                {form.toggles.youtube ? 'Visible en tienda' : 'Oculto'}
+              </span>
               <label className="switch-toggle">
                 <input
                   type="checkbox"
@@ -289,11 +271,13 @@ export default function ConfigProfileTab({
                 type="text"
                 value={form.redesSociales.twitter}
                 onChange={(e) => handleSocialChange('twitter', e.target.value)}
-                placeholder="@tunegocio"
+                placeholder="@tunegocio o x.com/tunegocio"
               />
             </div>
             <div className="social-toggle-col">
-              <span className="status-active-badge">Activo</span>
+              <span className="status-active-badge" style={{ color: form.toggles.twitter ? '#0d9488' : '#94a3b8' }}>
+                {form.toggles.twitter ? 'Visible en tienda' : 'Oculto'}
+              </span>
               <label className="switch-toggle">
                 <input
                   type="checkbox"
@@ -320,7 +304,9 @@ export default function ConfigProfileTab({
               />
             </div>
             <div className="social-toggle-col">
-              <span className="status-active-badge">Activo</span>
+              <span className="status-active-badge" style={{ color: form.toggles.whatsapp ? '#0d9488' : '#94a3b8' }}>
+                {form.toggles.whatsapp ? 'Visible en tienda' : 'Oculto'}
+              </span>
               <label className="switch-toggle">
                 <input
                   type="checkbox"

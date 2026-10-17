@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { User, Palette, Sliders, QrCode, Shield, Save } from 'lucide-react'
-import { getTienda, actualizarTienda } from '../services/apiAdmin'
+import { getTienda, actualizarTienda, enviarMetaCallback } from '../services/apiAdmin'
 import ConfigProfileTab from '../components/config/ConfigProfileTab'
 import ConfigAppearanceTab from '../components/config/ConfigAppearanceTab'
 import ConfigPreferencesTab from '../components/config/ConfigPreferencesTab'
@@ -42,6 +42,24 @@ export default function ConfigPage() {
 
   useEffect(() => {
     loadBusinessData()
+
+    // Detectar retorno de autorización de Meta OAuth
+    const urlParams = new URLSearchParams(window.location.search)
+    const metaCode = urlParams.get('code')
+    if (metaCode) {
+      setLoading(true)
+      const redirectUri = window.location.origin + window.location.pathname
+      enviarMetaCallback(metaCode, redirectUri)
+        .then((res) => {
+          setMessage('✅ ¡Meta API conectada exitosamente! Cuentas de Instagram y Facebook sincronizadas.')
+          window.history.replaceState({}, document.title, window.location.pathname)
+          loadBusinessData()
+        })
+        .catch((err) => {
+          setError(err.message || 'Error al conectar con Meta API')
+        })
+        .finally(() => setLoading(false))
+    }
   }, [])
 
   const loadBusinessData = () => {

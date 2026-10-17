@@ -151,6 +151,33 @@ const generateProductImage = async (req, res, next) => {
   }
 }
 
+const getMetaAuthUrl = async (req, res, next) => {
+  try {
+    const redirectUri = req.query.redirectUri || 'http://localhost:5174/configuracion'
+    const url = adminService.getMetaAuthUrl(redirectUri)
+    res.json({ url })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const handleMetaOAuthCallback = async (req, res, next) => {
+  try {
+    const result = await adminService.handleMetaOAuthCallback(req.user.id, req.body)
+    res.json(result)
+  } catch (error) {
+    next(error)
+  }
+}
+
+const connectMetaManualToken = async (req, res, next) => {
+  try {
+    const result = await adminService.connectMetaManualToken(req.user.id, req.body)
+    res.json(result)
+  } catch (error) {
+    next(error)
+  }
+}
 
 module.exports = {
   getResumen,
@@ -172,6 +199,9 @@ module.exports = {
   publishDirectlyMarketing,
   getSocialAccounts,
   connectSocialAccount,
+  getMetaAuthUrl,
+  handleMetaOAuthCallback,
+  connectMetaManualToken,
 }
 
 

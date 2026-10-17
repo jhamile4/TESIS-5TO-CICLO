@@ -242,7 +242,7 @@ const createExpense = async (clienteId, datos) => {
   return { ...result.rows[0], monto: Number(result.rows[0].monto) }
 }
 
-const generateMarketing = async (clienteId, { tipo = 'Promoción / Oferta', prompt = '', tono = 'Modo Creativo', contentType = 'Publicación' }) => {
+const generateMarketing = async (clienteId, { tipo = 'Promoción / Oferta', prompt = '', tono = 'Modo Creativo', contentType = 'Publicación', generateImage = false }) => {
   const negocioResult = await repository.findBusinessByOwner(clienteId)
   if (negocioResult.rows.length === 0) {
     throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
@@ -251,7 +251,7 @@ const generateMarketing = async (clienteId, { tipo = 'Promoción / Oferta', prom
 
   const negocio = negocioResult.rows[0]
   const productosResult = await productoModel.findByNegocio(negocio.pk_id)
-  const productos = productosResult.rows.slice(0, 12).map((producto) => `${producto.nombre} (S/${producto.precio})`).join(', ')
+  const productos = productosResult.rows.slice(0, 8).map((p) => `${p.nombre} (S/${p.precio})`).join(', ')
 
   const isVideoFormat = contentType === 'Video' || contentType === 'Reels / Short'
   let completion
@@ -259,73 +259,95 @@ const generateMarketing = async (clienteId, { tipo = 'Promoción / Oferta', prom
   let finalCaption = ''
 
   if (isVideoFormat) {
-    const systemInstruction = `Eres el productor creativo de videos y Reels/Shorts para ${negocio.nombre}, negocio de ${negocio.categoria || 'productos'} en Perú.
-Debes devolver OBLIGATORIAMENTE un JSON válido con la siguiente estructura exacta:
-{
-  "guion": {
-    "gancho": "Frase de 0-3 segundos para llamar la atención de forma impactante",
-    "desarrollo": "Descripción de 3-15 segundos sobre el beneficio o demostración del producto",
-    "cta": "Llamada a la acción clara para comentar o ir al link en bio",
-    "audio_sugerido": "Nombre de tendencia o estilo de música/efectos"
-  },
-  "caption": "Texto completo para el post con emojis, llamada a la acción y hashtags virales"
-}`
+    const systemInstruction = `Eres un estratega de contenido y videos cortos (TikTok/Reels) para "${negocio.nombre}", negocio de ${negocio.categoria || 'comercio'} en Perú.
+Genera un guión estructurado y persuasivo para el producto o idea del usuario.
+Estructura tu respuesta exactamente así:
+GANCHO: [Frase de 0 a 3 segundos muy llamativa que detenga el scroll]
+DESARROLLO: [Demostración rápida de 5 a 15 segundos destacando beneficios clave]
+CTA: [Llamada a la acción clara para comentar o comprar por WhatsApp/Link]
+AUDIO: [Estilo de música o tendencia recomendada]
+CAPTION: [Texto del post para publicar con emojis, llamada a la acción y hashtags relevantes]`
 
     try {
       completion = await groq.chat.completions.create({
-        model: 'openai/gpt-oss-120b',
+        model: 'openai/gpt-oss-20b',
         messages: [
           { role: 'system', content: systemInstruction },
-          { role: 'user', content: `Tipo: ${tipo}. Estilo: ${tono}. Productos disponibles: ${productos}. Idea del negocio: ${prompt}` }
+          { role: 'user', content: `Tipo: ${tipo}. Tono: ${tono}. Productos disponibles: ${productos || 'Catálogo general'}. Solicitud del usuario: "${prompt}". Genera el guión y caption directamente relacionados a esta solicitud.` }
         ],
         temperature: 0.7,
-        response_format: { type: "json_object" }
+        max_tokens: 500
       })
 
-      const parsed = JSON.parse(completion.choices[0].message.content)
-      guionVideo = parsed.guion
-      finalCaption = parsed.caption
-    } catch (err) {
+      const rawText = completion.choices[0].message.content
+      const ganchoMatch = rawText.match(/GANCHO:\s*(.+?)(?=\n[A-Z]+:|$)/s)
+      const desarrolloMatch = rawText.match(/DESARROLLO:\s*(.+?)(?=\n[A-Z]+:|$)/s)
+      const ctaMatch = rawText.match(/CTA:\s*(.+?)(?=\n[A-Z]+:|$)/s)
+      const audioMatch = rawText.match(/AUDIO:\s*(.+?)(?=\n[A-Z]+:|$)/s)
+      const captionMatch = rawText.match(/CAPTION:\s*(.+?)$/s)
+
       guionVideo = {
-        gancho: `🔥 ¡Atención! No te pierdas esto de ${negocio.nombre}`,
-        desarrollo: `Descubre nuestros mejores productos como ${productos.split(',')[0] || 'nuestro catálogo exclusivo'} con la mejor calidad.`,
-        cta: `🛒 Haz clic en el enlace de la bio para hacer tu pedido hoy mismo con envío rápido.`,
-        audio_sugerido: 'Trending Audio Viral - Pop Upbeat'
+        gancho: ganchoMatch ? ganchoMatch[1].trim() : `🔥 ¡Atención amantes de ${negocio.categoria || 'buenos productos'}!`,
+        desarrollo: desarrolloMatch ? desarrolloMatch[1].trim() : `Mira lo nuevo que llegó a ${negocio.nombre}: ${prompt}`,
+        cta: ctaMatch ? ctaMatch[1].trim() : `📲 Escríbenos al WhatsApp para pedir el tuyo hoy mismo.`,
+        audio_sugerido: audioMatch ? audioMatch[1].trim() : 'Trending Audio Upbeat - Lo-Fi Chill Beat'
       }
-      finalCaption = `📹 ¡Mira esto! Descubre la calidad de ${negocio.nombre}. ${prompt}\n\n👉 Haz tu pedido por WhatsApp o link en bio.\n#viral #tienda #${negocio.categoria || 'peru'}`
+      finalCaption = captionMatch ? captionMatch[1].trim() : rawText
+    } catch (err) {
+      console.error('Error Groq Video:', err.message)
+      guionVideo = {
+        gancho: `🔥 ¡No dejes pasar esto en ${negocio.nombre}!`,
+        desarrollo: `Llegó ${prompt}. Calidad comprobada y stock limitado.`,
+        cta: `👉 Pide el tuyo al WhatsApp o mediante el link en bio.`,
+        audio_sugerido: 'Viral TikTok Pop Beat'
+      }
+      finalCaption = `✨ ¡Lo que estabas esperando en ${negocio.nombre}! ✨\n\n${prompt}\n\n📲 Haz tu pedido ahora antes que se agote.\n#${negocio.categoria ? negocio.categoria.replace(/\s+/g, '') : 'tienda'} #peru #oferta #compras`
     }
   } else if (contentType === 'Story') {
     try {
       completion = await groq.chat.completions.create({
-        model: 'openai/gpt-oss-120b',
+        model: 'openai/gpt-oss-20b',
         messages: [
-          { role: 'system', content: `Eres el experto de social media de ${negocio.nombre}. Genera un texto para Instagram Story / WhatsApp Status súper corto, ultra directo (máximo 25 palabras), con sticker de encuesta o cuenta regresiva y emojis impactantes.` },
+          { role: 'system', content: `Eres un copywriter experto para Instagram Stories y WhatsApp Status de "${negocio.nombre}" (${negocio.categoria || 'negocio'} en Perú). Genera un mensaje súper visual, directo al grano (máx 35 palabras), con emojis, precio/beneficio y llamado a tocar el sticker o enlace.` },
           { role: 'user', content: `Tipo: ${tipo}. Tono: ${tono}. Idea: ${prompt}` }
         ],
-        max_tokens: 150
+        max_tokens: 200,
+        temperature: 0.7
       })
       finalCaption = completion.choices[0].message.content
     } catch (err) {
-      finalCaption = `⚡ ¡OFERTA FLASH EN STORY! ⚡\nÚltimas unidades disponibles en ${negocio.nombre}.\n\n👇 Toca aquí para comprar ahora antes que se agote.`
+      console.error('Error Groq Story:', err.message)
+      finalCaption = `⚡ ¡OFERTA FLASH en ${negocio.nombre}! ⚡\n${prompt}\n\n👇 ¡Toca el botón o respóndenos para asegurar el tuyo ahora!`
     }
   } else {
     try {
       completion = await groq.chat.completions.create({
-        model: 'openai/gpt-oss-120b',
+        model: 'openai/gpt-oss-20b',
         messages: [
-          { role: 'system', content: `Eres el asistente experto de marketing de ${negocio.nombre}, negocio de ${negocio.categoria || 'productos y servicios'} en Peru. Genera contenido atractivo y listo para redes sociales en espanol peruano. Productos disponibles: ${productos || 'productos del catalogo'}. Usa emojis, hashtags relevantes y llamada a la accion clara.` },
-          { role: 'user', content: `Tipo: ${tipo}. Estilo / Tono: ${tono}. Solicitud del negocio: ${prompt || 'Crea una promocion atractiva para nuestro catalogo'}. Devuelve el post redactado de forma profesional e impactante.` }
+          { role: 'system', content: `Eres el community manager y copywriter profesional de "${negocio.nombre}" (${negocio.categoria || 'tienda'} en Perú).
+Crea un post para Instagram/Facebook altamente persuasivo y bien redactado.
+Reglas:
+1. Habla específicamente del producto o idea indicada por el dueño.
+2. Incluye emojis atractivos en puntos clave (beneficios, llamado a la acción).
+3. Añade una llamada a la acción clara para comprar por WhatsApp, DM o tienda web.
+4. Finaliza con 5 a 8 hashtags virales relevantes al rubro y a Perú.` },
+          { role: 'user', content: `Tipo de publicación: ${tipo}. Tono: ${tono}. Lo que quiero publicar: "${prompt}". Productos del catálogo: ${productos || 'disponibles en tienda'}.` }
         ],
-        max_tokens: 400
+        max_tokens: 450,
+        temperature: 0.7
       })
       finalCaption = completion.choices[0].message.content
     } catch (err) {
-      finalCaption = `🎉 ¡OFERTA ESPECIAL en ${negocio.nombre}! 🎉\n\nDescubre nuestros productos destacados: ${productos}.\n\n💬 Escríbenos para obtener tu descuento exclusivo hoy.\n#descuento #promocion #compras`
+      console.error('Error Groq Feed:', err.message)
+      finalCaption = `✨ ¡Descubre lo nuevo en ${negocio.nombre}! ✨\n\n${prompt}\n\n🛍️ Calidad garantizada y entregas inmediatas.\n📲 Escríbenos por WhatsApp o DM para hacer tu pedido.\n\n#${negocio.nombre.replace(/\s+/g, '')} #peru #emprendimiento #calidad #compras`
     }
   }
 
-  const mediaGen = await generateProductImage(clienteId, { prompt: `${prompt} ${tipo}`, categoria: negocio.categoria, mode: 'studio' }).catch(() => ({}))
-  const mediaUrl = mediaGen.imageUrl || getStudioFallback(prompt, negocio.categoria)
+  let mediaUrl = null
+  if (generateImage) {
+    const mediaGen = await generateProductImage(clienteId, { prompt, categoria: negocio.categoria, mode: 'studio' }).catch(() => ({}))
+    mediaUrl = mediaGen.imageUrl || getStudioFallback(prompt, negocio.categoria)
+  }
 
   return {
     negocio: { id: negocio.pk_id, nombre: negocio.nombre },
@@ -403,7 +425,7 @@ const generateProductImage = async (clienteId, { mode, prompt, nombre, categoria
 
   try {
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 4500)
+    const timeout = setTimeout(() => controller.abort(), 15000)
     const response = await fetch(pollUrl, { signal: controller.signal })
     clearTimeout(timeout)
 
@@ -415,7 +437,7 @@ const generateProductImage = async (clienteId, { mode, prompt, nombre, categoria
       return { imageUrl: dataUri, prompt: textPrompt, mode: mode || 'prompt', provider: 'pollinations_ai' }
     }
   } catch (err) {
-    // If Pollinations server takes >4.5s or fails, seamlessly use HD Studio Catalog fallback
+    console.error('Info: Pollinations AI fallback triggered:', err.message)
   }
 
   const fallbackUrl = getStudioFallback(textPrompt, categoria)
@@ -520,6 +542,54 @@ const connectSocialAccount = async (clienteId, accountData) => {
   return result.rows[0]
 }
 
+const getMetaAuthUrl = (redirectUri) => {
+  return socialPublisher.getMetaAuthUrl(redirectUri)
+}
+
+const handleMetaOAuthCallback = async (clienteId, { code, redirectUri }) => {
+  const negocioResult = await repository.findBusinessByOwner(clienteId)
+  if (negocioResult.rows.length === 0) throw { status: 403, message: 'Negocio no encontrado' }
+  const negocioId = negocioResult.rows[0].pk_id
+
+  // 1. Canjear código por Token de larga duración
+  const token = await socialPublisher.exchangeMetaCode({ code, redirectUri })
+
+  // 2. Obtener páginas y cuentas vinculadas
+  const accounts = await socialPublisher.fetchMetaAccounts(token)
+
+  // 3. Guardar en base de datos
+  const savedAccounts = []
+  for (const acc of accounts) {
+    const res = await repository.upsertSocialAccount(negocioId, acc)
+    savedAccounts.push(res.rows[0])
+  }
+
+  return {
+    success: true,
+    message: 'Cuentas de Meta vinculadas exitosamente',
+    accounts: savedAccounts
+  }
+}
+
+const connectMetaManualToken = async (clienteId, { accessToken }) => {
+  const negocioResult = await repository.findBusinessByOwner(clienteId)
+  if (negocioResult.rows.length === 0) throw { status: 403, message: 'Negocio no encontrado' }
+  const negocioId = negocioResult.rows[0].pk_id
+
+  const accounts = await socialPublisher.fetchMetaAccounts(accessToken)
+  const savedAccounts = []
+  for (const acc of accounts) {
+    const res = await repository.upsertSocialAccount(negocioId, acc)
+    savedAccounts.push(res.rows[0])
+  }
+
+  return {
+    success: true,
+    message: 'Cuentas de Meta vinculadas mediante token',
+    accounts: savedAccounts
+  }
+}
+
 module.exports = {
   getResumen,
   getInventario,
@@ -540,6 +610,9 @@ module.exports = {
   publishDirectlyMarketing,
   getSocialAccounts,
   connectSocialAccount,
+  getMetaAuthUrl,
+  handleMetaOAuthCallback,
+  connectMetaManualToken,
 }
 
 

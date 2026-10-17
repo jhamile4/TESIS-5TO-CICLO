@@ -301,13 +301,18 @@ const getSocialAccounts = (negocioId) =>
     [negocioId]
   )
 
-const upsertSocialAccount = (negocioId, { plataforma, cuentaIdExterna, nombreCuenta, handle, accessToken, estado }) =>
-  pool.query(
+const upsertSocialAccount = async (negocioId, { plataforma, cuentaIdExterna, nombreCuenta, handle, accessToken, estado }) => {
+  await pool.query(
+    `DELETE FROM red_social_cuenta WHERE fk_negocio_id = $1 AND plataforma = $2`,
+    [negocioId, plataforma]
+  )
+  return pool.query(
     `INSERT INTO red_social_cuenta (fk_negocio_id, plataforma, cuenta_id_externa, nombre_cuenta, handle, access_token, estado)
      VALUES ($1, $2, $3, $4, $5, $6, $7)
      RETURNING *`,
-    [negocioId, plataforma, cuentaIdExterna || '', nombreCuenta, handle || '', accessToken || '', estado || 'conectado']
+    [negocioId, plataforma, cuentaIdExterna || '', nombreCuenta || plataforma, handle || '', accessToken || '', estado || 'conectado']
   )
+}
 
 module.exports = {
   findBusinessByOwner,
