@@ -51,6 +51,7 @@ const findByCliente = (clienteId) =>
        pp.pk_id, pp.numero_pedido, pp.stripe_payment_intent, pp.monto_total,
        pp.estado, pp.estado_pedido, pp.estado_pedido_at, pp.tipo_entrega,
        pp.items, pp.direccion, pp.ciudad, pp.notas, pp.created_at,
+       EXISTS (SELECT 1 FROM resena r WHERE r.fk_pedido_id = pp.pk_id) AS resenado,
        n.nombre   AS negocio_nombre,
        n.logo_url AS negocio_logo,
        n.whatsapp AS negocio_whatsapp,

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { estadoConfig, pasosSeguimiento, estaEntregado, estaEnCurso, claveEstado } from '../estadoPedido'
+import ResenaPedido from '../components/ResenaPedido'
 
 const BASE_URL = 'http://localhost:3001/api'
 
@@ -102,6 +103,8 @@ function DetallePedido({ pedido: p, onVolver, navigate, perfil }) {
           ))}
         </div>}
       </div>
+
+      {estaEntregado(p) && <ResenaPedido key={p.pk_id} pedido={p} />}
 
       {/* Aviso pago en efectivo — solo informativo para el cliente */}
       {esEfectivo && (

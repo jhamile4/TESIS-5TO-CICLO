@@ -19,14 +19,19 @@ function ResenasList({ reviews }) {
                 <span className="text-sm font-bold text-[#111827] truncate">{r.nombre}</span>
                 <span className="text-[10px] text-[#9CA3AF] shrink-0">{r.tiempo}</span>
               </div>
-              <div className="flex gap-0.5 mt-0.5">
+              <div className="flex items-center gap-0.5 mt-0.5">
                 {Array.from({ length: 5 }).map((_, j) => (
                   <i key={j} className={`text-xs ${j < r.estrellas ? 'ri-star-fill text-amber-400' : 'ri-star-line text-[#E5E7EB]'}`} />
                 ))}
+                {r.verificada && (
+                  <span className="ml-2 inline-flex items-center gap-1 text-[10px] font-semibold text-[#0D9488]">
+                    <i className="ri-shield-check-line" /> Compra verificada
+                  </span>
+                )}
               </div>
             </div>
           </div>
-          <p className="text-sm text-[#374151] leading-relaxed">{r.texto}</p>
+          {r.texto && <p className="text-sm text-[#374151] leading-relaxed">{r.texto}</p>}
         </div>
       ))}
     </div>

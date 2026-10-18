@@ -86,6 +86,7 @@ const normalizarResena = (r) => ({
   estrellas: r.estrellas,
   texto:     r.texto,
   tiempo:    tiempoRelativo(r.created_at),
+  verificada: Boolean(r.compra_verificada),
 })
 
 export const getNegocios = async (search = '') => {
@@ -107,6 +108,10 @@ export const getProductos = async (negocioId) => {
 export const getResenas = async (negocioId) => {
   const data = await get(`/negocios/${negocioId}/resenas`)
   return data.map(normalizarResena)
+}
+
+export const crearResena = async (negocioId, { pedidoId, estrellas, texto }, token) => {
+  return post(`/negocios/${negocioId}/resenas`, { pedidoId, estrellas, texto }, token)
 }
 
 export const getGaleria = async (negocioId) => {
