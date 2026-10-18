@@ -225,13 +225,16 @@ function FilaPedido({ p, expandidoId, setExpandidoId, onVerDetalle }) {
   const numPed   = numeroPedido(p)
   const cfg      = estadoConfig(p)
   const abierto  = expandidoId === p.pk_id
+  const portada  = items.find(i => i.img)?.img
 
   return (
     <div className="border-b border-[#F3F4F6] last:border-0">
       <div className="flex items-center gap-3 px-5 py-4 cursor-pointer hover:bg-[#FAFAFA] transition-colors"
         onClick={() => setExpandidoId(abierto ? null : p.pk_id)}>
-        <div className="w-9 h-9 rounded-xl bg-[#0D9488]/10 flex items-center justify-center shrink-0">
-          <i className={`${cfg.icon} ${cfg.color} text-sm`} />
+        <div className="w-9 h-9 rounded-xl bg-[#0D9488]/10 flex items-center justify-center shrink-0 overflow-hidden">
+          {portada
+            ? <img src={portada} alt="" className="w-full h-full object-cover" />
+            : <i className={`${cfg.icon} ${cfg.color} text-sm`} />}
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-[#111827]">Pedido #{numPed}</p>
@@ -266,12 +269,13 @@ function FilaPedido({ p, expandidoId, setExpandidoId, onVerDetalle }) {
 function TabPedidos({ pedidos, navigate, perfil }) {
   const [filtro,      setFiltro]      = useState('todos')
   const [expandidoId, setExpandidoId] = useState(null)
-  const [detalle,     setDetalle]     = useState(null)
+  const [detalleId,   setDetalleId]   = useState(null)
+  const detalle = pedidos.find(p => p.pk_id === detalleId)
 
   if (detalle) return (
     <DetallePedido
       pedido={detalle}
-      onVolver={() => setDetalle(null)}
+      onVolver={() => setDetalleId(null)}
       navigate={navigate}
       perfil={perfil}
     />
@@ -362,7 +366,7 @@ function TabPedidos({ pedidos, navigate, perfil }) {
               p={p}
               expandidoId={expandidoId}
               setExpandidoId={setExpandidoId}
-              onVerDetalle={setDetalle}
+              onVerDetalle={p => setDetalleId(p.pk_id)}
             />
           ))
         )}

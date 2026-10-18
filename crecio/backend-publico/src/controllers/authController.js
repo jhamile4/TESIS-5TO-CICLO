@@ -13,7 +13,9 @@ const clearPanelCookie = (res) => {
 const getSession = async (req, res, next) => {
   try {
     const cliente = await authService.getSessionData(req.user.id)
-    res.json({ cliente: cliente || { id: req.user.id, email: req.user.email } })
+    // Devuelve el token para que el panel lo guarde: así su sesión no cambia
+    // si en otra pestaña de localhost se inicia sesión con otra cuenta (la cookie es compartida)
+    res.json({ cliente: cliente || { id: req.user.id, email: req.user.email }, token: req.token })
   } catch (err) {
     next(err)
   }

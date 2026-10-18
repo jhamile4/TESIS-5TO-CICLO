@@ -28,7 +28,7 @@ const prepararPedido = async (items, negocioId, tipoEntrega) => {
     const cantidad = cantidades.get(producto.pk_id)
     if (producto.stock < cantidad)
       throw { status: 409, message: `Stock insuficiente para "${producto.nombre}" (quedan ${producto.stock})` }
-    return { pk_id: producto.pk_id, nombre: producto.nombre, precio: Number(producto.precio), cantidad }
+    return { pk_id: producto.pk_id, nombre: producto.nombre, precio: Number(producto.precio), cantidad, img: producto.imagen_url || null }
   })
 
   const subtotal = itemsPedido.reduce((s, i) => s + i.precio * i.cantidad, 0)

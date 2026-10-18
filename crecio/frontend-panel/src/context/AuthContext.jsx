@@ -23,8 +23,9 @@ export function AuthProvider({ children }) {
         if (data?.cliente) {
           const sessionUser = { ...data.cliente }
           localStorage.setItem('crecio_admin_user', JSON.stringify(sessionUser))
-          if (token) {
-            localStorage.setItem('crecio_admin_token', token)
+          const sessionToken = token || data.token
+          if (sessionToken) {
+            localStorage.setItem('crecio_admin_token', sessionToken)
           }
           setUser(sessionUser)
         } else {

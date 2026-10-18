@@ -1,5 +1,6 @@
 const clienteModel = require('../models/clienteModel')
 const pedidoModel  = require('../models/pedidoModel')
+const productoModel = require('../models/productoModel')
 
 const getPerfil = async (clienteId) => {
   const result = await clienteModel.findById(clienteId)
@@ -10,7 +11,17 @@ const getPerfil = async (clienteId) => {
 
 const getMisPedidos = async (clienteId) => {
   const result = await pedidoModel.findByCliente(clienteId)
-  return result.rows
+  const pedidos = result.rows
+
+  // Completa la imagen de cada producto (los pedidos antiguos no la guardaban)
+  const ids = [...new Set(pedidos.flatMap((p) => (p.items || []).map((i) => Number(i.pk_id)).filter(Boolean)))]
+  if (ids.length === 0) return pedidos
+
+  const imagenes = new Map((await productoModel.findImagenes(ids)).rows.map((r) => [r.pk_id, r.imagen_url]))
+  return pedidos.map((p) => ({
+    ...p,
+    items: (p.items || []).map((i) => ({ ...i, img: i.img || imagenes.get(Number(i.pk_id)) || null })),
+  }))
 }
 
 const actualizarPerfil = async (clienteId, nombre) => {

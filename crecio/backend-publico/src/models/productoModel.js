@@ -18,7 +18,7 @@ const findActivosParaChat = (negocioId, limit) =>
 
 const findByIds = (negocioId, ids) =>
   pool.query(
-    `SELECT pk_id, nombre, precio, stock FROM producto
+    `SELECT pk_id, nombre, precio, stock, imagen_url FROM producto
      WHERE fk_negocio_id = $1 AND pk_id = ANY($2::int[]) AND activo = TRUE`,
     [negocioId, ids]
   )
@@ -46,6 +46,10 @@ const devolverStock = (dbClient, negocioId, productoId, cantidad) =>
     [cantidad, productoId, negocioId]
   )
 
+// Incluye productos desactivados: un pedido antiguo debe seguir mostrando su imagen
+const findImagenes = (ids) =>
+  pool.query(`SELECT pk_id, imagen_url FROM producto WHERE pk_id = ANY($1::int[])`, [ids])
+
 const findIdByNombre = (dbClient, negocioId, nombre) =>
   dbClient.query(
     `SELECT pk_id FROM producto
@@ -61,5 +65,6 @@ module.exports = {
   descontarStock,
   descontarStockForzado,
   devolverStock,
+  findImagenes,
   findIdByNombre,
 }

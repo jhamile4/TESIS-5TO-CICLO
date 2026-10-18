@@ -102,6 +102,16 @@ function PerfilPage() {
       })
   }, [])
 
+  // Mientras haya pedidos en curso, revisa cada 15 s si el negocio cambió su estado
+  const hayPedidosEnCurso = pedidos.some(estaEnCurso)
+  useEffect(() => {
+    if (!token || !hayPedidosEnCurso) return
+    const intervalo = setInterval(() => {
+      apiFetch('/perfil/pedidos', token).then(setPedidos).catch(() => {})
+    }, 15000)
+    return () => clearInterval(intervalo)
+  }, [token, hayPedidosEnCurso])
+
   const handleToggleFav = async (producto_id) => {
     if (!token) return
     try {

@@ -3,6 +3,7 @@ const fs = require('fs')
 const path = require('path')
 const { createClient } = require('@supabase/supabase-js')
 const pool = require('./src/db/db')
+const bcrypt = require('bcryptjs')
 
 const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY
@@ -177,7 +178,18 @@ const negocios = [
   },
 ]
 
+// Correo del dueño de prueba de cada tienda: dueno.polleria-el-sabor@crecio.test
+const correoDueno = (nombre) =>
+  `dueno.${nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}@crecio.test`
+
 async function seed() {
+  // La contraseña de las cuentas de prueba se toma del .env, nunca del código
+  const password = process.env.SEED_PASSWORD
+  if (!password || password.length < 6) {
+    throw new Error('Define SEED_PASSWORD (mínimo 6 caracteres) en backend-publico/.env para las cuentas de dueño de prueba')
+  }
+  const hash = await bcrypt.hash(password, 10)
+
   // 1. Subir todas las imagenes a Supabase Storage
   const todasLasImagenes = new Set()
   for (const n of negocios) {
@@ -191,46 +203,67 @@ async function seed() {
     await uploadImage(filename)
   }
 
-  // 2. Limpiar datos anteriores
-  console.log('\n🗑️  Limpiando datos anteriores...')
-  await pool.query('DELETE FROM galeria_negocio')
-  await pool.query('DELETE FROM resena')
-  await pool.query('DELETE FROM producto')
-  await pool.query('DELETE FROM negocio')
-  console.log('  ✓ Tablas limpiadas')
-
-  // 3. Insertar negocios con URLs de Supabase Storage
-  console.log('\n🏪 Insertando negocios...')
+  // 2. Insertar solo las tiendas que aún no existen: nunca se borran datos reales
+  console.log('\n🏪 Insertando negocios de ejemplo...')
   for (const n of negocios) {
-    const res = await pool.query(
-      `INSERT INTO negocio (nombre, categoria, descripcion, logo_url, direccion, distrito, horario, telefono, whatsapp, rating, total_resenas, verificado, activo)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,TRUE)
-       RETURNING pk_id`,
-      [n.nombre, n.categoria, n.descripcion, imgUrl(n.logo), n.direccion, n.distrito, n.horario, n.telefono, n.whatsapp, n.rating, n.total_resenas, n.verificado]
-    )
-    const id = res.rows[0].pk_id
-    console.log(`  ✓ ${n.nombre} (id: ${id})`)
-
-    for (let i = 0; i < n.galeria.length; i++) {
-      await pool.query(
-        'INSERT INTO galeria_negocio (fk_negocio_id, imagen_url, orden) VALUES ($1,$2,$3)',
-        [id, imgUrl(n.galeria[i]), i + 1]
-      )
+    const existe = await pool.query('SELECT pk_id FROM negocio WHERE LOWER(nombre) = LOWER($1)', [n.nombre])
+    if (existe.rows.length > 0) {
+      console.log(`  • ${n.nombre} ya existe (id: ${existe.rows[0].pk_id}), se omite`)
+      continue
     }
 
-    for (const p of n.productos) {
-      await pool.query(
-        `INSERT INTO producto (fk_negocio_id, nombre, descripcion, precio, imagen_url, stock, categoria, activo)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,TRUE)`,
-        [id, p.nombre, p.descripcion, p.precio, imgUrl(p.imagen), p.stock, p.categoria]
-      )
-    }
+    const client = await pool.connect()
+    try {
+      await client.query('BEGIN')
 
-    for (const r of n.resenas) {
-      await pool.query(
-        'INSERT INTO resena (fk_negocio_id, nombre_autor, estrellas, texto) VALUES ($1,$2,$3,$4)',
-        [id, r.nombre_autor, r.estrellas, r.texto]
+      // Cada tienda tiene su propia cuenta de dueño
+      const email = correoDueno(n.nombre)
+      const dueno = await client.query(
+        `INSERT INTO cliente (nombre, email, password, email_verificado)
+         VALUES ($1, $2, $3, TRUE)
+         ON CONFLICT (email) DO UPDATE SET email = EXCLUDED.email
+         RETURNING pk_id`,
+        [`Dueño ${n.nombre}`, email, hash]
       )
+      const duenoId = dueno.rows[0].pk_id
+
+      const res = await client.query(
+        `INSERT INTO negocio (nombre, categoria, descripcion, logo_url, direccion, distrito, horario, telefono, whatsapp, rating, total_resenas, verificado, activo, fk_cliente_id)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,TRUE,$13)
+         RETURNING pk_id`,
+        [n.nombre, n.categoria, n.descripcion, imgUrl(n.logo), n.direccion, n.distrito, n.horario, n.telefono, n.whatsapp, n.rating, n.total_resenas, n.verificado, duenoId]
+      )
+      const id = res.rows[0].pk_id
+
+      for (let i = 0; i < n.galeria.length; i++) {
+        await client.query(
+          'INSERT INTO galeria_negocio (fk_negocio_id, imagen_url, orden) VALUES ($1,$2,$3)',
+          [id, imgUrl(n.galeria[i]), i + 1]
+        )
+      }
+
+      for (const p of n.productos) {
+        await client.query(
+          `INSERT INTO producto (fk_negocio_id, nombre, descripcion, precio, imagen_url, stock, categoria, activo)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,TRUE)`,
+          [id, p.nombre, p.descripcion, p.precio, imgUrl(p.imagen), p.stock, p.categoria]
+        )
+      }
+
+      for (const r of n.resenas) {
+        await client.query(
+          'INSERT INTO resena (fk_negocio_id, nombre_autor, estrellas, texto) VALUES ($1,$2,$3,$4)',
+          [id, r.nombre_autor, r.estrellas, r.texto]
+        )
+      }
+
+      await client.query('COMMIT')
+      console.log(`  ✓ ${n.nombre} (id: ${id}) · dueño: ${email}`)
+    } catch (error) {
+      await client.query('ROLLBACK')
+      throw error
+    } finally {
+      client.release()
     }
   }
 
