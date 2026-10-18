@@ -8,6 +8,7 @@ import TabFavoritos            from './tabs/TabFavoritos'
 import TabParaTi               from './tabs/TabParaTi'
 import TabTiendas              from './tabs/TabTiendas'
 import TabDatos                from './tabs/TabDatos'
+import { estaEntregado, estaEnCurso } from './estadoPedido'
 
 const BASE_URL = 'http://localhost:3001/api'
 
@@ -133,8 +134,8 @@ function PerfilPage() {
     navigate('/')
   }
 
-  const pagados    = pedidos.filter(p => p.estado === 'pagado').length
-  const pendientes = pedidos.filter(p => p.estado === 'pendiente').length
+  const pagados    = pedidos.filter(estaEntregado).length
+  const pendientes = pedidos.filter(estaEnCurso).length
   const tiendas    = [...new Map(
     pedidos.filter(p => p.negocio_id).map(p => [p.negocio_id, { id: p.negocio_id, nombre: p.negocio_nombre, logo: p.negocio_logo }])
   ).values()]
@@ -212,7 +213,7 @@ function PerfilPage() {
           />
         )}
         {tab === 'pedidos' && (
-          <TabPedidos pedidos={pedidos} pagados={pagados} pendientes={pendientes} navigate={navigate} perfil={perfil} setPedidos={setPedidos} />
+          <TabPedidos pedidos={pedidos} navigate={navigate} perfil={perfil} />
         )}
         {tab === 'favoritos' && (
           <TabFavoritos favData={favData} navigate={navigate} onToggleFav={handleToggleFav} />

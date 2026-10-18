@@ -10,6 +10,7 @@ const {
   deleteProduct,
   getVentas,
   createSale,
+  updateOrderStatus,
   getClientes,
   getFinanzas,
   createExpense,
@@ -33,6 +34,7 @@ router.get('/tienda', verifyToken, getTienda)
 router.put('/tienda', verifyToken, updateTienda)
 router.get('/ventas', verifyToken, getVentas)
 router.post('/ventas', verifyToken, createSale)
+router.put('/ventas/:id/estado', verifyToken, updateOrderStatus)
 router.get('/clientes', verifyToken, getClientes)
 router.get('/finanzas', verifyToken, getFinanzas)
 router.post('/gastos', verifyToken, createExpense)

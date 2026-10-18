@@ -40,6 +40,12 @@ const descontarStockForzado = (dbClient, negocioId, productoId, cantidad) =>
     [cantidad, productoId, negocioId]
   )
 
+const devolverStock = (dbClient, negocioId, productoId, cantidad) =>
+  dbClient.query(
+    `UPDATE producto SET stock = stock + $1 WHERE pk_id = $2 AND fk_negocio_id = $3`,
+    [cantidad, productoId, negocioId]
+  )
+
 const findIdByNombre = (dbClient, negocioId, nombre) =>
   dbClient.query(
     `SELECT pk_id FROM producto
@@ -54,5 +60,6 @@ module.exports = {
   findByIds,
   descontarStock,
   descontarStockForzado,
+  devolverStock,
   findIdByNombre,
 }

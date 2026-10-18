@@ -11,18 +11,18 @@ const extraerClienteId = (authHeader) => {
 
 const crearPaymentIntent = async (req, res, next) => {
   try {
-    const { items, fk_negocio_id, direccion, ciudad, notas } = req.body
+    const { items, fk_negocio_id, direccion, ciudad, notas, tipo_entrega } = req.body
     const clienteId = extraerClienteId(req.headers['authorization'])
-    const data = await stripeService.crearPaymentIntent(items, fk_negocio_id, clienteId, direccion, ciudad, notas)
+    const data = await stripeService.crearPaymentIntent(items, fk_negocio_id, clienteId, direccion, ciudad, notas, tipo_entrega)
     res.json(data)
   } catch (err) { next(err) }
 }
 
 const confirmarPedidoEfectivo = async (req, res, next) => {
   try {
-    const { items, fk_negocio_id, direccion, ciudad, notas } = req.body
+    const { items, fk_negocio_id, direccion, ciudad, notas, tipo_entrega } = req.body
     const clienteId = extraerClienteId(req.headers['authorization'])
-    const data = await stripeService.confirmarPedidoEfectivo(items, fk_negocio_id, clienteId, direccion, ciudad, notas)
+    const data = await stripeService.confirmarPedidoEfectivo(items, fk_negocio_id, clienteId, direccion, ciudad, notas, tipo_entrega)
     res.json(data)
   } catch (err) { next(err) }
 }

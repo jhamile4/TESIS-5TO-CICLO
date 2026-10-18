@@ -3,6 +3,10 @@ const repository = require('./admin.repository')
 const socialPublisher = require('../../services/socialPublisherService')
 const Groq = require('groq-sdk')
 const productoModel = require('../../models/productoModel')
+const Stripe = require('stripe')
+const { enviarEstadoPedido } = require('../../utils/email')
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
@@ -214,6 +218,73 @@ const createSale = async (clienteId, data) => {
   } finally {
     client.release()
   }
+}
+
+// Flujo del pedido según el tipo de entrega (el delivery lo hace el propio negocio)
+const SIGUIENTES_ESTADOS = {
+  delivery: { recibido: ['preparando', 'cancelado'], preparando: ['en_camino', 'cancelado'], en_camino: ['entregado'] },
+  recojo:   { recibido: ['preparando', 'cancelado'], preparando: ['listo_recojo', 'cancelado'], listo_recojo: ['entregado', 'cancelado'] },
+}
+
+const updateOrderStatus = async (clienteId, pedidoId, nuevoEstado) => {
+  const negocioResult = await repository.findBusinessByOwner(clienteId)
+  if (negocioResult.rows.length === 0) {
+    throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
+  }
+  const negocio = negocioResult.rows[0]
+
+  const client = await pool.connect()
+  let pedido
+  let actualizado
+  try {
+    await client.query('BEGIN')
+
+    const pedidoResult = await repository.findOrderForUpdate(client, negocio.pk_id, pedidoId)
+    if (pedidoResult.rows.length === 0) throw { status: 404, message: 'Pedido no encontrado' }
+    pedido = pedidoResult.rows[0]
+
+    if (pedido.estado === 'pendiente')
+      throw { status: 400, message: 'Este pedido aún no ha sido pagado por el cliente' }
+
+    const permitidos = SIGUIENTES_ESTADOS[pedido.tipo_entrega]?.[pedido.estado_pedido] || []
+    if (!permitidos.includes(nuevoEstado))
+      throw { status: 400, message: `No se puede pasar de "${pedido.estado_pedido}" a "${nuevoEstado}"` }
+
+    let estadoPago = pedido.estado
+    // En efectivo el cliente paga al recibir, así que al entregar queda pagado
+    if (nuevoEstado === 'entregado' && pedido.estado === 'efectivo') estadoPago = 'pagado'
+
+    if (nuevoEstado === 'cancelado') {
+      for (const item of pedido.items || []) {
+        if (item.pk_id) await productoModel.devolverStock(client, negocio.pk_id, item.pk_id, Number(item.cantidad))
+      }
+      if (pedido.stripe_payment_intent && pedido.estado === 'pagado') {
+        await stripe.refunds.create({ payment_intent: pedido.stripe_payment_intent })
+        estadoPago = 'reembolsado'
+      }
+    }
+
+    actualizado = (await repository.updateOrderStatus(client, pedido.pk_id, nuevoEstado, estadoPago)).rows[0]
+    await client.query('COMMIT')
+  } catch (error) {
+    await client.query('ROLLBACK')
+    throw error
+  } finally {
+    client.release()
+  }
+
+  // El correo es un aviso: si falla, el cambio de estado igual queda guardado
+  if (pedido.cliente_email) {
+    enviarEstadoPedido(pedido.cliente_email, {
+      cliente: pedido.cliente_nombre,
+      negocio: negocio.nombre,
+      numeroPedido: pedido.numero_pedido,
+      estado: nuevoEstado,
+      tipoEntrega: pedido.tipo_entrega,
+    }).catch((err) => console.error('No se pudo enviar el correo de estado:', err.message))
+  }
+
+  return actualizado
 }
 
 const getClientes = async (clienteId) => {
@@ -636,6 +707,7 @@ module.exports = {
   deleteProduct,
   getVentas,
   createSale,
+  updateOrderStatus,
   getClientes,
   getFinanzas,
   createExpense,

@@ -48,7 +48,7 @@ const getMetrics = (negocioId) =>
   pool.query(
     `SELECT
        COALESCE(SUM(monto_total) FILTER (WHERE estado = 'pagado'), 0) AS ventas_totales,
-       COUNT(*) FILTER (WHERE estado <> 'cancelado') AS ordenes,
+       COUNT(*) FILTER (WHERE estado_pedido <> 'cancelado') AS ordenes,
        COUNT(DISTINCT fk_cliente_id) FILTER (WHERE fk_cliente_id IS NOT NULL) AS clientes
      FROM pedido_pago
      WHERE fk_negocio_id = $1`,
@@ -95,6 +95,7 @@ const getRecentOrders = (negocioId) =>
 const getSales = (negocioId) =>
   pool.query(
     `SELECT pp.pk_id, pp.numero_pedido, pp.monto_total, pp.estado,
+            pp.estado_pedido, pp.estado_pedido_at, pp.tipo_entrega,
             pp.stripe_payment_intent, pp.metodo_pago, pp.comprobante_url,
             pp.telefono_cliente, pp.items, pp.notas, pp.created_at, pp.direccion, pp.ciudad,
             COALESCE(c.nombre, 'Cliente Directo') AS cliente_nombre,
@@ -110,7 +111,8 @@ const createSale = (negocioId, { clienteNombre, clienteTelefono, metodoPago, com
   db.query(
     `INSERT INTO pedido_pago (
        fk_negocio_id, numero_pedido, monto_total, estado, metodo_pago,
-       comprobante_url, telefono_cliente, items, notas, created_at
+       comprobante_url, telefono_cliente, items, notas, created_at,
+       estado_pedido, tipo_entrega
      )
      VALUES (
        $1,
@@ -122,9 +124,11 @@ const createSale = (negocioId, { clienteNombre, clienteTelefono, metodoPago, com
        $5,
        $6::jsonb,
        $7,
-       NOW()
+       NOW(),
+       'entregado',
+       'recojo'
      )
-     RETURNING pk_id, numero_pedido, monto_total, estado, metodo_pago, comprobante_url, telefono_cliente, items, notas, created_at`,
+     RETURNING pk_id, numero_pedido, monto_total, estado, estado_pedido, tipo_entrega, metodo_pago, comprobante_url, telefono_cliente, items, notas, created_at`,
     [
       negocioId,
       Number(montoTotal) || 0,
@@ -134,6 +138,28 @@ const createSale = (negocioId, { clienteNombre, clienteTelefono, metodoPago, com
       JSON.stringify(items || []),
       nota || null
     ]
+  )
+
+// Bloquea la fila mientras se cambia el estado, para evitar cambios simultáneos
+const findOrderForUpdate = (dbClient, negocioId, pedidoId) =>
+  dbClient.query(
+    `SELECT pp.pk_id, pp.numero_pedido, pp.estado, pp.estado_pedido, pp.tipo_entrega,
+            pp.stripe_payment_intent, pp.items, pp.monto_total,
+            c.email AS cliente_email, c.nombre AS cliente_nombre
+     FROM pedido_pago pp
+     LEFT JOIN cliente c ON c.pk_id = pp.fk_cliente_id
+     WHERE pp.pk_id = $1 AND pp.fk_negocio_id = $2
+     FOR UPDATE OF pp`,
+    [pedidoId, negocioId]
+  )
+
+const updateOrderStatus = (dbClient, pedidoId, estadoPedido, estadoPago) =>
+  dbClient.query(
+    `UPDATE pedido_pago
+     SET estado_pedido = $1, estado = $2, estado_pedido_at = NOW()
+     WHERE pk_id = $3
+     RETURNING pk_id, numero_pedido, estado, estado_pedido, estado_pedido_at, tipo_entrega`,
+    [estadoPedido, estadoPago, pedidoId]
   )
 
 const getClients = (negocioId) =>
@@ -324,6 +350,8 @@ module.exports = {
   getRecentOrders,
   getSales,
   createSale,
+  findOrderForUpdate,
+  updateOrderStatus,
   getClients,
   getFinanceSummary,
   getFinanceTransactions,

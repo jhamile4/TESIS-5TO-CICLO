@@ -5,6 +5,7 @@ import { currency } from '../utils/formatters'
 import RegisterSaleModal from '../components/sales/RegisterSaleModal'
 import VoucherModal from '../components/sales/VoucherModal'
 import SaleDetailModal from '../components/sales/SaleDetailModal'
+import { estadoPedidoInfo } from '../utils/orderStatus'
 
 export default function SalesPage() {
   const [data, setData] = useState(null)
@@ -47,16 +48,16 @@ export default function SalesPage() {
   const todayStr = new Date().toDateString()
   const todaySales = sales.filter((sale) => new Date(sale.created_at).toDateString() === todayStr)
   const totalToday = todaySales
-    .filter((sale) => sale.estado !== 'cancelado')
+    .filter((sale) => sale.estado_pedido !== 'cancelado')
     .reduce((sum, sale) => sum + Number(sale.monto_total || 0), 0)
 
   const sumByMethod = (methodName) =>
     sales
-      .filter((sale) => getPaymentMethod(sale).toLowerCase() === methodName.toLowerCase() && sale.estado !== 'cancelado')
+      .filter((sale) => getPaymentMethod(sale).toLowerCase() === methodName.toLowerCase() && sale.estado_pedido !== 'cancelado')
       .reduce((sum, sale) => sum + Number(sale.monto_total || 0), 0)
 
   const countByMethod = (methodName) =>
-    sales.filter((sale) => getPaymentMethod(sale).toLowerCase() === methodName.toLowerCase() && sale.estado !== 'cancelado').length
+    sales.filter((sale) => getPaymentMethod(sale).toLowerCase() === methodName.toLowerCase() && sale.estado_pedido !== 'cancelado').length
 
   const getItemCount = (sale) => {
     try {
@@ -163,6 +164,7 @@ export default function SalesPage() {
                 <th>Productos</th>
                 <th>Total</th>
                 <th>Pago</th>
+                <th>Estado</th>
                 <th>Comprobante</th>
                 <th style={{ width: '48px', textAlign: 'center' }}></th>
               </tr>
@@ -200,6 +202,11 @@ export default function SalesPage() {
                         {payMethod === 'Efectivo' && <DollarSign size={12} />}
                         {payMethod === 'Tarjeta' && <CreditCard size={12} />}
                         {payMethod}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`order-status-tag ${estadoPedidoInfo(sale).tone}`}>
+                        {estadoPedidoInfo(sale).label}
                       </span>
                     </td>
                     <td>
@@ -250,6 +257,13 @@ export default function SalesPage() {
         isOpen={Boolean(selectedSaleDetail)}
         sale={selectedSaleDetail}
         onClose={() => setSelectedSaleDetail(null)}
+        onUpdated={(actualizado) => {
+          setSelectedSaleDetail(actualizado)
+          setData((prev) => prev && {
+            ...prev,
+            ventas: prev.ventas.map((venta) => (venta.pk_id === actualizado.pk_id ? actualizado : venta)),
+          })
+        }}
       />
     </section>
   )

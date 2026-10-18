@@ -34,7 +34,11 @@ function CheckoutInner({ carrito, negocioId, subtotal, onExito, onCerrar, onPaso
   const comprador = JSON.parse(localStorage.getItem('comprador') || '{}')
   const token     = localStorage.getItem('token_comprador')
 
-  const envio = subtotal >= 200 ? 0 : ENVIO
+  const [tipoEntrega, setTipoEntrega] = useState('delivery')
+  const esRecojo = tipoEntrega === 'recojo'
+
+  // Igual que el backend: recojo en tienda no paga envío
+  const envio = esRecojo || subtotal >= 200 ? 0 : ENVIO
   const total = subtotal + envio
 
   const [paso,       setPaso]      = useState(1)
@@ -92,7 +96,7 @@ function CheckoutInner({ carrito, negocioId, subtotal, onExito, onCerrar, onPaso
   }
 
   const irPaso2 = () => {
-    if (!direccion.trim()) { setError('La dirección de entrega es obligatoria'); return }
+    if (!esRecojo && !direccion.trim()) { setError('La dirección de entrega es obligatoria'); return }
     setError(null)
     cambiarPaso(2)
   }
@@ -102,7 +106,7 @@ function CheckoutInner({ carrito, negocioId, subtotal, onExito, onCerrar, onPaso
     if (!nombre.trim()) { setError('Ingresa el nombre en la tarjeta'); return }
     setCargando(true); setError(null)
     try {
-      const data = await crearPaymentIntent(carrito, negocioId, token, { direccion, ciudad, notas })
+      const data = await crearPaymentIntent(carrito, negocioId, token, { direccion, ciudad, notas, tipo_entrega: tipoEntrega })
       const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(data.clientSecret, {
         payment_method: {
           card: elements.getElement(CardNumberElement),
@@ -124,7 +128,7 @@ function CheckoutInner({ carrito, negocioId, subtotal, onExito, onCerrar, onPaso
   const handleConfirmarEfectivo = async () => {
     setCargando(true); setError(null)
     try {
-      const data = await confirmarPedidoEfectivo({ carrito, negocioId, direccion, ciudad, notas, total }, token)
+      const data = await confirmarPedidoEfectivo({ carrito, negocioId, direccion, ciudad, notas, tipoEntrega }, token)
       setOrdenId(data.ordenId)
       onExito()
       cambiarPaso(3)
@@ -225,6 +229,32 @@ function CheckoutInner({ carrito, negocioId, subtotal, onExito, onCerrar, onPaso
         </div>
       </div>
 
+      {/* Tipo de entrega */}
+      <div className="flex flex-col gap-2">
+        <p className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-wider">¿Cómo recibes tu pedido?</p>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { key: 'delivery', icon: 'ri-e-bike-2-line',  titulo: 'Delivery',         sub: 'El negocio te lo lleva' },
+            { key: 'recojo',   icon: 'ri-store-2-line',   titulo: 'Recojo en tienda', sub: 'Sin costo de envío' },
+          ].map(op => (
+            <button key={op.key} type="button" onClick={() => { setTipoEntrega(op.key); setError(null) }}
+              className={`flex items-center gap-2 p-3 rounded-xl border-2 text-left transition-all cursor-pointer ${tipoEntrega === op.key ? 'border-[#0D9488] bg-[#F0FDF9]' : 'border-[#E5E7EB] bg-white hover:border-[#0D9488]/40'}`}>
+              <i className={`${op.icon} text-lg ${tipoEntrega === op.key ? 'text-[#0D9488]' : 'text-[#6B7280]'}`} />
+              <span>
+                <span className="block text-xs font-bold text-[#111827]">{op.titulo}</span>
+                <span className="block text-[10px] text-[#6B7280]">{op.sub}</span>
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {esRecojo ? (
+        <div className="flex items-start gap-2 bg-[#F9FAFB] border border-[#E5E7EB] text-[#374151] text-xs rounded-xl px-3 py-2.5">
+          <i className="ri-information-line shrink-0 text-[#0D9488]" />
+          Te avisaremos por correo cuando tu pedido esté listo para recoger en la tienda.
+        </div>
+      ) : (<>
       {/* Separador dirección */}
       <div className="flex items-center gap-2 text-[10px] font-bold text-[#9CA3AF] uppercase tracking-wider">
         <div className="h-px flex-1 bg-[#E5E7EB]" />
@@ -278,12 +308,16 @@ function CheckoutInner({ carrito, negocioId, subtotal, onExito, onCerrar, onPaso
             className="w-full px-4 py-3 rounded-xl border border-[#E5E7EB] bg-white text-sm outline-none focus:border-[#0D9488] transition-colors placeholder-[#9CA3AF]"
           />
         </div>
+      </div>
+      </>)}
+
+      <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-semibold text-[#374151]">Notas (opcional)</label>
           <textarea
             value={notas}
             onChange={e => setNotas(e.target.value)}
-            placeholder="Referencias, timbre, piso, instrucciones de entrega..."
+            placeholder={esRecojo ? 'Ej: paso a recoger después de las 6 pm' : 'Referencias, timbre, piso, instrucciones de entrega...'}
             rows={2}
             className="w-full px-4 py-3 rounded-xl border border-[#E5E7EB] bg-white text-sm outline-none focus:border-[#0D9488] transition-colors placeholder-[#9CA3AF] resize-none"
           />
@@ -331,7 +365,7 @@ function CheckoutInner({ carrito, negocioId, subtotal, onExito, onCerrar, onPaso
           </div>
           <div className="flex-1">
             <p className="text-sm font-bold text-[#111827]">Pago en efectivo</p>
-            <p className="text-xs text-[#6B7280]">Pagas al recibir el delivery</p>
+            <p className="text-xs text-[#6B7280]">{esRecojo ? 'Pagas al recoger en la tienda' : 'Pagas al recibir el delivery'}</p>
           </div>
           {metodo === 'efectivo' && <i className="ri-check-line text-[#0D9488] text-lg" />}
         </button>
@@ -382,7 +416,11 @@ function CheckoutInner({ carrito, negocioId, subtotal, onExito, onCerrar, onPaso
           </div>
           <div>
             <p className="text-sm font-bold text-[#111827]">Pagas al recibir tu pedido</p>
-            <p className="text-xs text-[#6B7280] mt-1">El delivery pasara por tu dirección y pagas en efectivo al momento de la entrega.</p>
+            <p className="text-xs text-[#6B7280] mt-1">
+              {esRecojo
+                ? 'Pagas en efectivo cuando pases a recoger tu pedido en la tienda.'
+                : 'El negocio llevará el pedido a tu dirección y pagas en efectivo al momento de la entrega.'}
+            </p>
           </div>
           <div className="flex items-center gap-4 text-xs text-[#0D9488] font-semibold">
             <span className="flex items-center gap-1"><i className="ri-check-line" /> Sin adelantos</span>

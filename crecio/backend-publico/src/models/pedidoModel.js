@@ -6,20 +6,20 @@ const createWhatsapp = (negocioId, mensaje) =>
     [negocioId, mensaje]
   )
 
-const createPago = (negocioId, clienteId, paymentIntentId, total, items, direccion, ciudad, notas) =>
+const createPago = (negocioId, clienteId, paymentIntentId, total, items, direccion, ciudad, notas, tipoEntrega) =>
   pool.query(
     `INSERT INTO pedido_pago
-       (fk_negocio_id, fk_cliente_id, stripe_payment_intent, monto_total, estado, items, direccion, ciudad, notas)
-     VALUES ($1, $2, $3, $4, 'pendiente', $5, $6, $7, $8) RETURNING pk_id`,
-    [negocioId, clienteId, paymentIntentId, total, JSON.stringify(items), direccion || null, ciudad || null, notas || null]
+       (fk_negocio_id, fk_cliente_id, stripe_payment_intent, monto_total, estado, items, direccion, ciudad, notas, tipo_entrega)
+     VALUES ($1, $2, $3, $4, 'pendiente', $5, $6, $7, $8, $9) RETURNING pk_id`,
+    [negocioId, clienteId, paymentIntentId, total, JSON.stringify(items), direccion || null, ciudad || null, notas || null, tipoEntrega]
   )
 
-const createEfectivo = (negocioId, clienteId, montoTotal, items, direccion, ciudad, notas, db = pool) =>
+const createEfectivo = (negocioId, clienteId, montoTotal, items, direccion, ciudad, notas, tipoEntrega, db = pool) =>
   db.query(
     `INSERT INTO pedido_pago
-       (fk_negocio_id, fk_cliente_id, stripe_payment_intent, monto_total, estado, items, direccion, ciudad, notas)
-     VALUES ($1, $2, NULL, $3, 'efectivo', $4, $5, $6, $7) RETURNING pk_id`,
-    [negocioId, clienteId, montoTotal, JSON.stringify(items), direccion, ciudad || null, notas || null]
+       (fk_negocio_id, fk_cliente_id, stripe_payment_intent, monto_total, estado, items, direccion, ciudad, notas, tipo_entrega)
+     VALUES ($1, $2, NULL, $3, 'efectivo', $4, $5, $6, $7, $8) RETURNING pk_id`,
+    [negocioId, clienteId, montoTotal, JSON.stringify(items), direccion || null, ciudad || null, notas || null, tipoEntrega]
   )
 
 const updateEstado = (paymentIntentId, estado) =>
@@ -49,7 +49,8 @@ const findByCliente = (clienteId) =>
   pool.query(
     `SELECT
        pp.pk_id, pp.numero_pedido, pp.stripe_payment_intent, pp.monto_total,
-       pp.estado, pp.items, pp.direccion, pp.ciudad, pp.notas, pp.created_at,
+       pp.estado, pp.estado_pedido, pp.estado_pedido_at, pp.tipo_entrega,
+       pp.items, pp.direccion, pp.ciudad, pp.notas, pp.created_at,
        n.nombre   AS negocio_nombre,
        n.logo_url AS negocio_logo,
        n.whatsapp AS negocio_whatsapp,

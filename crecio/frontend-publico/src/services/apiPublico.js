@@ -155,13 +155,13 @@ export const confirmarPago = async (paymentIntentId, token) => {
   return post('/stripe/confirmar', { paymentIntentId }, token)
 }
 
-export const confirmarPedidoEfectivo = async ({ carrito, negocioId, direccion, ciudad, notas, total }, token) => {
+export const confirmarPedidoEfectivo = async ({ carrito, negocioId, direccion, ciudad, notas, tipoEntrega }, token) => {
   return post('/stripe/efectivo', {
     items:        carrito,
     fk_negocio_id: negocioId,
     direccion,
     ciudad,
     notas,
-    monto_total:  total,
+    tipo_entrega: tipoEntrega,
   }, token)
 }

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { estadoConfig, pasosSeguimiento, estaEntregado, estaEnCurso, claveEstado } from '../estadoPedido'
 
 const BASE_URL = 'http://localhost:3001/api'
 
@@ -14,12 +15,6 @@ function parseItems(raw) {
   try { return JSON.parse(raw) } catch { return [] }
 }
 
-function estadoConfig(estado) {
-  if (estado === 'pagado')   return { label: 'Entregado',   color: 'text-green-600',  bg: 'bg-green-50',  border: 'border-green-200' }
-  if (estado === 'efectivo') return { label: 'En curso',    color: 'text-amber-600',  bg: 'bg-amber-50',  border: 'border-amber-200' }
-  return                            { label: 'Pendiente',   color: 'text-amber-600',  bg: 'bg-amber-50',  border: 'border-amber-200' }
-}
-
 /* ── Vista detalle ── */
 function DetallePedido({ pedido: p, onVolver, navigate, perfil }) {
   const items    = parseItems(p.items)
@@ -27,16 +22,12 @@ function DetallePedido({ pedido: p, onVolver, navigate, perfil }) {
   const envio    = Math.round((Number(p.monto_total) - subtotal) * 100) / 100
   const metodo   = p.stripe_payment_intent ? 'Tarjeta (Stripe)' : 'Pago en efectivo'
   const numPed   = numeroPedido(p)
-  const cfg      = estadoConfig(p.estado)
-  const esEfectivo  = p.estado === 'efectivo'
-  const esPendiente = p.estado === 'pendiente'
-  const enCurso     = esEfectivo || esPendiente
-
-  const pasos = [
-    { icon: 'ri-file-list-3-line', titulo: 'Pedido recibido',  sub: 'Estamos procesando tu orden', hecho: true },
-    { icon: 'ri-bank-card-line',   titulo: 'Pago confirmado',  sub: 'Tu pago fue verificado',       hecho: p.estado === 'pagado' || !!p.stripe_payment_intent },
-    { icon: 'ri-home-4-line',      titulo: '¡Entregado!',       sub: 'Disfruta tu compra',           hecho: p.estado === 'pagado' },
-  ]
+  const cfg      = estadoConfig(p)
+  const esRecojo      = p.tipo_entrega === 'recojo'
+  const cancelado     = claveEstado(p) === 'cancelado'
+  const pagoPendiente = claveEstado(p) === 'pago_pendiente'
+  const esEfectivo    = p.estado === 'efectivo' && !cancelado
+  const pasos         = pasosSeguimiento(p)
 
   const inicial = perfil?.nombre?.charAt(0).toUpperCase() || '?'
 
@@ -67,13 +58,30 @@ function DetallePedido({ pedido: p, onVolver, navigate, perfil }) {
         <p className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-wider flex items-center gap-1.5 mb-4">
           <i className="ri-map-pin-time-line text-[#0D9488]" /> Seguimiento del pedido
         </p>
-        <div className="flex flex-col gap-2">
+        {cancelado && (
+          <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl p-4 mb-3">
+            <i className="ri-close-circle-line text-red-500 text-lg shrink-0" />
+            <div>
+              <p className="text-xs font-bold text-red-700">El negocio canceló este pedido</p>
+              <p className="text-xs text-red-600 mt-0.5">
+                {p.estado === 'reembolsado' ? 'Tu pago con tarjeta fue reembolsado.' : 'No se realizó ningún cobro.'}
+              </p>
+            </div>
+          </div>
+        )}
+        {pagoPendiente && (
+          <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl p-4 mb-3">
+            <i className="ri-error-warning-line text-red-500 text-lg shrink-0" />
+            <p className="text-xs text-red-700">El pago con tarjeta no se completó, por eso el negocio no recibió este pedido.</p>
+          </div>
+        )}
+        {!cancelado && !pagoPendiente && <div className="flex flex-col gap-2">
           {pasos.map((paso, i) => (
             <div key={i} className="flex gap-3">
               <div className="flex flex-col items-center">
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${paso.hecho ? 'bg-[#0D9488]' : 'bg-[#F3F4F6] border border-[#E5E7EB]'}`}>
                   {paso.hecho
-                    ? <i className={`${i === 2 ? paso.icon : 'ri-check-line'} text-white text-xs`} />
+                    ? <i className={`${paso.actual ? paso.icon : 'ri-check-line'} text-white text-xs`} />
                     : <i className={`${paso.icon} text-[#D1D5DB] text-xs`} />
                   }
                 </div>
@@ -86,13 +94,13 @@ function DetallePedido({ pedido: p, onVolver, navigate, perfil }) {
                   <p className={`text-sm font-bold ${paso.hecho ? 'text-[#111827]' : 'text-[#9CA3AF]'}`}>{paso.titulo}</p>
                   <p className="text-[10px] text-[#9CA3AF] mt-0.5">{paso.sub}</p>
                 </div>
-                {paso.hecho && i === pasos.filter(x => x.hecho).length - 1 && (
+                {paso.actual && (
                   <span className="text-[10px] font-bold text-[#0D9488] bg-[#0D9488]/10 px-2 py-0.5 rounded-full shrink-0 ml-2 mt-0.5">Ahora</span>
                 )}
               </div>
             </div>
           ))}
-        </div>
+        </div>}
       </div>
 
       {/* Aviso pago en efectivo — solo informativo para el cliente */}
@@ -100,9 +108,9 @@ function DetallePedido({ pedido: p, onVolver, navigate, perfil }) {
         <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl p-4">
           <i className="ri-hand-coin-line text-amber-500 text-lg shrink-0 mt-0.5" />
           <div>
-            <p className="text-xs font-bold text-amber-700">Pago en efectivo al recibir</p>
+            <p className="text-xs font-bold text-amber-700">{esRecojo ? 'Pago en efectivo al recoger' : 'Pago en efectivo al recibir'}</p>
             <p className="text-xs text-amber-600 mt-0.5">
-              El delivery pasará por tu dirección. Ten el dinero listo — pagas S/ {Number(p.monto_total).toFixed(2)} al momento de la entrega.
+              Ten el dinero listo — pagas S/ {Number(p.monto_total).toFixed(2)} {esRecojo ? 'cuando recojas tu pedido en la tienda.' : 'cuando el negocio te entregue el pedido.'}
             </p>
           </div>
         </div>
@@ -125,7 +133,12 @@ function DetallePedido({ pedido: p, onVolver, navigate, perfil }) {
               </div>
             </div>
           )}
-          {p.direccion ? (
+          {esRecojo ? (
+            <div className="flex items-start gap-1.5 text-xs text-[#374151]">
+              <i className="ri-store-2-line text-[#9CA3AF] shrink-0 mt-0.5" />
+              <span>Recojo en tienda</span>
+            </div>
+          ) : p.direccion ? (
             <div className="flex flex-col gap-1 text-xs">
               <div className="flex items-start gap-1.5 text-[#374151]">
                 <i className="ri-map-pin-line text-[#9CA3AF] shrink-0 mt-0.5" />
@@ -210,7 +223,7 @@ function FilaPedido({ p, expandidoId, setExpandidoId, onVerDetalle }) {
   const items    = parseItems(p.items)
   const cantItem = items.reduce((a, i) => a + i.cantidad, 0)
   const numPed   = numeroPedido(p)
-  const cfg      = estadoConfig(p.estado)
+  const cfg      = estadoConfig(p)
   const abierto  = expandidoId === p.pk_id
 
   return (
@@ -218,7 +231,7 @@ function FilaPedido({ p, expandidoId, setExpandidoId, onVerDetalle }) {
       <div className="flex items-center gap-3 px-5 py-4 cursor-pointer hover:bg-[#FAFAFA] transition-colors"
         onClick={() => setExpandidoId(abierto ? null : p.pk_id)}>
         <div className="w-9 h-9 rounded-xl bg-[#0D9488]/10 flex items-center justify-center shrink-0">
-          <i className="ri-home-4-line text-[#0D9488] text-sm" />
+          <i className={`${cfg.icon} ${cfg.color} text-sm`} />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-[#111827]">Pedido #{numPed}</p>
@@ -250,7 +263,7 @@ function FilaPedido({ p, expandidoId, setExpandidoId, onVerDetalle }) {
 }
 
 /* ── Componente principal ── */
-function TabPedidos({ pedidos, pagados, pendientes, navigate, perfil, setPedidos }) {
+function TabPedidos({ pedidos, navigate, perfil }) {
   const [filtro,      setFiltro]      = useState('todos')
   const [expandidoId, setExpandidoId] = useState(null)
   const [detalle,     setDetalle]     = useState(null)
@@ -268,12 +281,12 @@ function TabPedidos({ pedidos, pagados, pendientes, navigate, perfil, setPedidos
     .filter(p => p.estado === 'pagado')
     .reduce((s, p) => s + Number(p.monto_total), 0)
 
-  const efectivos = pedidos.filter(p => p.estado === 'efectivo').length
-  const enCurso   = pendientes + efectivos
+  const enCurso   = pedidos.filter(estaEnCurso).length
+  const pagados   = pedidos.filter(estaEntregado).length
 
   const pedidosFiltrados = pedidos.filter(p => {
-    if (filtro === 'en_curso')    return p.estado === 'pendiente' || p.estado === 'efectivo'
-    if (filtro === 'entregados')  return p.estado === 'pagado'
+    if (filtro === 'en_curso')    return estaEnCurso(p)
+    if (filtro === 'entregados')  return estaEntregado(p)
     return true
   })
 
@@ -358,7 +371,7 @@ function TabPedidos({ pedidos, pagados, pendientes, navigate, perfil, setPedidos
       {/* Footer info */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { icon: 'ri-map-pin-time-line', titulo: 'Seguimiento',     desc: 'Cuando tu pedido esté en camino, vas a recibir un número de tracking para seguirlo paso a paso.' },
+          { icon: 'ri-map-pin-time-line', titulo: 'Seguimiento',     desc: 'Cada vez que el negocio actualice tu pedido lo verás aquí y te avisaremos por correo.' },
           { icon: 'ri-refresh-line',      titulo: 'Repetir compra',  desc: 'Volvé a pedir lo que te gustó con un solo click. Los productos van directo al carrito.' },
           { icon: 'ri-shield-check-line', titulo: 'Compra protegida', desc: 'Todas tus compras en CRECIO están protegidas. Si hay un problema, te ayudamos.' },
         ].map((f, i) => (

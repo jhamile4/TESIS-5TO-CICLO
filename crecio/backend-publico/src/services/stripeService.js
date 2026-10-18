@@ -7,7 +7,7 @@ const { ENVIO_GRATIS_DESDE, COSTO_ENVIO } = require('../config/constants')
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 // Arma el pedido con precios y stock de la BD; del carrito solo se usa id y cantidad
-const prepararPedido = async (items, negocioId) => {
+const prepararPedido = async (items, negocioId, tipoEntrega) => {
   if (!Array.isArray(items) || items.length === 0)
     throw { status: 400, message: 'El carrito está vacío' }
 
@@ -32,14 +32,27 @@ const prepararPedido = async (items, negocioId) => {
   })
 
   const subtotal = itemsPedido.reduce((s, i) => s + i.precio * i.cantidad, 0)
-  const envio    = subtotal >= ENVIO_GRATIS_DESDE ? 0 : COSTO_ENVIO
+  // Si recoge en tienda no hay envío; el delivery lo hace el propio negocio
+  const envio    = tipoEntrega === 'recojo' || subtotal >= ENVIO_GRATIS_DESDE ? 0 : COSTO_ENVIO
   const total    = Math.round((subtotal + envio) * 100) / 100
 
   return { itemsPedido, total }
 }
 
-const crearPaymentIntent = async (items, negocioId, clienteId, direccion, ciudad, notas) => {
-  const { itemsPedido, total } = await prepararPedido(items, negocioId)
+const TIPOS_ENTREGA = ['delivery', 'recojo']
+
+const validarEntrega = (tipoEntrega, direccion) => {
+  const tipo = tipoEntrega || 'delivery'
+  if (!TIPOS_ENTREGA.includes(tipo))
+    throw { status: 400, message: 'Tipo de entrega no válido' }
+  if (tipo === 'delivery' && !direccion?.trim())
+    throw { status: 400, message: 'La dirección es obligatoria para delivery' }
+  return tipo
+}
+
+const crearPaymentIntent = async (items, negocioId, clienteId, direccion, ciudad, notas, tipoEntrega) => {
+  const tipo = validarEntrega(tipoEntrega, direccion)
+  const { itemsPedido, total } = await prepararPedido(items, negocioId, tipo)
 
   const paymentIntent = await stripe.paymentIntents.create({
     amount:   Math.round(total * 100),
@@ -52,17 +65,15 @@ const crearPaymentIntent = async (items, negocioId, clienteId, direccion, ciudad
   })
 
   const result = await pedidoModel.createPago(
-    negocioId, clienteId, paymentIntent.id, total, itemsPedido, direccion, ciudad, notas
+    negocioId, clienteId, paymentIntent.id, total, itemsPedido, direccion, ciudad, notas, tipo
   )
 
   return { clientSecret: paymentIntent.client_secret, ordenId: result.rows[0].pk_id, total }
 }
 
-const confirmarPedidoEfectivo = async (items, negocioId, clienteId, direccion, ciudad, notas) => {
-  if (!direccion)
-    throw { status: 400, message: 'La dirección es obligatoria' }
-
-  const { itemsPedido, total } = await prepararPedido(items, negocioId)
+const confirmarPedidoEfectivo = async (items, negocioId, clienteId, direccion, ciudad, notas, tipoEntrega) => {
+  const tipo = validarEntrega(tipoEntrega, direccion)
+  const { itemsPedido, total } = await prepararPedido(items, negocioId, tipo)
 
   const client = await pool.connect()
   try {
@@ -75,7 +86,7 @@ const confirmarPedidoEfectivo = async (items, negocioId, clienteId, direccion, c
     }
 
     const result = await pedidoModel.createEfectivo(
-      negocioId, clienteId, total, itemsPedido, direccion, ciudad, notas, client
+      negocioId, clienteId, total, itemsPedido, direccion, ciudad, notas, tipo, client
     )
 
     await client.query('COMMIT')

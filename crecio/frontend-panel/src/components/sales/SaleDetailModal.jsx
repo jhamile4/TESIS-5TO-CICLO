@@ -1,9 +1,38 @@
-import { Smartphone, DollarSign, CreditCard } from 'lucide-react'
+import { useState } from 'react'
+import { Smartphone, DollarSign, CreditCard, Truck, Store } from 'lucide-react'
 import { currency } from '../../utils/formatters'
+import { actualizarEstadoPedido } from '../../services/apiAdmin'
+import { estadoPedidoInfo, accionesPedido } from '../../utils/orderStatus'
 import ModalShell from '../common/ModalShell'
 
-export default function SaleDetailModal({ isOpen, sale, onClose }) {
+export default function SaleDetailModal({ isOpen, sale, onClose, onUpdated }) {
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
   if (!sale) return null
+
+  const estadoInfo = estadoPedidoInfo(sale)
+  const { siguiente, puedeCancelar } = accionesPedido(sale)
+  const esDelivery = (sale.tipo_entrega || 'delivery') === 'delivery'
+
+  const cambiarEstado = async (estado) => {
+    if (estado === 'cancelado') {
+      const aviso = sale.stripe_payment_intent
+        ? '¿Cancelar este pedido? Se devolverá el stock y se reembolsará el pago con tarjeta.'
+        : '¿Cancelar este pedido? Se devolverá el stock de los productos.'
+      if (!window.confirm(aviso)) return
+    }
+    setSaving(true)
+    setError('')
+    try {
+      const actualizado = await actualizarEstadoPedido(sale.pk_id, estado)
+      onUpdated?.({ ...sale, ...actualizado })
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const payMethod = sale.metodo_pago || (sale.stripe_payment_intent ? 'Tarjeta' : 'Efectivo')
   const dateObj = new Date(sale.created_at)
@@ -22,9 +51,21 @@ export default function SaleDetailModal({ isOpen, sale, onClose }) {
   const items = parseItems(sale.items)
 
   const footerAction = (
-    <button className="btn-ui-outline" onClick={onClose}>
-      Cerrar
-    </button>
+    <>
+      {puedeCancelar && (
+        <button className="btn-ui-outline" style={{ color: '#dc2626' }} onClick={() => cambiarEstado('cancelado')} disabled={saving}>
+          Cancelar pedido
+        </button>
+      )}
+      <button className="btn-ui-outline" onClick={onClose}>
+        Cerrar
+      </button>
+      {siguiente && (
+        <button className="btn-ui-primary" onClick={() => cambiarEstado(siguiente.estado)} disabled={saving}>
+          {saving ? 'Guardando...' : siguiente.texto}
+        </button>
+      )}
+    </>
   )
 
   return (
@@ -57,6 +98,26 @@ export default function SaleDetailModal({ isOpen, sale, onClose }) {
               {dateObj.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
             </small>
           </div>
+        </div>
+
+        {/* Estado del pedido y tipo de entrega */}
+        <div className="sale-section">
+          <span className="sale-section-label">Estado del pedido</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <span className={`order-status-tag ${estadoInfo.tone}`} style={{ fontSize: '12px', padding: '4px 10px' }}>
+              {estadoInfo.label}
+            </span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#475569' }}>
+              {esDelivery ? <Truck size={14} /> : <Store size={14} />}
+              {esDelivery ? 'Delivery del negocio' : 'Recojo en tienda'}
+            </span>
+          </div>
+          {esDelivery && sale.direccion && (
+            <p className="sale-notes-text" style={{ marginTop: '8px' }}>
+              {[sale.direccion, sale.ciudad].filter(Boolean).join(', ')}
+            </p>
+          )}
+          {error && <div className="toast-error" style={{ marginTop: '8px' }}>{error}</div>}
         </div>
 
         {/* Payment Method */}

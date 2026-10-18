@@ -29,4 +29,33 @@ const enviarCodigoVerificacion = async (destinatario, codigo) => {
   })
 }
 
-module.exports = { enviarCodigoVerificacion }
+const MENSAJES_ESTADO = {
+  preparando:   { titulo: 'Estamos preparando tu pedido', texto: 'El negocio ya está alistando tus productos.' },
+  en_camino:    { titulo: 'Tu pedido va en camino',       texto: 'El negocio ya envió tu pedido a la dirección indicada.' },
+  listo_recojo: { titulo: 'Tu pedido está listo',         texto: 'Ya puedes pasar a recogerlo en la tienda.' },
+  entregado:    { titulo: '¡Pedido entregado!',           texto: 'Gracias por tu compra. ¡Esperamos que lo disfrutes!' },
+  cancelado:    { titulo: 'Tu pedido fue cancelado',      texto: 'El negocio canceló tu pedido. Si pagaste con tarjeta, el reembolso se procesa automáticamente.' },
+}
+
+const enviarEstadoPedido = async (destinatario, { cliente, negocio, numeroPedido, estado }) => {
+  const mensaje = MENSAJES_ESTADO[estado]
+  if (!mensaje) return
+
+  await transporter.sendMail({
+    from: `"CRECIO" <${process.env.EMAIL_USER}>`,
+    to: destinatario,
+    subject: `${mensaje.titulo} · Pedido #${numeroPedido}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 32px;">
+        <h2 style="color: #00B894; margin-bottom: 8px;">${mensaje.titulo}</h2>
+        <p style="color: #4A5568;">Hola${cliente ? ` ${cliente}` : ''}, tu pedido <strong>#${numeroPedido}</strong> de <strong>${negocio}</strong> cambió de estado.</p>
+        <p style="color: #4A5568;">${mensaje.texto}</p>
+        <p style="color: #718096; font-size: 14px;">Puedes ver el seguimiento en tu perfil de CRECIO, en la sección "Mis pedidos".</p>
+        <hr style="border: none; border-top: 1px solid #E2E8F0; margin: 24px 0;" />
+        <p style="color: #A0AEC0; font-size: 12px;">CRECIO - Plataforma de negocios locales</p>
+      </div>
+    `,
+  })
+}
+
+module.exports = { enviarCodigoVerificacion, enviarEstadoPedido }

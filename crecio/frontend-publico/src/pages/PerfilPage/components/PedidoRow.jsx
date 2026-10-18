@@ -1,9 +1,11 @@
 import { useState } from 'react'
+import { estadoConfig } from '../estadoPedido'
 
 function PedidoRow({ pedido: p, navigate, detalle }) {
   const [expandido, setExpandido] = useState(false)
   const items     = typeof p.items === 'string' ? JSON.parse(p.items) : p.items
   const cantItems = items?.reduce((a, i) => a + i.cantidad, 0) || 0
+  const cfg       = estadoConfig(p)
 
   return (
     <div className="border-b border-[#F3F4F6] last:border-0">
@@ -12,7 +14,7 @@ function PedidoRow({ pedido: p, navigate, detalle }) {
         onClick={() => detalle && setExpandido(!expandido)}
       >
         <div className="w-10 h-10 rounded-xl bg-[#0D9488]/10 flex items-center justify-center shrink-0">
-          <i className={`text-sm ${p.estado === 'pagado' ? 'ri-checkbox-circle-line text-green-500' : 'ri-time-line text-amber-500'}`} />
+          <i className={`text-sm ${cfg.icon} ${cfg.color}`} />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-[#111827]">
@@ -24,9 +26,7 @@ function PedidoRow({ pedido: p, navigate, detalle }) {
         </div>
         <div className="text-right shrink-0">
           <p className="text-sm font-bold text-[#111827]">S/ {Number(p.monto_total).toFixed(2)}</p>
-          <p className={`text-[10px] font-semibold ${p.estado === 'pagado' ? 'text-green-600' : 'text-amber-600'}`}>
-            {p.estado === 'pagado' ? 'Entregado' : 'Pendiente de pago'}
-          </p>
+          <p className={`text-[10px] font-semibold ${cfg.color}`}>{cfg.label}</p>
         </div>
         {detalle && <i className={`ri-arrow-down-s-line text-[#9CA3AF] transition-transform ${expandido ? 'rotate-180' : ''}`} />}
       </div>

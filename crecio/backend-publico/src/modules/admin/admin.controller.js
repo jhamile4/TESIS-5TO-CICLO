@@ -53,6 +53,15 @@ const createSale = async (req, res, next) => {
   }
 }
 
+const updateOrderStatus = async (req, res, next) => {
+  try {
+    const data = await adminService.updateOrderStatus(req.user.id, req.params.id, req.body.estado)
+    res.json(data)
+  } catch (error) {
+    next(error)
+  }
+}
+
 const getClientes = async (req, res, next) => {
   try {
     const clientes = await adminService.getClientes(req.user.id)
@@ -189,6 +198,7 @@ module.exports = {
   deleteProduct,
   getVentas,
   createSale,
+  updateOrderStatus,
   getClientes,
   getFinanzas,
   createExpense,

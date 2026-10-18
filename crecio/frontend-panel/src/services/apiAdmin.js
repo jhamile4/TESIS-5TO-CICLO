@@ -47,6 +47,11 @@ export const crearVenta = (venta) => request('/admin/ventas', {
   body: JSON.stringify(venta),
 })
 
+export const actualizarEstadoPedido = (id, estado) => request(`/admin/ventas/${id}/estado`, {
+  method: 'PUT',
+  body: JSON.stringify({ estado }),
+})
+
 export const getClientes = () => request('/admin/clientes')
 export const getFinanzas = () => request('/admin/finanzas')
 export const crearGasto = (gasto) => request('/admin/gastos', { method: 'POST', body: JSON.stringify(gasto) })
