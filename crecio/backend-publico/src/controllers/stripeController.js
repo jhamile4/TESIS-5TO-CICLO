@@ -20,9 +20,9 @@ const crearPaymentIntent = async (req, res, next) => {
 
 const confirmarPedidoEfectivo = async (req, res, next) => {
   try {
-    const { items, fk_negocio_id, direccion, ciudad, notas, monto_total } = req.body
+    const { items, fk_negocio_id, direccion, ciudad, notas } = req.body
     const clienteId = extraerClienteId(req.headers['authorization'])
-    const data = await stripeService.confirmarPedidoEfectivo(items, fk_negocio_id, clienteId, direccion, ciudad, notas, monto_total)
+    const data = await stripeService.confirmarPedidoEfectivo(items, fk_negocio_id, clienteId, direccion, ciudad, notas)
     res.json(data)
   } catch (err) { next(err) }
 }

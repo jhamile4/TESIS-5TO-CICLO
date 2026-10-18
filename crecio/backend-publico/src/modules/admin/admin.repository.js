@@ -106,8 +106,8 @@ const getSales = (negocioId) =>
     [negocioId]
   )
 
-const createSale = (negocioId, { clienteNombre, clienteTelefono, metodoPago, comprobanteUrl, items, nota, montoTotal }) =>
-  pool.query(
+const createSale = (negocioId, { clienteNombre, clienteTelefono, metodoPago, comprobanteUrl, items, nota, montoTotal }, db = pool) =>
+  db.query(
     `INSERT INTO pedido_pago (
        fk_negocio_id, numero_pedido, monto_total, estado, metodo_pago,
        comprobante_url, telefono_cliente, items, notas, created_at

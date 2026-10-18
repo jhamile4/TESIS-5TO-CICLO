@@ -14,8 +14,8 @@ const createPago = (negocioId, clienteId, paymentIntentId, total, items, direcci
     [negocioId, clienteId, paymentIntentId, total, JSON.stringify(items), direccion || null, ciudad || null, notas || null]
   )
 
-const createEfectivo = (negocioId, clienteId, montoTotal, items, direccion, ciudad, notas) =>
-  pool.query(
+const createEfectivo = (negocioId, clienteId, montoTotal, items, direccion, ciudad, notas, db = pool) =>
+  db.query(
     `INSERT INTO pedido_pago
        (fk_negocio_id, fk_cliente_id, stripe_payment_intent, monto_total, estado, items, direccion, ciudad, notas)
      VALUES ($1, $2, NULL, $3, 'efectivo', $4, $5, $6, $7) RETURNING pk_id`,
@@ -26,6 +26,15 @@ const updateEstado = (paymentIntentId, estado) =>
   pool.query(
     `UPDATE pedido_pago SET estado = $1 WHERE stripe_payment_intent = $2`,
     [estado, paymentIntentId]
+  )
+
+// Pasa de 'pendiente' a 'pagado' una sola vez; si ya estaba pagado no devuelve filas
+const marcarPagado = (dbClient, paymentIntentId) =>
+  dbClient.query(
+    `UPDATE pedido_pago SET estado = 'pagado'
+     WHERE stripe_payment_intent = $1 AND estado = 'pendiente'
+     RETURNING fk_negocio_id, items`,
+    [paymentIntentId]
   )
 
 const confirmEfectivo = (pedidoId, clienteId) =>
@@ -65,6 +74,7 @@ module.exports = {
   createPago,
   createEfectivo,
   updateEstado,
+  marcarPagado,
   confirmEfectivo,
   findByCliente,
   findCategoriasCompradas,

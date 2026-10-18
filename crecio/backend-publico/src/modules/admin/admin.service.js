@@ -1,3 +1,4 @@
+const pool = require('../../config/db')
 const repository = require('./admin.repository')
 const socialPublisher = require('../../services/socialPublisherService')
 const Groq = require('groq-sdk')
@@ -186,8 +187,33 @@ const createSale = async (clienteId, data) => {
     throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
   }
   const negocio = negocioResult.rows[0]
-  const result = await repository.createSale(negocio.pk_id, data)
-  return result.rows[0]
+  const items = (data.items || []).filter((item) => item.nombre && Number(item.cantidad) > 0)
+  if (items.length === 0) throw { status: 400, message: 'Agrega al menos un producto a la venta' }
+  const montoTotal = items.reduce((sum, item) => sum + Number(item.cantidad) * (Number(item.precio) || 0), 0)
+
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+
+    // Si el producto existe en el inventario (por id o nombre), se descuenta su stock
+    for (const item of items) {
+      const productoId = item.pk_id || (await productoModel.findIdByNombre(client, negocio.pk_id, item.nombre)).rows[0]?.pk_id
+      if (!productoId) continue
+      item.pk_id = productoId
+      const descuento = await productoModel.descontarStock(client, negocio.pk_id, productoId, Number(item.cantidad))
+      if (descuento.rowCount === 0)
+        throw { status: 409, message: `Stock insuficiente para "${item.nombre}"` }
+    }
+
+    const result = await repository.createSale(negocio.pk_id, { ...data, items, montoTotal }, client)
+    await client.query('COMMIT')
+    return result.rows[0]
+  } catch (error) {
+    await client.query('ROLLBACK')
+    throw error
+  } finally {
+    client.release()
+  }
 }
 
 const getClientes = async (clienteId) => {

@@ -30,11 +30,27 @@ const confirmarPlan = async (paymentIntentId, planId, clienteId) => {
   if (paymentIntent.status !== 'succeeded')
     throw { status: 400, message: 'El pago no fue completado' }
 
+  // El pago debe ser de este plan, de este usuario y por el monto correcto
+  const { metadata } = paymentIntent
+  const pagoValido =
+    metadata.tipo === 'plan' &&
+    metadata.planId === planId &&
+    metadata.clienteId === String(clienteId) &&
+    paymentIntent.amount === plan.monto &&
+    paymentIntent.currency === 'pen'
+  if (!pagoValido)
+    throw { status: 400, message: 'El pago no corresponde a este plan' }
+
+  // Un mismo pago no puede activar (ni renovar) el plan dos veces
+  if (metadata.aplicado === 'true')
+    throw { status: 409, message: 'Este pago ya fue usado para activar un plan' }
+
   const expira   = new Date()
   expira.setMonth(expira.getMonth() + plan.meses)
   const planBase = planId.replace('_anual', '')
 
   await negocioModel.updatePlan(clienteId, planBase, expira)
+  await stripe.paymentIntents.update(paymentIntentId, { metadata: { aplicado: 'true' } })
 
   return { message: 'Plan activado exitosamente', plan: planBase, plan_expira: expira }
 }

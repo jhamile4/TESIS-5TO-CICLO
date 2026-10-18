@@ -1,56 +1,121 @@
-const Stripe     = require('stripe')
-const pedidoModel = require('../models/pedidoModel')
+const Stripe        = require('stripe')
+const pool          = require('../config/db')
+const pedidoModel   = require('../models/pedidoModel')
+const productoModel = require('../models/productoModel')
 const { ENVIO_GRATIS_DESDE, COSTO_ENVIO } = require('../config/constants')
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
-const crearPaymentIntent = async (items, negocioId, clienteId, direccion, ciudad, notas) => {
-  if (!items || items.length === 0)
+// Arma el pedido con precios y stock de la BD; del carrito solo se usa id y cantidad
+const prepararPedido = async (items, negocioId) => {
+  if (!Array.isArray(items) || items.length === 0)
     throw { status: 400, message: 'El carrito está vacío' }
 
-  const subtotal      = items.reduce((s, i) => s + i.precio * i.cantidad, 0)
-  const envio         = subtotal >= ENVIO_GRATIS_DESDE ? 0 : COSTO_ENVIO
-  const total         = subtotal + envio
-  const totalCentavos = Math.round(total * 100)
+  const cantidades = new Map()
+  for (const item of items) {
+    const id       = Number(item.pk_id ?? item.id)
+    const cantidad = Number(item.cantidad)
+    if (!Number.isInteger(id) || !Number.isInteger(cantidad) || cantidad <= 0)
+      throw { status: 400, message: 'Producto o cantidad no válida en el carrito' }
+    cantidades.set(id, (cantidades.get(id) || 0) + cantidad)
+  }
+
+  const result = await productoModel.findByIds(negocioId, [...cantidades.keys()])
+  if (result.rows.length !== cantidades.size)
+    throw { status: 400, message: 'Algún producto ya no está disponible en esta tienda' }
+
+  const itemsPedido = result.rows.map((producto) => {
+    const cantidad = cantidades.get(producto.pk_id)
+    if (producto.stock < cantidad)
+      throw { status: 409, message: `Stock insuficiente para "${producto.nombre}" (quedan ${producto.stock})` }
+    return { pk_id: producto.pk_id, nombre: producto.nombre, precio: Number(producto.precio), cantidad }
+  })
+
+  const subtotal = itemsPedido.reduce((s, i) => s + i.precio * i.cantidad, 0)
+  const envio    = subtotal >= ENVIO_GRATIS_DESDE ? 0 : COSTO_ENVIO
+  const total    = Math.round((subtotal + envio) * 100) / 100
+
+  return { itemsPedido, total }
+}
+
+const crearPaymentIntent = async (items, negocioId, clienteId, direccion, ciudad, notas) => {
+  const { itemsPedido, total } = await prepararPedido(items, negocioId)
 
   const paymentIntent = await stripe.paymentIntents.create({
-    amount:   totalCentavos,
+    amount:   Math.round(total * 100),
     currency: 'pen',
     metadata: {
       fk_negocio_id: String(negocioId),
       fk_cliente_id: String(clienteId || ''),
-      items: JSON.stringify(items.map(i => ({ nombre: i.nombre, cantidad: i.cantidad, precio: i.precio }))),
+      items: JSON.stringify(itemsPedido.map(i => ({ nombre: i.nombre, cantidad: i.cantidad, precio: i.precio }))),
     },
   })
 
   const result = await pedidoModel.createPago(
-    negocioId, clienteId, paymentIntent.id, total, items, direccion, ciudad, notas
+    negocioId, clienteId, paymentIntent.id, total, itemsPedido, direccion, ciudad, notas
   )
 
-  return { clientSecret: paymentIntent.client_secret, ordenId: result.rows[0].pk_id }
+  return { clientSecret: paymentIntent.client_secret, ordenId: result.rows[0].pk_id, total }
 }
 
-const confirmarPedidoEfectivo = async (items, negocioId, clienteId, direccion, ciudad, notas, montoTotal) => {
-  if (!items || items.length === 0)
-    throw { status: 400, message: 'El carrito está vacío' }
+const confirmarPedidoEfectivo = async (items, negocioId, clienteId, direccion, ciudad, notas) => {
   if (!direccion)
     throw { status: 400, message: 'La dirección es obligatoria' }
 
-  const result = await pedidoModel.createEfectivo(
-    negocioId, clienteId, montoTotal, items, direccion, ciudad, notas
-  )
-  return { message: 'Pedido confirmado', ordenId: result.rows[0].pk_id }
+  const { itemsPedido, total } = await prepararPedido(items, negocioId)
+
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+
+    for (const item of itemsPedido) {
+      const descuento = await productoModel.descontarStock(client, negocioId, item.pk_id, item.cantidad)
+      if (descuento.rowCount === 0)
+        throw { status: 409, message: `Stock insuficiente para "${item.nombre}"` }
+    }
+
+    const result = await pedidoModel.createEfectivo(
+      negocioId, clienteId, total, itemsPedido, direccion, ciudad, notas, client
+    )
+
+    await client.query('COMMIT')
+    return { message: 'Pedido confirmado', ordenId: result.rows[0].pk_id, total }
+  } catch (error) {
+    await client.query('ROLLBACK')
+    throw error
+  } finally {
+    client.release()
+  }
 }
 
 const confirmarPago = async (paymentIntentId) => {
   const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
 
-  if (paymentIntent.status === 'succeeded') {
-    await pedidoModel.updateEstado(paymentIntentId, 'pagado')
-    return { message: 'Pago confirmado', estado: 'pagado' }
+  if (paymentIntent.status !== 'succeeded')
+    throw { status: 400, message: 'El pago no fue completado', estado: paymentIntent.status }
+
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+
+    // Solo la primera confirmación descuenta stock; las repetidas no hacen nada
+    const pedido = await pedidoModel.marcarPagado(client, paymentIntentId)
+    if (pedido.rows.length > 0) {
+      const { fk_negocio_id, items } = pedido.rows[0]
+      for (const item of items || []) {
+        if (item.pk_id) await productoModel.descontarStockForzado(client, fk_negocio_id, item.pk_id, item.cantidad)
+      }
+    }
+
+    await client.query('COMMIT')
+  } catch (error) {
+    await client.query('ROLLBACK')
+    throw error
+  } finally {
+    client.release()
   }
 
-  throw { status: 400, message: 'El pago no fue completado', estado: paymentIntent.status }
+  return { message: 'Pago confirmado', estado: 'pagado' }
 }
 
 module.exports = { crearPaymentIntent, confirmarPedidoEfectivo, confirmarPago }
