@@ -10,7 +10,8 @@ import {
   ImagePlus,
   WandSparkles,
   Check,
-  X
+  X,
+  Pencil
 } from 'lucide-react'
 import {
   InstagramIcon,
@@ -317,19 +318,21 @@ export default function MarketingEditorCol({
         <div className="accounts-list">
           {accounts.map((acc) => {
             const badgeStyle = getSocialBadgeColor(acc.id)
+            const isConfigured = acc.handle && acc.handle !== 'Sin conectar'
             return (
               <div
                 key={acc.id}
                 className="account-item-figma"
                 onClick={() => {
-                  if (acc.handle === 'Sin conectar' || !acc.connected) {
+                  if (!isConfigured) {
                     openConnectModal(acc)
                   } else {
                     toggleAccount(acc.id)
                   }
                 }}
+                style={{ cursor: 'pointer' }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
                   <div
                     style={{
                       width: '36px',
@@ -345,49 +348,97 @@ export default function MarketingEditorCol({
                   >
                     {getSocialIcon(acc.id)}
                   </div>
-                  <div>
+                  <div style={{ minWidth: 0, flex: 1 }}>
                     <strong style={{ display: 'block', fontSize: '13px', color: '#0f172a', fontWeight: 700 }}>
                       {acc.name}
                     </strong>
-                    <small style={{ display: 'block', fontSize: '11px', color: acc.connected ? '#64748b' : '#94a3b8' }}>
-                      {acc.handle}
+                    <small
+                      style={{
+                        display: 'block',
+                        fontSize: '11px',
+                        color: isConfigured ? '#64748b' : '#94a3b8',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      {isConfigured ? acc.handle : 'Sin vincular (Clic para agregar)'}
                     </small>
                   </div>
                 </div>
 
-                <div
-                  style={{
-                    width: '20px',
-                    height: '20px',
-                    borderRadius: '50%',
-                    background: acc.active ? '#0f172a' : 'transparent',
-                    border: acc.active ? 'none' : '1.5px solid #cbd5e1',
-                    display: 'grid',
-                    placeItems: 'center',
-                    color: '#ffffff',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  {acc.active && <Check size={11} strokeWidth={3.5} />}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      openConnectModal(acc)
+                    }}
+                    title="Editar usuario o enlace de tu negocio"
+                    style={{
+                      background: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '6px',
+                      padding: '4px 8px',
+                      fontSize: '11px',
+                      color: '#475569',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontWeight: 600,
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <Pencil size={11} />
+                    <span>{isConfigured ? 'Editar' : 'Vincular'}</span>
+                  </button>
+
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      toggleAccount(acc.id)
+                    }}
+                    title={acc.active ? 'Activa para publicar (clic para desactivar)' : 'Desactivada (clic para activar)'}
+                    style={{
+                      width: '22px',
+                      height: '22px',
+                      borderRadius: '50%',
+                      background: acc.active ? '#0f172a' : 'transparent',
+                      border: acc.active ? 'none' : '1.5px solid #cbd5e1',
+                      display: 'grid',
+                      placeItems: 'center',
+                      color: '#ffffff',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    {acc.active && <Check size={11} strokeWidth={3.5} />}
+                  </div>
                 </div>
               </div>
             )
           })}
         </div>
+
+        <div style={{ marginTop: '12px', padding: '8px 10px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #f1f5f9', fontSize: '11px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span>💡</span>
+          <span>También puedes configurar tus redes desde <strong>Configuración &gt; Datos del Negocio</strong>.</span>
+        </div>
       </div>
 
-      {/* MODAL PARA CONECTAR CUENTA */}
+      {/* MODAL PARA CONECTAR / EDITAR CUENTA */}
       {connectModalAcc && (
         <div className="modal-overlay-marketing" onClick={() => setConnectModalAcc(null)}>
           <div className="modal-box-marketing" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header-marketing">
               <div className="modal-title-flex">
                 <div className="acc-icon-badge-lg" style={{ backgroundColor: connectModalAcc.color + '20', color: connectModalAcc.color }}>
-                  {connectModalAcc.name.charAt(0)}
+                  {getSocialIcon(connectModalAcc.id)}
                 </div>
                 <div>
-                  <h4>Conectar {connectModalAcc.name}</h4>
-                  <p>Escribe el usuario de tu negocio para activar esta red</p>
+                  <h4>Vincular {connectModalAcc.name}</h4>
+                  <p>Ingresa el usuario o enlace de tu tienda</p>
                 </div>
               </div>
               <button className="btn-close-modal" onClick={() => setConnectModalAcc(null)}><X size={18} /></button>
@@ -395,17 +446,43 @@ export default function MarketingEditorCol({
 
             <div className="modal-body-marketing">
               <form onSubmit={handleSaveConnection} className="manual-handle-form">
-                <label>Usuario o enlace (@)</label>
+                <label>
+                  {connectModalAcc.id === 'whatsapp'
+                    ? 'Número de WhatsApp de tu negocio'
+                    : connectModalAcc.id === 'facebook'
+                    ? 'Página o usuario de Facebook'
+                    : `Usuario o enlace de ${connectModalAcc.name}`}
+                </label>
                 <input
                   type="text"
-                  placeholder={`Ej: @${connectModalAcc.name.toLowerCase()}_tienda`}
+                  placeholder={
+                    connectModalAcc.id === 'whatsapp'
+                      ? 'Ej: 987 654 321'
+                      : connectModalAcc.id === 'facebook'
+                      ? 'Ej: facebook.com/mitienda o MiTiendaPeru'
+                      : connectModalAcc.id === 'instagram'
+                      ? 'Ej: @mitiendaperu'
+                      : connectModalAcc.id === 'tiktok'
+                      ? 'Ej: @mitienda_tiktok'
+                      : `@${connectModalAcc.name.toLowerCase()}_tienda`
+                  }
                   value={handleInput}
                   onChange={(e) => setHandleInput(e.target.value)}
+                  autoFocus
                   required
                 />
-                <button type="submit" className="btn-save-handle" disabled={connecting}>
-                  {connecting ? 'Guardando...' : 'Activar red'}
-                </button>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '14px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setConnectModalAcc(null)}
+                    style={{ flex: 1, padding: '10px', background: '#f1f5f9', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, color: '#475569' }}
+                  >
+                    Cancelar
+                  </button>
+                  <button type="submit" className="btn-save-handle" style={{ flex: 2 }} disabled={connecting}>
+                    {connecting ? 'Guardando...' : 'Guardar y Activar'}
+                  </button>
+                </div>
               </form>
             </div>
           </div>

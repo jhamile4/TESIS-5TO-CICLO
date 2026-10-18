@@ -4,6 +4,7 @@ import {
   generarMarketing,
   getResumen,
   getInventario,
+  getTienda,
   generarImagenProducto,
   getPublicacionesMarketing,
   guardarPublicacionMarketing,
@@ -99,6 +100,30 @@ export default function MarketingPage() {
             return acc
           })
         )
+      } else {
+        // Fallback: sincronizar con las redes configuradas en el perfil de la tienda
+        const tiendaData = await getTienda().catch(() => null)
+        if (tiendaData?.negocio) {
+          const redes = tiendaData.negocio.redes_sociales || {}
+          const wa = tiendaData.negocio.whatsapp
+          setAccounts((prev) =>
+            prev.map((acc) => {
+              let handleVal = null
+              if (acc.id === 'whatsapp' && wa) handleVal = wa
+              else if (redes[acc.id]) handleVal = redes[acc.id]
+
+              if (handleVal) {
+                return {
+                  ...acc,
+                  handle: handleVal,
+                  connected: true,
+                  active: true
+                }
+              }
+              return acc
+            })
+          )
+        }
       }
     } catch (err) {
       console.warn('No se pudieron cargar cuentas sociales:', err.message)
