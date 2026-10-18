@@ -7,9 +7,16 @@ const { ENVIO_GRATIS_DESDE, COSTO_ENVIO } = require('../config/constants')
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 // Arma el pedido con precios y stock de la BD; del carrito solo se usa id y cantidad
-const prepararPedido = async (items, negocioId, tipoEntrega) => {
+const prepararPedido = async (items, negocioId, tipoEntrega, clienteId) => {
   if (!Array.isArray(items) || items.length === 0)
     throw { status: 400, message: 'El carrito está vacío' }
+
+  // Un dueño puede comprar en otras tiendas, pero no en la suya (inflaría sus ventas)
+  const negocio = await pool.query('SELECT fk_cliente_id FROM negocio WHERE pk_id = $1 AND activo = TRUE', [negocioId])
+  if (negocio.rows.length === 0)
+    throw { status: 404, message: 'La tienda no existe o no está activa' }
+  if (clienteId && negocio.rows[0].fk_cliente_id === clienteId)
+    throw { status: 403, message: 'No puedes comprar en tu propia tienda' }
 
   const cantidades = new Map()
   for (const item of items) {
@@ -52,7 +59,7 @@ const validarEntrega = (tipoEntrega, direccion) => {
 
 const crearPaymentIntent = async (items, negocioId, clienteId, direccion, ciudad, notas, tipoEntrega) => {
   const tipo = validarEntrega(tipoEntrega, direccion)
-  const { itemsPedido, total } = await prepararPedido(items, negocioId, tipo)
+  const { itemsPedido, total } = await prepararPedido(items, negocioId, tipo, clienteId)
 
   const paymentIntent = await stripe.paymentIntents.create({
     amount:   Math.round(total * 100),
@@ -73,7 +80,7 @@ const crearPaymentIntent = async (items, negocioId, clienteId, direccion, ciudad
 
 const confirmarPedidoEfectivo = async (items, negocioId, clienteId, direccion, ciudad, notas, tipoEntrega) => {
   const tipo = validarEntrega(tipoEntrega, direccion)
-  const { itemsPedido, total } = await prepararPedido(items, negocioId, tipo)
+  const { itemsPedido, total } = await prepararPedido(items, negocioId, tipo, clienteId)
 
   const client = await pool.connect()
   try {

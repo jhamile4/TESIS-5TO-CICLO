@@ -8,6 +8,13 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Si llegamos desde el sitio público ("Mi panel"), usa esa sesión y borra el token de la URL
+    const sesionUrl = window.location.hash.match(/sesion=([^&]+)/)
+    if (sesionUrl) {
+      localStorage.setItem('crecio_admin_token', decodeURIComponent(sesionUrl[1]))
+      window.history.replaceState(null, '', window.location.pathname + window.location.search)
+    }
+
     const token = localStorage.getItem('crecio_admin_token') || localStorage.getItem('token')
     const headers =
       token && token !== 'null' && token !== 'undefined'

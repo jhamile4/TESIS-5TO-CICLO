@@ -16,6 +16,12 @@ const titles = {
   '/tienda': 'Mi tienda',
 }
 
+// Abre el sitio público con la misma cuenta; el token va en el fragmento (#), que no se envía al servidor
+const irAComprarUrl = () => {
+  const token = localStorage.getItem('crecio_admin_token')
+  return token ? `${PUBLIC_URL}/perfil#sesion=${encodeURIComponent(token)}` : `${PUBLIC_URL}/perfil`
+}
+
 export default function PanelLayout() {
   const location = useLocation()
   const [business, setBusiness] = useState(null)
@@ -37,12 +43,12 @@ export default function PanelLayout() {
 
           <div className="topbar-actions">
             <a
-              href={`${PUBLIC_URL}/perfil`}
+              href={irAComprarUrl()}
               className="go-public-btn"
-              title="Ir a mi Perfil Público / Directorio"
+              title="Ir a comprar con esta misma cuenta"
             >
               <Globe size={16} />
-              <span>Sitio Público / Mi Perfil</span>
+              <span>Ir a comprar</span>
             </a>
 
             <button className="icon-button" title="Buscar">

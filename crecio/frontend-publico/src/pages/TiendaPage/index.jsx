@@ -7,6 +7,7 @@ import ResenasList from './components/ResenasList'
 import Carrito from './components/Carrito'
 import ChatNegocio from './components/ChatNegocio'
 import { getNegocio, getProductos, getResenas, getGaleria } from '../../services/apiPublico'
+import { irAlPanel } from '../../services/sesion'
 
 function TiendaPage() {
   const { id } = useParams()
@@ -22,6 +23,10 @@ function TiendaPage() {
   const [tabActivo, setTabActivo]           = useState('productos')
   const [imgActiva, setImgActiva]           = useState(0)
   const intervalRef                         = useRef(null)
+
+  // El dueño puede ver su tienda como la ven sus clientes, pero no comprar en ella
+  const comprador  = JSON.parse(localStorage.getItem('comprador') || '{}')
+  const esMiTienda = Boolean(comprador.negocioId) && Number(comprador.negocioId) === Number(id)
 
   useEffect(() => {
     setCargando(true); setError(null)
@@ -244,8 +249,21 @@ function TiendaPage() {
                 </button>
               ))}
             </div>
+            {esMiTienda && (
+              <div className="flex items-center gap-3 bg-[#F0FDF9] border border-[#99F6E4] rounded-xl px-4 py-3 mb-4">
+                <i className="ri-store-2-line text-[#0D9488] text-xl shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-[#0F766E]">Esta es tu tienda</p>
+                  <p className="text-xs text-[#6B7280]">Así la ven tus clientes. No puedes comprar en tu propia tienda.</p>
+                </div>
+                <button onClick={irAlPanel}
+                  className="shrink-0 px-4 py-2 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white text-xs font-bold cursor-pointer transition-all">
+                  Ir a mi panel
+                </button>
+              </div>
+            )}
             {tabActivo === 'productos' && (
-              <ProductoGrid productos={productos} onAgregar={agregarAlCarrito} whatsapp={negocio.whatsapp} waBase={waBase} />
+              <ProductoGrid productos={productos} onAgregar={esMiTienda ? null : agregarAlCarrito} whatsapp={negocio.whatsapp} waBase={waBase} />
             )}
             {tabActivo === 'resenas' && <ResenasList reviews={resenas} />}
           </div>

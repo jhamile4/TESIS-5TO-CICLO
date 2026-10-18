@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import '../../components/Navbar/Navbar.css'
+import { irAlPanel } from '../../services/sesion'
 
 const BASE_URL = 'http://localhost:3001/api'
-const PANEL_URL = import.meta.env.VITE_PANEL_URL || 'http://localhost:5174'
 
 function LoginPage() {
   const navigate = useNavigate()
@@ -54,7 +54,7 @@ function LoginPage() {
         setShowRoles(true)
       } else if (data.roles.esEmprendedor) {
         // Solo emprendedor -> panel admin
-        window.location.assign(PANEL_URL)
+        irAlPanel()
       } else {
         // Solo comprador → perfil
         navigate('/perfil')
@@ -88,7 +88,7 @@ function LoginPage() {
           <div className="flex flex-col gap-4">
             {/* Opción emprendedor */}
             <button
-              onClick={() => window.location.assign(PANEL_URL)}
+              onClick={() => irAlPanel()}
               className="group bg-white border-2 border-[#E5E7EB] hover:border-[#0D9488] rounded-2xl p-6 text-left transition-all cursor-pointer hover:shadow-md"
             >
               <div className="flex items-center gap-4">

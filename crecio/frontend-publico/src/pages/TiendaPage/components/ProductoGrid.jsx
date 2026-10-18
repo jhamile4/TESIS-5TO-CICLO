@@ -40,8 +40,8 @@ function ProductoGrid({ productos, onAgregar, whatsapp, waBase }) {
 
             <div className="flex items-center gap-2">
               <button
-                onClick={() => onAgregar(p)}
-                disabled={p.stock === 0}
+                onClick={() => onAgregar?.(p)}
+                disabled={!onAgregar || p.stock === 0}
                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-[#111827] hover:bg-[#374151] disabled:opacity-50 text-white rounded-lg font-semibold text-xs transition-all cursor-pointer"
               >
                 <i className="ri-add-line text-sm" />

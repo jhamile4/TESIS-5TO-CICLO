@@ -54,6 +54,7 @@ const login = async (email, password) => {
       id: cliente.pk_id,
       nombre: cliente.nombre,
       email: cliente.email,
+      negocioId: negocio?.pk_id || null,
       negocioNombre: negocio?.nombre || null
     },
     roles: { esEmprendedor: tieneNegocio, esComprador: true, ambos: tieneNegocio },
@@ -172,6 +173,7 @@ const getSessionData = async (clienteId) => {
     id: cliente.pk_id,
     nombre: cliente.nombre,
     email: cliente.email,
+    negocioId: negocio?.pk_id || null,
     negocioNombre: negocio?.nombre || null
   }
 }

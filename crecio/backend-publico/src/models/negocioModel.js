@@ -27,7 +27,7 @@ const findById = (id) =>
   )
 
 const findByClienteId = (clienteId) =>
-  pool.query('SELECT pk_id FROM negocio WHERE fk_cliente_id = $1 LIMIT 1', [clienteId])
+  pool.query('SELECT pk_id, nombre FROM negocio WHERE fk_cliente_id = $1 LIMIT 1', [clienteId])
 
 const create = (dbClient, nombre, categoria, descripcion, direccion, whatsapp, latitud, longitud, clienteId) =>
   dbClient.query(
