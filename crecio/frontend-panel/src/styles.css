@@ -109,7 +109,7 @@
 .m-card-title h3 { margin: 0; }
 .text-teal { color: #0d9488; }
 .template-button-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.template-btn { padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; background: #ffffff; color: #475569; font-size: 12px; font-weight: 600; text-align: left; cursor: pointer; transition: all 0.15s ease; }
+.template-btn { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; background: #ffffff; color: #475569; font-size: 12px; font-weight: 600; text-align: left; cursor: pointer; transition: all 0.15s ease; }
 .template-btn:hover { border-color: #cbd5e1; background: #f8fafc; }
 .template-btn.selected { background: #0f172a; color: #ffffff; border-color: #0f172a; }
 .prompt-area-wrap { position: relative; }
@@ -141,9 +141,50 @@
 .acc-info small { display: block; font-size: 11px; color: #94a3b8; }
 .acc-checkbox { width: 20px; height: 20px; border: 2px solid #cbd5e1; border-radius: 50%; display: grid; place-items: center; color: #ffffff; transition: all 0.2s; }
 .acc-checkbox.checked { background: #0f172a; border-color: #0f172a; }
+.account-item-figma {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-bottom: 8px;
+}
+.account-item-figma:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+.play-circle-frosted {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+.social-circle-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+.social-circle-icon.ig { background: #fdf2f8; color: #db2777; }
+.social-circle-icon.fb { background: #eff6ff; color: #2563eb; }
+.social-circle-icon.tt { background: #f1f5f9; color: #0f172a; }
+.social-circle-icon.wa { background: #f0fdf4; color: #16a34a; }
+.video-graphic-figma {
+  background: radial-gradient(circle at center, #991b1b 0%, #450a0a 100%) !important;
+}
 .preview-top-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .preview-top-header h3 { margin: 0; }
-.social-icons-preview { display: flex; gap: 6px; color: #94a3b8; }
+.social-icons-preview { display: flex; gap: 6px; }
 .content-type-label { font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 8px; }
 .content-types-scroll { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 16px; }
 .ct-pill { padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 20px; background: #ffffff; color: #475569; font-size: 11px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: all 0.15s; }

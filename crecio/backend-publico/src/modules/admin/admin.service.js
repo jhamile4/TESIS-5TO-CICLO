@@ -258,12 +258,21 @@ const generateMarketing = async (clienteId, { tipo = 'Promoción / Oferta', prom
   let guionVideo = null
   let finalCaption = ''
 
+  const toneGuides = {
+    'Modo Creativo': 'Estilo creativo, fresco, divertido, con storytelling atractivo y emojis expresivos que cautiven al público en redes sociales.',
+    'Modo Profesional': 'Estilo corporativo, elegante, enfocado en confianza, calidad superior, garantía y seriedad comercial.',
+    'Formato Corto': 'Estilo ultraconciso, directo al grano (máximo 2 a 3 líneas de alto impacto), ideal para lecturas rápidas en Stories.',
+    'Viral / Trending': 'Estilo persuasivo con psicología de urgencia (FOMO), llamado a la acción contundente, ganchos magnéticos y hashtags en tendencia.'
+  }
+  const toneInstruction = toneGuides[tono] || 'Estilo persuasivo y orientado a ventas.'
+
   if (isVideoFormat) {
-    const systemInstruction = `Eres un estratega de contenido y videos cortos (TikTok/Reels) para "${negocio.nombre}", negocio de ${negocio.categoria || 'comercio'} en Perú.
-Genera un guión estructurado y persuasivo para el producto o idea del usuario.
+    const systemInstruction = `Eres un estratega de contenido audiovisual y videos cortos (TikTok/Reels) para "${negocio.nombre}", negocio de ${negocio.categoria || 'comercio'} en Perú.
+Tono solicitado: ${toneInstruction}.
+Genera un guión estructurado, altamente específico y directamente relacionado a lo que pide el usuario (no inventes datos genéricos).
 Estructura tu respuesta exactamente así:
 GANCHO: [Frase de 0 a 3 segundos muy llamativa que detenga el scroll]
-DESARROLLO: [Demostración rápida de 5 a 15 segundos destacando beneficios clave]
+DESARROLLO: [Demostración rápida de 5 a 15 segundos destacando beneficios clave del producto]
 CTA: [Llamada a la acción clara para comentar o comprar por WhatsApp/Link]
 AUDIO: [Estilo de música o tendencia recomendada]
 CAPTION: [Texto del post para publicar con emojis, llamada a la acción y hashtags relevantes]`
@@ -273,7 +282,7 @@ CAPTION: [Texto del post para publicar con emojis, llamada a la acción y hashta
         model: 'openai/gpt-oss-20b',
         messages: [
           { role: 'system', content: systemInstruction },
-          { role: 'user', content: `Tipo: ${tipo}. Tono: ${tono}. Productos disponibles: ${productos || 'Catálogo general'}. Solicitud del usuario: "${prompt}". Genera el guión y caption directamente relacionados a esta solicitud.` }
+          { role: 'user', content: `Plantilla: ${tipo}. Tono: ${tono}. Productos del catálogo: ${productos || 'disponibles en tienda'}. Solicitud del usuario: "${prompt}". Escribe el guión y caption enfocados con precisión en esta solicitud.` }
         ],
         temperature: 0.7,
         max_tokens: 500
@@ -308,8 +317,8 @@ CAPTION: [Texto del post para publicar con emojis, llamada a la acción y hashta
       completion = await groq.chat.completions.create({
         model: 'openai/gpt-oss-20b',
         messages: [
-          { role: 'system', content: `Eres un copywriter experto para Instagram Stories y WhatsApp Status de "${negocio.nombre}" (${negocio.categoria || 'negocio'} en Perú). Genera un mensaje súper visual, directo al grano (máx 35 palabras), con emojis, precio/beneficio y llamado a tocar el sticker o enlace.` },
-          { role: 'user', content: `Tipo: ${tipo}. Tono: ${tono}. Idea: ${prompt}` }
+          { role: 'system', content: `Eres un copywriter experto para Instagram Stories y WhatsApp Status de "${negocio.nombre}" (${negocio.categoria || 'negocio'} en Perú). Tono: ${toneInstruction}. Genera un mensaje súper visual, directo al grano (máx 35 palabras), con emojis, precio/beneficio claro y llamado a tocar el sticker o responder al WhatsApp.` },
+          { role: 'user', content: `Plantilla: ${tipo}. Tono: ${tono}. Idea: ${prompt}` }
         ],
         max_tokens: 200,
         temperature: 0.7
@@ -325,13 +334,14 @@ CAPTION: [Texto del post para publicar con emojis, llamada a la acción y hashta
         model: 'openai/gpt-oss-20b',
         messages: [
           { role: 'system', content: `Eres el community manager y copywriter profesional de "${negocio.nombre}" (${negocio.categoria || 'tienda'} en Perú).
-Crea un post para Instagram/Facebook altamente persuasivo y bien redactado.
+Tono solicitado: ${toneInstruction}.
+Crea un post para Instagram/Facebook altamente persuasivo, impecablemente redactado y enfocado exactamente en lo que el dueño solicita.
 Reglas:
-1. Habla específicamente del producto o idea indicada por el dueño.
-2. Incluye emojis atractivos en puntos clave (beneficios, llamado a la acción).
-3. Añade una llamada a la acción clara para comprar por WhatsApp, DM o tienda web.
+1. Habla específicamente del producto o tema indicado por el dueño (sin textos genéricos).
+2. Estructura con emojis atractivos en puntos clave (beneficios, características, llamada a la acción).
+3. Añade una llamada a la acción clara para pedir por WhatsApp o catálogo online.
 4. Finaliza con 5 a 8 hashtags virales relevantes al rubro y a Perú.` },
-          { role: 'user', content: `Tipo de publicación: ${tipo}. Tono: ${tono}. Lo que quiero publicar: "${prompt}". Productos del catálogo: ${productos || 'disponibles en tienda'}.` }
+          { role: 'user', content: `Plantilla: ${tipo}. Tono: ${tono}. Lo que quiero promocionar: "${prompt}". Productos del catálogo: ${productos || 'disponibles en tienda'}.` }
         ],
         max_tokens: 450,
         temperature: 0.7
@@ -425,7 +435,7 @@ const generateProductImage = async (clienteId, { mode, prompt, nombre, categoria
 
   try {
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 15000)
+    const timeout = setTimeout(() => controller.abort(), 35000)
     const response = await fetch(pollUrl, { signal: controller.signal })
     clearTimeout(timeout)
 

@@ -3,6 +3,7 @@ import { FileText } from 'lucide-react'
 import {
   generarMarketing,
   getResumen,
+  getInventario,
   generarImagenProducto,
   getPublicacionesMarketing,
   guardarPublicacionMarketing,
@@ -37,33 +38,32 @@ const tones = [
   'Viral / Trending'
 ]
 
+// Formatos visuales reales de publicación (sin redundancia de temas)
 const contentTypes = [
-  { id: 'Publicación', label: 'Publicación' },
-  { id: 'Story', label: 'Story 9:16' },
-  { id: 'Reels / Short', label: 'Reel / Short' },
-  { id: 'Video', label: 'Video Largo' },
-  { id: 'Promoción', label: 'Promoción' },
-  { id: 'Producto', label: 'Producto' },
-  { id: 'Anuncio', label: 'Anuncio' }
+  { id: 'Publicación', label: 'Publicación Feed (1:1)' },
+  { id: 'Story', label: 'Story / Estado (9:16)' },
+  { id: 'Video', label: 'Video / Reel (9:16)' }
 ]
 
 const defaultAccounts = [
-  { id: 'instagram', name: 'Instagram', handle: 'Sin vincular', active: true, connected: false, color: '#e1306c' },
-  { id: 'facebook', name: 'Facebook', handle: 'Sin vincular', active: true, connected: false, color: '#1877f2' },
-  { id: 'tiktok', name: 'TikTok', handle: 'Sin vincular', active: false, connected: false, color: '#000000' },
-  { id: 'whatsapp', name: 'WhatsApp Status', handle: 'Disponible', active: false, connected: true, color: '#25d366' },
-  { id: 'youtube', name: 'YouTube', handle: 'Sin vincular', active: false, connected: false, color: '#ff0000' }
+  { id: 'instagram', name: 'Instagram', handle: '@mitiendacrecio', active: true, connected: true, color: '#e1306c' },
+  { id: 'tiktok', name: 'TikTok', handle: '@mitiendacrecio', active: true, connected: true, color: '#000000' },
+  { id: 'facebook', name: 'Facebook', handle: 'MiTiendaCrecio', active: true, connected: true, color: '#1877f2' },
+  { id: 'youtube', name: 'YouTube', handle: 'Sin conectar', active: false, connected: false, color: '#ff0000' },
+  { id: 'twitter', name: 'X / Twitter', handle: 'Sin conectar', active: false, connected: false, color: '#000000' },
+  { id: 'whatsapp', name: 'WhatsApp Status', handle: 'Mi Tienda', active: true, connected: true, color: '#25d366' }
 ]
 
 export default function MarketingPage() {
   const [activeMainTab, setActiveMainTab] = useState('crear')
   const [business, setBusiness] = useState(null)
+  const [productos, setProductos] = useState([])
 
-  const [tipo, setTipo] = useState(templates[0])
+  const [tipo, setTipo] = useState('Detrás de Cámaras')
   const [tono, setTono] = useState(tones[0])
-  const [contentType, setContentType] = useState('Publicación')
-  const [prompt, setPrompt] = useState('')
-  const [content, setContent] = useState('')
+  const [contentType, setContentType] = useState('Video')
+  const [prompt, setPrompt] = useState('Comparte un momento detrás de cámaras de tu negocio para humanizar tu marca')
+  const [content, setContent] = useState('🎬 Mira cómo nuestro producto transforma tu día a día. ¡Dale play! Guión generado por IA. #video #viral')
   const [guionVideo, setGuionVideo] = useState(null)
   const [uploadedImage, setUploadedImage] = useState(null)
   const [accounts, setAccounts] = useState(defaultAccounts)
@@ -136,6 +136,13 @@ export default function MarketingPage() {
   useEffect(() => {
     getResumen()
       .then((result) => setBusiness(result.negocio))
+      .catch(() => {})
+    getInventario()
+      .then((result) => {
+        if (Array.isArray(result?.productos)) {
+          setProductos(result.productos)
+        }
+      })
       .catch(() => {})
     loadPosts()
     loadAccounts()
@@ -354,6 +361,7 @@ export default function MarketingPage() {
             prompt={prompt}
             setPrompt={setPrompt}
             uploadedImage={uploadedImage}
+            setUploadedImage={setUploadedImage}
             handleImageUpload={handleImageUpload}
             generateImageIa={generateImageIa}
             loadingImage={loadingImage}
@@ -361,6 +369,7 @@ export default function MarketingPage() {
             tono={tono}
             setTono={setTono}
             contentType={contentType}
+            setContentType={setContentType}
             loading={loading}
             error={error}
             generate={generate}
@@ -371,6 +380,7 @@ export default function MarketingPage() {
             onStartMetaAuth={handleStartMetaAuth}
             onManualTokenConnect={handleManualTokenConnect}
             business={business}
+            productos={productos}
           />
 
 

@@ -1,6 +1,16 @@
 import { useState } from 'react'
 import { Video as VideoIcon, Play, Copy, Check, RotateCw, Send, CalendarDays, Clock, Film, Music, Sparkles } from 'lucide-react'
-import { InstagramIcon, FacebookIcon } from '../common/SocialIcons'
+import { InstagramIcon, FacebookIcon, WhatsAppIcon, TikTokIcon } from '../common/SocialIcons'
+
+const getPlatformPillStyle = (id) => {
+  switch (id) {
+    case 'instagram': return { bg: '#fdf2f8', color: '#db2777', border: '#fbcfe8' }
+    case 'facebook': return { bg: '#eff6ff', color: '#2563eb', border: '#bfdbfe' }
+    case 'tiktok': return { bg: '#f1f5f9', color: '#0f172a', border: '#e2e8f0' }
+    case 'whatsapp': return { bg: '#f0fdf4', color: '#16a34a', border: '#bbf7d0' }
+    default: return { bg: '#f8fafc', color: '#475569', border: '#e2e8f0' }
+  }
+}
 
 export default function MarketingPreviewCol({
   contentTypes,
@@ -24,7 +34,7 @@ export default function MarketingPreviewCol({
   handlePublishOrSchedule,
   publishing
 }) {
-  const [viewTab, setViewTab] = useState('post') // 'post' o 'guion'
+  const [viewTab, setViewTab] = useState('post')
   const isVideo = contentType === 'Video' || contentType === 'Reels / Short'
   const isStory = contentType === 'Story'
 
@@ -33,18 +43,23 @@ export default function MarketingPreviewCol({
       {/* Vista Previa del Post */}
       <div className="m-card">
         <div className="preview-top-header">
-          <h3>Vista Previa del Contenido</h3>
+          <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#1e293b' }}>
+            Vista Previa del Post
+          </h3>
           <div className="social-icons-preview">
-            <InstagramIcon size={14} className="icon-ig" />
-            <FacebookIcon size={14} className="icon-fb" />
+            <div className="social-circle-icon ig"><InstagramIcon size={12} /></div>
+            <div className="social-circle-icon fb"><FacebookIcon size={12} /></div>
+            <div className="social-circle-icon tt"><TikTokIcon size={12} /></div>
+            <div className="social-circle-icon wa"><WhatsAppIcon size={12} /></div>
           </div>
         </div>
 
-        <div className="content-type-label">Tipo de contenido</div>
+        <div className="content-type-label">Formato de publicación</div>
         <div className="content-types-scroll">
           {contentTypes.map((ct) => (
             <button
               key={ct.id}
+              type="button"
               className={`ct-pill ${contentType === ct.id ? 'selected' : ''}`}
               onClick={() => setContentType(ct.id)}
             >
@@ -56,12 +71,14 @@ export default function MarketingPreviewCol({
         {isVideo && (
           <div className="video-subtabs-row">
             <button
+              type="button"
               className={`subtab-btn ${viewTab === 'post' ? 'active' : ''}`}
               onClick={() => setViewTab('post')}
             >
               <Film size={13} /> Vista previa Reel
             </button>
             <button
+              type="button"
               className={`subtab-btn ${viewTab === 'guion' ? 'active' : ''}`}
               onClick={() => setViewTab('guion')}
             >
@@ -85,16 +102,41 @@ export default function MarketingPreviewCol({
 
             <div className="mockup-media-container">
               {uploadedImage ? (
-                <img src={uploadedImage} alt="Post media" className="mockup-img" />
+                <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+                  <img src={uploadedImage} alt="Post media" className="mockup-img" />
+                  {isVideo && (
+                    <>
+                      <div className="video-tag-badge">
+                        <VideoIcon size={12} /> VIDEO
+                      </div>
+                      <div className="play-button-overlay">
+                        <div className="play-circle-frosted">
+                          <Play size={24} fill="#fff" style={{ marginLeft: '3px' }} />
+                        </div>
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#ffffff', textShadow: '0 2px 4px rgba(0,0,0,0.6)' }}>
+                          Video · 0:60
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
               ) : isVideo ? (
-                <div className="mockup-video-placeholder">
+                <div className="mockup-default-graphic video-graphic-figma">
                   <div className="video-tag-badge">
-                    <VideoIcon size={12} /> REEL / SHORT GENERADO POR IA
+                    <VideoIcon size={12} /> VIDEO
+                  </div>
+                  <div className="flash-sale-banner">
+                    <span className="star-decoration">★</span>
+                    <h2>FLASH<br />SALE</h2>
+                    <span className="percent-badge">%</span>
                   </div>
                   <div className="play-button-overlay">
-                    <div className="audio-wave-pulse"></div>
-                    <Play size={26} fill="#fff" />
-                    <span>Reproducir Reel · 0:30</span>
+                    <div className="play-circle-frosted">
+                      <Play size={24} fill="#fff" style={{ marginLeft: '3px' }} />
+                    </div>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#ffffff', textShadow: '0 2px 4px rgba(0,0,0,0.6)' }}>
+                      Video · 0:60
+                    </span>
                   </div>
                 </div>
               ) : (
@@ -113,15 +155,11 @@ export default function MarketingPreviewCol({
                 className="editable-caption-textarea"
                 value={content}
                 onChange={(e) => setContent?.(e.target.value)}
-                placeholder={
-                  isVideo
-                    ? '📹 Escribe o edita el texto de tu Reel aquí...'
-                    : '🎉 Escribe o edita el texto de tu publicación aquí...'
-                }
+                placeholder="Escribe o edita el texto de tu publicación aquí..."
                 rows={4}
               />
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
-                <small className="edit-hint">✏️ Puedes editar el texto directamente aquí</small>
+                <small className="edit-hint">✎ Clic en el texto para editar</small>
                 <small style={{ fontSize: '11px', color: '#94a3b8' }}>{content?.length || 0} caracteres</small>
               </div>
             </div>
@@ -160,11 +198,11 @@ export default function MarketingPreviewCol({
 
         {/* Action buttons below mockup */}
         <div className="post-actions-row">
-          <button className="copy-text-btn" onClick={copyText}>
+          <button type="button" className="copy-text-btn" onClick={copyText}>
             {copied ? <Check size={14} /> : <Copy size={14} />}
-            {copied ? 'Texto copiado' : 'Copiar texto completo'}
+            <span>{copied ? 'Texto copiado' : 'Copiar texto'}</span>
           </button>
-          <button className="refresh-btn" onClick={generate} title="Regenerar con IA">
+          <button type="button" className="refresh-btn" onClick={generate} title="Regenerar con IA">
             <RotateCw size={15} />
           </button>
         </div>
@@ -172,16 +210,20 @@ export default function MarketingPreviewCol({
 
       {/* ¿Cuándo publicar? */}
       <div className="m-card">
-        <h3>¿Cuándo publicar en Redes Sociales?</h3>
+        <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a', margin: '0 0 14px' }}>
+          ¿Cuándo publicar?
+        </h3>
 
         <div className="publish-mode-toggle">
           <button
+            type="button"
             className={publishMode === 'ahora' ? 'active' : ''}
             onClick={() => setPublishMode('ahora')}
           >
             <Send size={14} /> Publicar ahora
           </button>
           <button
+            type="button"
             className={publishMode === 'programar' ? 'active' : ''}
             onClick={() => setPublishMode('programar')}
           >
@@ -218,33 +260,47 @@ export default function MarketingPreviewCol({
           </div>
         )}
 
-        <div className="target-platforms-row">
-          <span>Se enviará a:</span>
+        <div className="target-platforms-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', margin: '14px 0 16px' }}>
+          <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Se publicará en:</span>
           {activeAccountsList.length > 0 ? (
-            activeAccountsList.map((acc) => (
-              <span key={acc.id} className="platform-pill-badge">
-                {acc.name}
-              </span>
-            ))
+            activeAccountsList.map((acc) => {
+              const pillColor = getPlatformPillStyle(acc.id)
+              return (
+                <span
+                  key={acc.id}
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    padding: '4px 10px',
+                    borderRadius: '16px',
+                    background: pillColor.bg,
+                    color: pillColor.color,
+                    border: `1px solid ${pillColor.border}`,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  {acc.name}
+                </span>
+              )
+            })
           ) : (
             <small className="no-platforms-warn">Selecciona al menos una red</small>
           )}
         </div>
 
         <button
+          type="button"
           className="main-publish-cta-btn"
           disabled={activeAccountsList.length === 0 || publishing}
           onClick={handlePublishOrSchedule}
         >
           {publishing ? (
             'Publicando en tus redes...'
-          ) : publishMode === 'ahora' ? (
-            <>
-              <Send size={16} /> Publicar Ahora Directamente
-            </>
           ) : (
             <>
-              <CalendarDays size={16} /> Programar Publicación Automática
+              <Send size={16} /> Publicar Ahora
             </>
           )}
         </button>
@@ -252,4 +308,3 @@ export default function MarketingPreviewCol({
     </div>
   )
 }
-
