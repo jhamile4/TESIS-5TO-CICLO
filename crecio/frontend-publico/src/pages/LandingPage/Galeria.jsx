@@ -87,9 +87,9 @@ function Galeria() {
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div className="rounded-full bg-white/80 px-8 py-6 shadow-xl backdrop-blur-md md:px-12 md:py-8">
             <div className="text-center">
-              <span className="block text-4xl font-bold text-[#111827] md:text-6xl">+2,400</span>
+              <span className="block text-3xl font-bold text-[#111827] md:text-5xl">Tu negocio aquí</span>
               <span className="mt-1 block text-xs font-semibold uppercase tracking-widest text-[#9CA3AF] md:text-sm">
-                Negocios activos
+                Tienda online en minutos
               </span>
             </div>
           </div>

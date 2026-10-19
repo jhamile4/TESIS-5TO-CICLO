@@ -1,64 +1,55 @@
 import { useRef, useEffect, useState } from 'react'
 
+// Tiendas que existen en CRECIO (las fotos son ilustrativas del rubro)
 const negociosFotos = [
-  { nombre: 'Cafe Andino',            img: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=500&q=80' },
-  { nombre: 'Floreria Rosas',         img: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=500&q=80' },
+  { nombre: 'Floreria Primavera',     img: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=500&q=80' },
   { nombre: 'Panaderia La Tradicion', img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500&q=80' },
   { nombre: 'Boutique Valentina',     img: 'https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=500&q=80' },
   { nombre: 'Ferreteria Don Carlos',  img: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=500&q=80' },
   { nombre: 'Polleria El Sabor',      img: 'https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=500&q=80' },
+  { nombre: 'Sant Royal Peru',        img: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=500&q=80' },
 ]
 
+// Qué puede hacer cada tipo de negocio con lo que CRECIO ya ofrece (no son testimonios)
 const testimonios = [
   {
-    nombre: 'Rosa Flores',
-    negocio: 'Panaderia La Tradicion',
-    estrellas: 5,
-    texto: 'El buscador de CRECIO me trajo clientes nuevos del barrio que ni sabían que existía. Ahora tengo pedidos anticipados.',
-    avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=80&q=80',
+    nombre: 'Panaderías',
+    icono: 'ri-cake-3-line',
+    texto: 'Muestra tu catálogo con precios y recibe pedidos anticipados con pago en efectivo o tarjeta, para delivery o recojo en tienda.',
   },
   {
-    nombre: 'Lucia Torres',
-    negocio: 'Floreria Rosas',
-    estrellas: 5,
-    texto: 'La IA me ayuda a escribir las descripciones de mis productos en segundos. Antes me tomaba horas.',
-    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=80&q=80s',
+    nombre: 'Florerías',
+    icono: 'ri-flower-line',
+    texto: 'Redacta con IA la publicación de tus arreglos para fechas especiales y publícala en tu Página de Facebook e Instagram.',
   },
   {
-    nombre: 'Juan Paredes',
-    negocio: 'Polleria El Sabor',
-    estrellas: 5,
-    texto: 'Mi pollería ahora aparece cuando buscan "pollería cerca de mí". Los pedidos por WhatsApp se triplicaron.',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&q=80',
+    nombre: 'Pollerías y restaurantes',
+    icono: 'ri-restaurant-line',
+    texto: 'Tus clientes arman su pedido desde el celular y te llega por WhatsApp o como pedido online con seguimiento.',
   },
   {
-    nombre: 'Ana Gutierrez',
-    negocio: 'Cafe Andino',
-    estrellas: 5,
-    texto: 'CRECIO me dio una presencia digital profesional sin tener que aprender tecnología ni contratar un equipo de marketing.',
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&q=80',
+    nombre: 'Ferreterías',
+    icono: 'ri-hammer-line',
+    texto: 'Controla tu inventario y tu stock baja solo con cada venta; el panel te avisa cuando un producto se está acabando.',
   },
   {
-    nombre: 'Carlos Mendoza',
-    negocio: 'Ferreteria Don Carlos',
-    estrellas: 5,
-    texto: 'Nunca pensé que podría tener una tienda online. CRECIO lo hizo super fácil. Mis clientes ven mi inventario desde el celular.',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&q=80',
+    nombre: 'Boutiques',
+    icono: 'ri-t-shirt-line',
+    texto: 'Programa tus publicaciones para que salgan solas a la hora que más te conviene y revisa tus ventas del mes.',
   },
   {
-    nombre: 'Maria Quispe',
-    negocio: 'Boutique Valentina',
-    estrellas: 5,
-    texto: 'Antes vendía solo por WhatsApp. Con CRECIO tengo mi catálogo online y mis ventas subieron 60% en el primer mes.',
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&q=80',
+    nombre: 'Cualquier emprendimiento',
+    icono: 'ri-store-2-line',
+    texto: 'Recibe reseñas de compras verificadas y lleva tus ingresos, gastos y ganancia en un solo lugar.',
   },
 ]
 
+// Datos verdaderos del producto
 const stats = [
-  { valor: '2,400+', label: 'Negocios activos'           },
-  { valor: '60%',    label: 'Aumento promedio en ventas'  },
-  { valor: '14 días',label: 'Prueba gratis'               },
-  { valor: '5 min',  label: 'Para empezar'                },
+  { valor: 'S/ 0',    label: 'Para empezar (plan gratis)' },
+  { valor: '2',       label: 'Formas de pago: tarjeta o efectivo' },
+  { valor: 'FB + IG', label: 'Publicación directa en tus redes' },
+  { valor: '24/7',    label: 'Tu tienda abierta en internet' },
 ]
 
 // Cuadruplicar para loop suave
@@ -85,15 +76,15 @@ function Testimonios() {
       <div className="max-w-7xl mx-auto px-4 md:px-8 mb-16">
         <div className={`text-center transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <span className="inline-flex items-center rounded-full bg-[#0D9488]/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0D9488] mb-4">
-            Testimonios
+            Para quién es
           </span>
           <h2 className="text-4xl md:text-5xl lg:text-[56px] font-extrabold text-[#111827] leading-[1.1] tracking-tight">
-            Negocios reales.
+            Pensado para
             <br />
-            <span className="gradient-teal">Resultados reales.</span>
+            <span className="gradient-teal">negocios como el tuyo.</span>
           </h2>
           <p className="mt-4 max-w-2xl mx-auto text-sm md:text-base text-[#4B5563] leading-relaxed">
-            Más de 2,400 negocios peruanos ya usan CRECIO para crecer su presencia digital.
+            Así puede usar CRECIO cada tipo de negocio local, con las herramientas que ya están disponibles.
           </p>
         </div>
       </div>
@@ -132,30 +123,13 @@ function Testimonios() {
               key={i}
               className="w-80 md:w-96 shrink-0 rounded-xl bg-[#F3F4F6] hover:bg-[#E5E7EB] transition-colors p-5 md:p-6 flex flex-col justify-between"
             >
-              <div>
-                {/* Estrellas */}
-                <div className="flex gap-1 mb-3">
-                  {Array.from({ length: t.estrellas }).map((_, j) => (
-                    <i key={j} className="ri-star-fill text-amber-400 text-sm" />
-                  ))}
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-9 h-9 rounded-full bg-[#0D9488]/10 flex items-center justify-center shrink-0">
+                  <i className={`${t.icono} text-[#0D9488]`} />
                 </div>
-                {/* Texto */}
-                <p className="text-[#374151] text-sm leading-relaxed mb-4">
-                  &ldquo;{t.texto}&rdquo;
-                </p>
+                <div className="text-sm font-semibold text-[#111827]">{t.nombre}</div>
               </div>
-              {/* Autor con foto real */}
-              <div className="flex items-center gap-3">
-                <img
-                  src={t.avatar}
-                  alt={t.nombre}
-                  className="w-9 h-9 rounded-full object-cover shrink-0"
-                />
-                <div>
-                  <div className="text-sm font-semibold text-[#111827]">{t.nombre}</div>
-                  <div className="text-xs text-[#6B7280]">{t.negocio}</div>
-                </div>
-              </div>
+              <p className="text-[#374151] text-sm leading-relaxed">{t.texto}</p>
             </div>
           ))}
         </div>

@@ -15,8 +15,8 @@ const cards = [
     id: 'ia',
     icono: 'ri-sparkling-2-line',
     titulo: 'IA que trabaja por ti',
-    descripcion: 'Genera descripciones, precios y campañas de marketing automáticamente.',
-    badge: 'Próximamente',
+    descripcion: 'Redacta publicaciones, crea imágenes de producto y responde a tus clientes con un asistente.',
+    badge: 'Disponible',
     size: 'medium',
     dark: true,
   },
@@ -24,7 +24,7 @@ const cards = [
     id: 'analytics',
     icono: 'ri-bar-chart-box-line',
     titulo: 'Analítica en tiempo real',
-    descripcion: 'Ventas, visitas y conversiones. Todo en un panel simple.',
+    descripcion: 'Ventas, pedidos, gastos y ganancia. Todo en un panel simple.',
     badge: null,
     size: 'medium',
     dark: false,
@@ -32,9 +32,9 @@ const cards = [
   {
     id: 'google',
     icono: 'ri-search-eye-line',
-    titulo: 'Aparece en Google',
-    descripcion: 'Tus clientes te encuentran cuando buscan negocios cerca. Posicionamiento local incluido.',
-    badge: '+300% visibilidad',
+    titulo: 'Te encuentran en CRECIO y en tus redes',
+    descripcion: 'Tu tienda aparece en el directorio de CRECIO y publicas en Facebook e Instagram desde el panel.',
+    badge: 'Facebook + Instagram',
     img: 'https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=600&q=80',
     size: 'tall',
     dark: true,
@@ -64,7 +64,6 @@ function Beneficios() {
   const sectionRef = useRef(null)
   const [visible, setVisible] = useState(false)
   const [hoveredBar, setHoveredBar] = useState(null)
-  const [googleVis, setGoogleVis] = useState(0)
   const [chatStep, setChatStep] = useState(0)
 
   useEffect(() => {
@@ -75,25 +74,6 @@ function Beneficios() {
     if (sectionRef.current) obs.observe(sectionRef.current)
     return () => obs.disconnect()
   }, [])
-
-  useEffect(() => {
-    if (visible) {
-      let start = 0
-      const end = 300
-      const duration = 1200 // ms
-      const stepTime = Math.abs(Math.floor(duration / (end / 5)))
-      const timer = setInterval(() => {
-        start += 5
-        if (start >= end) {
-          setGoogleVis(end)
-          clearInterval(timer)
-        } else {
-          setGoogleVis(start)
-        }
-      }, stepTime)
-      return () => clearInterval(timer)
-    }
-  }, [visible])
 
   useEffect(() => {
     if (visible) {
@@ -178,16 +158,16 @@ function Beneficios() {
 
             <h3 className="text-lg font-bold text-white mb-2 relative z-10 flex items-center gap-2">
               IA que trabaja por ti
-              <span className="text-[9px] font-bold uppercase tracking-wider bg-[#0D9488]/20 text-[#0D9488] px-2 py-0.5 rounded border border-[#0D9488]/30">Beta</span>
+
             </h3>
 
             <p className="text-sm text-[#9CA3AF] leading-relaxed flex-1 relative z-10">
-              Genera descripciones, precios y campañas de marketing automáticamente. Solo sube una foto.
+              Redacta tus publicaciones, crea imágenes de tus productos y atiende a tus clientes con un chatbot.
             </p>
 
             {/* Tags flotantes */}
             <div className="flex flex-wrap gap-2 mt-5 relative z-10">
-              {['Descripciones', 'Precios IA', 'Marketing'].map(t => (
+              {['Publicaciones', 'Imágenes', 'Chatbot'].map(t => (
                 <span key={t} className="text-[10px] font-semibold bg-white/5 border border-white/10 text-white/70 px-2.5 py-1 rounded-full group-hover:border-[#0D9488]/30 group-hover:bg-[#0D9488]/5 transition-all duration-300">
                   {t}
                 </span>
@@ -195,7 +175,7 @@ function Beneficios() {
             </div>
 
             <div className="mt-6 flex items-center gap-2 text-xs font-bold text-[#0D9488] relative z-10 group-hover:gap-3 transition-all duration-300">
-              Próximamente <i className="ri-arrow-right-line" />
+              Disponible en tu panel <i className="ri-arrow-right-line" />
             </div>
           </div>
 
@@ -209,7 +189,7 @@ function Beneficios() {
             </div>
             <h3 className="text-lg font-bold text-[#111827] mb-2">Analítica en tiempo real</h3>
             <p className="text-sm text-[#6B7280] leading-relaxed">
-              Ventas, visitas y conversiones. Todo en un panel simple desde tu celular.
+              Ventas, pedidos, gastos y ganancia en un panel simple. (Gráfico de ejemplo)
             </p>
 
             {/* Mini chart con tooltip interactivo */}
@@ -253,7 +233,7 @@ function Beneficios() {
             </div>
           </div>
 
-          {/* CARD 4 — Google (tall dark, col-span-1 row-span-2) */}
+          {/* CARD 4 — Directorio y redes (tall dark, col-span-1 row-span-2) */}
           <div
             className={`lg:row-span-2 group relative overflow-hidden rounded-2xl bg-[#0D9488] hover:shadow-2xl hover:shadow-[#0D9488]/30 hover:-translate-y-2 transition-all duration-550 cursor-pointer flex flex-col min-h-[360px] ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
             style={{ transitionDelay: '400ms' }}
@@ -262,7 +242,7 @@ function Beneficios() {
             <div className="absolute inset-0">
               <img
                 src="https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=600&q=80"
-                alt="Aparecer en Google"
+                alt="Tu tienda en el directorio de CRECIO"
                 className="w-full h-full object-cover opacity-15 group-hover:opacity-25 group-hover:scale-105 transition-all duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0D9488] via-[#0D9488]/90 to-[#0D9488]/70" />
@@ -271,11 +251,11 @@ function Beneficios() {
             {/* Contenido */}
             <div className="relative z-10 p-7 md:p-8 flex flex-col flex-1">
               <div className="w-12 h-12 flex items-center justify-center bg-white/15 group-hover:bg-white/20 transition-colors rounded-xl mb-5">
-                <i className="ri-search-eye-line text-white text-xl" />
+                <i className="ri-store-3-line text-white text-xl" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Aparece en Google</h3>
+              <h3 className="text-xl font-bold text-white mb-2">Te encuentran en CRECIO y en tus redes</h3>
               <p className="text-sm text-white/80 leading-relaxed">
-                Tus clientes te encuentran cuando buscan negocios cerca. Posicionamiento local incluido.
+                Tu tienda aparece en el directorio de CRECIO con mapa, horario y reseñas, y publicas en tu Página de Facebook e Instagram desde el panel.
               </p>
 
               {/* Simulación resultado de búsqueda */}
@@ -284,23 +264,23 @@ function Beneficios() {
                   <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
                     <i className="ri-global-line text-white text-[10px]" />
                   </div>
-                  <span className="text-[10px] text-white/60 font-medium">google.com › maps</span>
+                  <span className="text-[10px] text-white/60 font-medium">crecio › tiendas</span>
                 </div>
-                <p className="text-xs font-semibold text-[#5EEAD4] mb-0.5">Tu negocio · Lima, Perú</p>
-                <p className="text-[10px] text-white/50 mb-2">Abierto ahora · Ver más</p>
+                <p className="text-xs font-semibold text-[#5EEAD4] mb-0.5">Tu negocio · tu distrito</p>
+                <p className="text-[10px] text-white/50 mb-2">Catálogo · Mapa · WhatsApp</p>
                 <div className="flex items-center gap-1">
                   {[1,2,3,4,5].map(s => <i key={s} className="ri-star-fill text-amber-300 text-[10px] animate-pulse" style={{ animationDelay: `${s * 150}ms` }} />)}
-                  <span className="text-[10px] text-white/70 ml-1 font-bold">4.9 (142 reseñas)</span>
+                  <span className="text-[10px] text-white/70 ml-1 font-bold">Reseñas de compras verificadas</span>
                 </div>
               </div>
 
               {/* Stat grande con contador */}
               <div className="mt-auto pt-8">
                 <div className="text-5xl font-extrabold text-white tracking-tight flex items-baseline">
-                  +{googleVis}%
+                  1 clic
                 </div>
                 <div className="text-xs text-white/75 mt-1.5 font-medium leading-normal">
-                  más visibilidad en búsquedas locales de tu distrito
+                  para publicar en Facebook e Instagram (o programarlo)
                 </div>
               </div>
             </div>

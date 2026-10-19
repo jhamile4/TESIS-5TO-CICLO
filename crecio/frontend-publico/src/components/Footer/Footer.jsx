@@ -31,7 +31,7 @@ function Footer() {
             <span className="gradient-teal"> crecer?</span>
           </h2>
           <p className="text-[#9CA3AF] text-sm md:text-base max-w-lg mx-auto mb-10">
-            Únete a más de 2,400 negocios que ya usan CRECIO. Empieza gratis en minutos.
+            Crea la tienda online de tu negocio y empieza gratis en minutos.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
             <button

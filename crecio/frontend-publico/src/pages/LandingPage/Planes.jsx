@@ -229,7 +229,7 @@ function Planes() {
         </div>
 
         <p className="text-[#6B7280]/60 text-xs text-center mt-10">
-          Todos los planes incluyen 14 días de prueba gratis. Sin tarjeta de crédito requerida para el plan Básico.
+          Puedes empezar con el plan gratuito sin tarjeta de crédito y cambiar de plan cuando lo necesites.
         </p>
       </div>
     </section>

@@ -22,7 +22,7 @@ const pasos = [
     titulo: 'Vende y crece',
     subtitulo: 'Resultados reales',
     descripcion:
-      'Recibe pedidos, gestiona tu inventario y analiza tus ventas desde un panel simple. Tus clientes te encuentran en el buscador local de CRECIO y en Google.',
+      'Recibe pedidos, gestiona tu inventario y analiza tus ventas desde un panel simple. Tus clientes te encuentran en el directorio de tiendas de CRECIO.',
     img: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=700&q=80',
   },
 ]

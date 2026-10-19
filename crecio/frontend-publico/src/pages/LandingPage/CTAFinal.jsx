@@ -45,7 +45,7 @@ function CTAFinal() {
               <span className="gradient-teal">te espera.</span>
             </h2>
             <p className="mt-4 text-sm md:text-base text-white/60 leading-relaxed mb-10 max-w-md">
-              Más del 70% de los consumidores buscan negocios locales por internet antes de visitarlos. Con CRECIO tu negocio aparece con catálogo, precios, horarios y todo lo que necesitan para decidir.
+              Hoy muchos clientes buscan en internet antes de visitar un negocio. Con CRECIO tu negocio aparece con catálogo, precios, horarios y todo lo que necesitan para decidir.
             </p>
 
             {/* Stats */}
@@ -68,8 +68,8 @@ function CTAFinal() {
                 'Perfil profesional con tu logo y fotos',
                 'Catálogo digital interactivo',
                 'Botón de WhatsApp para pedidos directos',
-                'Apareces en búsquedas locales de Google',
-                'Herramientas de IA para crecer tu negocio',
+                'Apareces en el directorio de tiendas de CRECIO',
+                'IA para redactar y publicar en Facebook e Instagram',
               ].map((f) => (
                 <div key={f} className="flex items-center gap-3">
                   <div className="w-5 h-5 flex items-center justify-center shrink-0 rounded-full bg-[#0D9488]/10">

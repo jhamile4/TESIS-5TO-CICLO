@@ -3,27 +3,31 @@ import { useRef, useEffect, useState } from 'react'
 const herramientas = [
   {
     icono: 'ri-camera-ai-line',
-    titulo: 'Carga Mágica con IA',
-    descripcion: 'Sube una foto de tu producto y la IA genera título, descripción y precio sugerido automáticamente.',
+    titulo: 'Fotos de producto con IA',
+    descripcion: 'Escribe qué vendes y la IA crea una foto de producto para tu catálogo o tus publicaciones.',
+    estado: 'Disponible',
     size: 'large',
     img: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=700&q=80',
   },
   {
     icono: 'ri-megaphone-line',
-    titulo: 'Marketing Automático',
-    descripcion: 'Genera publicaciones para redes sociales, emails y campañas con un solo clic usando IA.',
+    titulo: 'Marketing con IA',
+    descripcion: 'La IA redacta tus publicaciones y las publicas o programas en tu Página de Facebook e Instagram.',
+    estado: 'Disponible',
     size: 'medium',
   },
   {
     icono: 'ri-bar-chart-box-line',
     titulo: 'Análisis Predictivo',
-    descripcion: 'Predice qué productos se venderán más y cuándo reponer tu inventario antes de quedarte sin stock.',
+    descripcion: 'Predecir qué productos se venderán más y cuándo reponer. Hoy el panel ya te avisa cuando el stock está bajo.',
+    estado: 'Próximamente',
     size: 'medium',
   },
   {
     icono: 'ri-customer-service-2-line',
     titulo: 'Asistente Virtual',
     descripcion: 'Un chatbot con IA responde preguntas de tus clientes 24/7 directamente desde tu catálogo.',
+    estado: 'Disponible',
     size: 'wide',
     img: 'https://images.unsplash.com/photo-1531746790731-6c087fecd65a?w=800&q=80',
   },
@@ -98,7 +102,7 @@ function HerramientasIA() {
                 <h3 className="text-xl md:text-2xl font-bold text-white mb-2">{herramientas[0].titulo}</h3>
                 <p className="text-[#9CA3AF] text-sm leading-relaxed max-w-xs">{herramientas[0].descripcion}</p>
                 <div className="mt-6 flex items-center gap-2 text-[#0D9488] text-sm font-semibold group-hover:gap-3 transition-all">
-                  <span>Próximamente</span>
+                  <span>{herramientas[0].estado}</span>
                   <i className="ri-arrow-right-line" />
                 </div>
               </div>
@@ -119,7 +123,7 @@ function HerramientasIA() {
                 <h3 className="text-lg font-bold text-[#111827] mb-2">{h.titulo}</h3>
                 <p className="text-[#6B7280] text-sm leading-relaxed flex-1">{h.descripcion}</p>
                 <div className="mt-5 flex items-center gap-2 text-[#0D9488] text-sm font-semibold group-hover:gap-3 transition-all">
-                  <span>Próximamente</span>
+                  <span>{h.estado}</span>
                   <i className="ri-arrow-right-line" />
                 </div>
               </div>
@@ -150,7 +154,7 @@ function HerramientasIA() {
                 </div>
                 <div className="shrink-0">
                   <div className="flex items-center gap-3 text-[#0D9488] text-sm font-semibold group-hover:gap-4 transition-all">
-                    <span>Próximamente</span>
+                    <span>{herramientas[3].estado}</span>
                     <div className="w-8 h-8 flex items-center justify-center rounded-full bg-[#0D9488]/10 group-hover:bg-[#0D9488]/20 transition-colors">
                       <i className="ri-arrow-right-line" />
                     </div>
