@@ -3,6 +3,7 @@ import { Palette, Edit3, Layers, Share2, Copy, Check, QrCode, Download } from 'l
 import { InstagramIcon, FacebookIcon, WhatsAppIcon } from '../common/SocialIcons'
 
 export default function StoreTabsEditor({
+  tiendaLink,
   colorThemes,
   selectedTheme,
   setSelectedTheme,
@@ -269,7 +270,7 @@ export default function StoreTabsEditor({
           <div className="field-group">
             <label>Tu link público</label>
             <div className="copy-link-box">
-              <span>crecio.app/{form.nombre.toLowerCase().replace(/\s+/g, '-')}</span>
+              <span>{tiendaLink}</span>
               <button onClick={onCopyLink}>
                 {copiedLink ? <Check size={13} /> : <Copy size={13} />}
                 {copiedLink ? 'Copiado' : 'Copiar'}

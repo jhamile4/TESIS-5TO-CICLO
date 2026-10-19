@@ -87,38 +87,48 @@ const getTienda = async (clienteId) => {
   const negocioResult = await repository.getBusinessForAdmin(clienteId)
   if (negocioResult.rows.length === 0) throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
   const negocio = negocioResult.rows[0]
-  const productosResult = await repository.getInventoryProducts(negocio.pk_id)
-  return { negocio, productos: productosResult.rows.slice(0, 6) }
+  const [productosResult, statsResult] = await Promise.all([
+    repository.getInventoryProducts(negocio.pk_id),
+    repository.getStoreStats(negocio.pk_id),
+  ])
+  const stats = statsResult.rows[0]
+  return {
+    negocio,
+    productos: productosResult.rows.slice(0, 6),
+    estadisticas: {
+      activa: stats.activo,
+      pedidosOnlineMes: Number(stats.pedidos_online_mes),
+      pedidosWhatsappMes: Number(stats.pedidos_whatsapp_mes),
+      resenas: Number(stats.total_resenas),
+      rating: Number(stats.rating),
+    },
+  }
 }
 
 const updateTienda = async (clienteId, datos) => {
   const required = ['nombre', 'descripcion', 'direccion', 'whatsapp']
   if (required.some((field) => typeof datos[field] !== 'string')) throw { status: 400, message: 'Completa los datos de la tienda' }
+  if (!datos.nombre.trim()) throw { status: 400, message: 'El nombre de la tienda no puede quedar vacío' }
+
+  const negocioResult = await repository.findBusinessByOwner(clienteId)
+  if (negocioResult.rows.length === 0) throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
+
+  // El logo subido llega en base64: se guarda en Storage y en la base de datos queda solo su URL
+  const logoUrl = await asegurarUrlPublica((datos.logoUrl || '').trim() || null, `logos/${negocioResult.rows[0].pk_id}`)
+
+  // Las redes escritas aquí son solo los enlaces que se muestran en la tienda (negocio.redes_sociales).
+  // No se tocan las cuentas conectadas con Meta para publicar: antes se sobrescribían y se perdía el token.
   const result = await repository.updateBusiness(clienteId, {
     nombre: datos.nombre.trim(),
     descripcion: datos.descripcion.trim(),
     direccion: datos.direccion.trim(),
     whatsapp: datos.whatsapp.trim(),
-    logoUrl: (datos.logoUrl || '').trim(),
+    logoUrl: logoUrl || '',
     categoria: datos.categoria || 'Ropa y Accesorios',
+    emailContacto: datos.emailContacto,
     redesSociales: datos.redesSociales || {}
   })
   if (result.rows.length === 0) throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
-
-  // Sincronizar automáticamente cada red social ingresada en Configuración con red_social_cuenta
-  if (datos.redesSociales && typeof datos.redesSociales === 'object') {
-    const negocioId = result.rows[0].pk_id
-    for (const [plataforma, handle] of Object.entries(datos.redesSociales)) {
-      if (handle && typeof handle === 'string' && handle.trim()) {
-        await repository.upsertSocialAccount(negocioId, {
-          plataforma,
-          nombreCuenta: plataforma.charAt(0).toUpperCase() + plataforma.slice(1),
-          handle: handle.trim(),
-          estado: 'conectado'
-        }).catch(() => {})
-      }
-    }
-  }
 
   return { negocio: result.rows[0] }
 }
@@ -373,15 +383,21 @@ const getFinanzas = async (clienteId) => {
   const negocioResult = await repository.findBusinessByOwner(clienteId)
   if (negocioResult.rows.length === 0) throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
   const negocio = negocioResult.rows[0]
-  const [summaryResult, transactionsResult] = await Promise.all([
+  const [summaryResult, transactionsResult, historialResult] = await Promise.all([
     repository.getFinanceSummary(negocio.pk_id),
     repository.getFinanceTransactions(negocio.pk_id),
+    repository.getMonthlyHistory(negocio.pk_id),
   ])
   const summary = summaryResult.rows[0]
   return {
     negocio: { id: negocio.pk_id, nombre: negocio.nombre, logoUrl: negocio.logo_url },
     resumen: Object.fromEntries(Object.entries(summary).map(([key, value]) => [key, Number(value)])),
     gastosRegistrados: Number(summary.gastos_mes),
+    historial: historialResult.rows.map((fila) => ({
+      mes: fila.mes,
+      ingresos: Number(fila.ingresos),
+      gastos: Number(fila.gastos),
+    })),
     transacciones: transactionsResult.rows.map((transaction) => ({
       ...transaction,
       monto_total: Number(transaction.monto_total),

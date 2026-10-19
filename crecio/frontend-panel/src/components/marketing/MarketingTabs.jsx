@@ -1,37 +1,21 @@
-import { WandSparkles, CalendarDays, CheckCircle2, FileText } from 'lucide-react'
+import { PenLine, CalendarDays, CheckCircle2 } from 'lucide-react'
 
 export default function MarketingTabs({ activeMainTab, setActiveMainTab, scheduledCount }) {
+  const pestañas = [
+    ['crear', 'Crear', PenLine],
+    ['programadas', 'Programadas', CalendarDays],
+    ['publicadas', 'Publicadas', CheckCircle2],
+  ]
+
   return (
     <div className="marketing-main-tabs">
-      <button
-        className={`m-tab ${activeMainTab === 'crear' ? 'active' : ''}`}
-        onClick={() => setActiveMainTab('crear')}
-      >
-        <WandSparkles size={15} />
-        Crear & Publicar
-      </button>
-      <button
-        className={`m-tab ${activeMainTab === 'programadas' ? 'active' : ''}`}
-        onClick={() => setActiveMainTab('programadas')}
-      >
-        <CalendarDays size={15} />
-        Programadas
-        <span className="tab-badge">{scheduledCount}</span>
-      </button>
-      <button
-        className={`m-tab ${activeMainTab === 'publicadas' ? 'active' : ''}`}
-        onClick={() => setActiveMainTab('publicadas')}
-      >
-        <CheckCircle2 size={15} />
-        Publicadas
-      </button>
-      <button
-        className={`m-tab ${activeMainTab === 'borradores' ? 'active' : ''}`}
-        onClick={() => setActiveMainTab('borradores')}
-      >
-        <FileText size={15} />
-        Borradores
-      </button>
+      {pestañas.map(([id, texto, Icon]) => (
+        <button key={id} className={`m-tab ${activeMainTab === id ? 'active' : ''}`} onClick={() => setActiveMainTab(id)}>
+          <Icon size={15} />
+          {texto}
+          {id === 'programadas' && scheduledCount > 0 && <span className="tab-badge">{scheduledCount}</span>}
+        </button>
+      ))}
     </div>
   )
 }

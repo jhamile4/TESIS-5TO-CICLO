@@ -14,6 +14,7 @@ const titles = {
   '/marketing': 'Marketing IA',
   '/finanzas': 'Finanzas',
   '/tienda': 'Mi tienda',
+  '/configuracion': 'Configuración',
 }
 
 // Abre el sitio público con la misma cuenta; el token va en el fragmento (#), que no se envía al servidor

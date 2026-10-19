@@ -1,6 +1,7 @@
 import { WhatsAppIcon } from '../common/SocialIcons'
 
 export default function StorePreviewDesktop({
+  tiendaLink,
   selectedTheme,
   selectedBtnStyle,
   selectedFont,
@@ -17,7 +18,7 @@ export default function StorePreviewDesktop({
           <span className="dot green"></span>
         </div>
         <div className="browser-url-input">
-          crecio.app/{form.nombre.toLowerCase().replace(/\s+/g, '-')}
+          {tiendaLink}
         </div>
       </div>
 

@@ -35,7 +35,7 @@ export default function InventoryCard({ product, onClick }) {
             <span className={`status-dot-circle ${isLowStock ? 'dot-red' : 'dot-green'}`}></span>
             <span>{product.stock} en stock</span>
           </div>
-          <small className="sales-count">{product.ventas || Math.floor(product.stock * 0.8) || 12} ventas</small>
+          <small className="sales-count">{product.ventas || 0} {product.ventas === 1 ? 'vendido' : 'vendidos'}</small>
         </div>
       </div>
     </div>

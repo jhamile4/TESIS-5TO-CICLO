@@ -736,6 +736,8 @@ input:checked + .slider:before { transform: translateX(16px); }
 .status-card-box h4, .stats-card-box h4 { font-size: 12px; font-weight: 700; color: #1e293b; margin: 0 0 10px; }
 .status-pill-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; }
 .status-pill-badge.yellow { background: #fef3c7; color: #b45309; }
+.status-pill-badge.green { background: #dcfce7; color: #15803d; }
+.status-pill-badge.green .status-dot { background: #16a34a; }
 .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #f59e0b; }
 .stat-metric-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
 .stat-metric-row:last-child { border-bottom: none; }
@@ -2428,3 +2430,6 @@ input:checked + .slider { background-color: #10b981; }
 
 
 
+
+/* Los enlaces del menú lateral no van subrayados */
+.sidebar .nav-item { text-decoration: none; }

@@ -33,7 +33,7 @@ export default function DashboardPage() {
       {/* Middle Grid: Sales Chart (65%) + Quick Actions (35%) */}
       <div className="dash-middle-grid">
         <DashboardSalesChart salesData={data?.ventasSemana} />
-        <DashboardQuickActions businessName={data?.negocio?.nombre} />
+        <DashboardQuickActions negocioId={data?.negocio?.id} />
       </div>
 
       {/* Bottom Grid: Recent Orders (50%) + Top Products (50%) */}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Smartphone, Monitor } from 'lucide-react'
 import { actualizarTienda, getTienda } from '../services/apiAdmin'
-import { PUBLIC_URL } from '../config/env'
+import { tiendaUrl, sinProtocolo } from '../config/env'
 
 import StoreHeader from '../components/store/StoreHeader'
 import StoreTabsEditor from '../components/store/StoreTabsEditor'
@@ -78,7 +78,7 @@ export default function StorePage() {
   const toggleSection = (sec) => setSections({ ...sections, [sec]: !sections[sec] })
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(`${PUBLIC_URL}/tienda/${data?.negocio?.pk_id || data?.negocio?.id || ''}`)
+    navigator.clipboard.writeText(tiendaUrl(data?.negocio?.pk_id))
     setCopiedLink(true)
     setTimeout(() => setCopiedLink(false), 2000)
   }
@@ -105,12 +105,14 @@ export default function StorePage() {
     }
   }
 
+  const tiendaLink = data?.negocio?.pk_id ? sinProtocolo(tiendaUrl(data.negocio.pk_id)) : ''
+
   // Vista previa con los productos reales de la tienda (si aún no tiene, se ve vacía)
   const sampleProducts = (data?.productos || []).slice(0, 3)
 
   return (
     <section className="store-page-wrapper">
-      <StoreHeader saving={saving} onSave={saveChanges} />
+      <StoreHeader saving={saving} onSave={saveChanges} tiendaHref={data?.negocio?.pk_id ? tiendaUrl(data.negocio.pk_id) : undefined} />
 
       {message && <div className="toast-success">{message}</div>}
       {error && <div className="toast-error">{error}</div>}
@@ -118,6 +120,7 @@ export default function StorePage() {
       <div className="store-main-layout">
         {/* LEFT EDITOR SIDEBAR */}
         <StoreTabsEditor
+          tiendaLink={tiendaLink}
           colorThemes={colorThemes}
           selectedTheme={selectedTheme}
           setSelectedTheme={setSelectedTheme}
@@ -153,7 +156,7 @@ export default function StorePage() {
               </button>
             </div>
             <div className="domain-url-preview">
-              crecio.app/{form.nombre.toLowerCase().replace(/\s+/g, '-')}
+              {tiendaLink}
             </div>
           </div>
 
@@ -169,6 +172,7 @@ export default function StorePage() {
               />
             ) : (
               <StorePreviewDesktop
+                tiendaLink={tiendaLink}
                 selectedTheme={selectedTheme}
                 selectedBtnStyle={selectedBtnStyle}
                 selectedFont={selectedFont}
@@ -181,7 +185,7 @@ export default function StorePage() {
         </div>
 
         {/* RIGHT STATS SIDEBAR */}
-        <StoreStatsSidebar />
+        <StoreStatsSidebar estadisticas={data?.estadisticas} />
       </div>
     </section>
   )

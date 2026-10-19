@@ -1,7 +1,7 @@
-import { ExternalLink, WandSparkles } from 'lucide-react'
+import { ExternalLink, Save } from 'lucide-react'
 import { PUBLIC_URL } from '../../config/env'
 
-export default function StoreHeader({ saving, onSave }) {
+export default function StoreHeader({ saving, onSave, tiendaHref }) {
   return (
     <div className="store-page-header">
       <div>
@@ -11,7 +11,7 @@ export default function StoreHeader({ saving, onSave }) {
 
       <div className="top-header-actions">
         <a
-          href={PUBLIC_URL}
+          href={tiendaHref || PUBLIC_URL}
           target="_blank"
           rel="noreferrer"
           className="btn-outline-action"
@@ -19,7 +19,7 @@ export default function StoreHeader({ saving, onSave }) {
           <ExternalLink size={14} /> Ver en vivo
         </a>
         <button className="btn-teal-action" onClick={onSave} disabled={saving}>
-          <WandSparkles size={14} /> {saving ? 'Guardando...' : 'Publicar con IA'}
+          <Save size={14} /> {saving ? 'Guardando...' : 'Guardar cambios'}
         </button>
       </div>
     </div>

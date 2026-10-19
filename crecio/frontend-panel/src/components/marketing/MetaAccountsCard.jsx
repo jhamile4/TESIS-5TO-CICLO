@@ -1,5 +1,6 @@
 import { Check, KeyRound, Link2, Unplug } from 'lucide-react'
 import { InstagramIcon, FacebookIcon } from '../common/SocialIcons'
+import './marketing.css'
 
 const ICONOS = { facebook: FacebookIcon, instagram: InstagramIcon }
 
@@ -8,9 +9,9 @@ export default function MetaAccountsCard({ accounts, toggleAccount, onStartMetaA
   const conectadas = accounts.filter((acc) => acc.connected)
 
   return (
-    <div className="m-card">
-      <div className="m-card-header-flex">
-        <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#1e293b' }}>Publicar en</h3>
+    <div className="mk-card">
+      <div className="mk-card-head">
+        <h3>Redes conectadas</h3>
         <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 500 }}>
           {accounts.filter((a) => a.connected && a.active).length} seleccionadas
         </span>
@@ -66,8 +67,8 @@ export default function MetaAccountsCard({ accounts, toggleAccount, onStartMetaA
       <button
         type="button"
         onClick={onStartMetaAuth}
-        className="btn-ui-primary"
-        style={{ width: '100%', marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#1877f2' }}
+        className="mk-btn mk-btn-block"
+        style={{ marginTop: '12px', borderColor: '#1877f2', background: '#1877f2', color: '#fff' }}
       >
         <Link2 size={15} />
         {conectadas.length > 0 ? 'Volver a conectar con Meta' : 'Conectar con Meta (Facebook + Instagram)'}
@@ -76,8 +77,8 @@ export default function MetaAccountsCard({ accounts, toggleAccount, onStartMetaA
       <button
         type="button"
         onClick={onManualTokenConnect}
-        className="btn-ui-outline"
-        style={{ width: '100%', marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+        className="mk-btn mk-btn-block"
+        style={{ marginTop: '8px' }}
       >
         <KeyRound size={15} />
         Pegar token de Meta (Graph API Explorer)

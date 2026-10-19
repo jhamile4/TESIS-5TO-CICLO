@@ -3,7 +3,7 @@ export default function MarketingHeader() {
     <div className="marketing-header">
       <div>
         <h2>Marketing IA</h2>
-        <p>Genera contenido con IA y publícalo directamente en tus redes sociales</p>
+        <p>Redacta publicaciones con ayuda de IA y publícalas en tu Página de Facebook e Instagram.</p>
       </div>
     </div>
   )

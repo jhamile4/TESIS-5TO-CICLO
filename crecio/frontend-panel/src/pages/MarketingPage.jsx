@@ -259,7 +259,7 @@ export default function MarketingPage() {
         tono,
         prompt: prompt.trim(),
         contentType,
-        generateImage: !uploadedImage // Solo genera imagen si no hay una ya establecida
+        generateImage: false // la imagen se crea solo si el dueño la pide (botón «Crear con IA»)
       })
       setContent(result.contenido)
       setGuionVideo(result.guionVideo || null)
@@ -395,6 +395,7 @@ export default function MarketingPage() {
             activeAccountsList={activeAccountsList}
             handlePublishOrSchedule={handlePublishOrSchedule}
             publishing={publishing}
+            loading={loading}
           />
         </div>
       )}
@@ -407,18 +408,6 @@ export default function MarketingPage() {
         <MarketingPublishedTab publishedPosts={publishedPosts} />
       )}
 
-      {activeMainTab === 'borradores' && (
-        <div className="tab-view-container">
-          <div className="tab-view-header">
-            <h3>Borradores Guardados</h3>
-            <p>Contenido en borrador pendiente de revisar o publicar.</p>
-          </div>
-          <div className="empty-state-box">
-            <FileText size={32} />
-            <p>No tienes borradores guardados por el momento.</p>
-          </div>
-        </div>
-      )}
     </section>
   )
 }

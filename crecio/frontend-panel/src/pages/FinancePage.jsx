@@ -8,7 +8,6 @@ import FinancePeriodTabs from '../components/finance/FinancePeriodTabs'
 import FinanceTopRow from '../components/finance/FinanceTopRow'
 import FinanceMiddleRow from '../components/finance/FinanceMiddleRow'
 import FinanceAdviceCardsRow from '../components/finance/FinanceAdviceCardsRow'
-import FinanceGatewayBanner from '../components/finance/FinanceGatewayBanner'
 
 // Componentes para Vista 2: Resumen Mensual (Screenshot 2)
 import FinanceMetricsMonthly from '../components/finance/FinanceMetricsMonthly'
@@ -59,7 +58,6 @@ export default function FinancePage() {
           <FinanceTopRow summary={summary} isMonth={false} />
           <FinanceMiddleRow transacciones={data?.transacciones} summary={summary} isMonth={false} />
           <FinanceAdviceCardsRow summary={summary} isMonth={false} />
-          <FinanceGatewayBanner />
         </>
       ) : (
         /* VISTA 2: RESUMEN MENSUAL (SCREENSHOT 2) */

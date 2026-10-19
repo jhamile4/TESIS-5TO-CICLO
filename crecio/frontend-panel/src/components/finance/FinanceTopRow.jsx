@@ -1,10 +1,21 @@
 import { Sparkles, Plus, ArrowDown, Wallet } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { currency } from '../../utils/formatters'
 
 export default function FinanceTopRow({ summary, isMonth }) {
   const income = isMonth ? Number(summary.ingresos_mes || 0) : Number(summary.ingresos_hoy || 0)
   const expenses = isMonth ? Number(summary.gastos_mes || 0) : Number(summary.gastos_hoy || 0)
   const netProfit = income - expenses
+  const navigate = useNavigate()
+
+  // Recomendaciones simples a partir de los números reales del periodo (no son inventadas)
+  const periodo = isMonth ? 'este mes' : 'hoy'
+  const recomendaciones = []
+  if (income === 0) recomendaciones.push(`Aún no hay ventas ${periodo}. Comparte el enlace de tu tienda o publica una oferta en tus redes.`)
+  if (expenses > income) recomendaciones.push(`Tus gastos (${currency.format(expenses)}) superan tus ingresos ${periodo}. Revisa en qué se fue el dinero.`)
+  if (income > 0 && netProfit >= 0) recomendaciones.push(`Ganaste ${currency.format(netProfit)} ${periodo}: un margen del ${Math.round((netProfit / income) * 100)}%.`)
+  if (expenses === 0) recomendaciones.push('Registra también tus gastos (insumos, envíos, pasajes) para conocer tu ganancia real.')
+  if (recomendaciones.length === 0) recomendaciones.push('Vas bien. Sigue registrando tus ventas y gastos para ver tu evolución.')
 
   return (
     <div className="fin-top-4grid" style={{
@@ -32,12 +43,6 @@ export default function FinanceTopRow({ summary, isMonth }) {
           }}>
             <Plus size={18} />
           </div>
-          <span style={{
-            marginLeft: 'auto', background: '#d1fae5', color: '#047857',
-            fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '12px'
-          }}>
-            +12.4%
-          </span>
         </div>
         <div>
           <span style={{ fontSize: '12px', fontWeight: '600', color: '#64748b' }}>
@@ -73,12 +78,6 @@ export default function FinanceTopRow({ summary, isMonth }) {
           }}>
             <ArrowDown size={18} />
           </div>
-          <span style={{
-            marginLeft: 'auto', background: '#ffe4e6', color: '#e11d48',
-            fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '12px'
-          }}>
-            -3.2%
-          </span>
         </div>
         <div>
           <span style={{ fontSize: '12px', fontWeight: '600', color: '#64748b' }}>
@@ -147,21 +146,18 @@ export default function FinanceTopRow({ summary, isMonth }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: '#38bdf8' }}>
             <Sparkles size={16} />
             <h4 style={{ margin: 0, fontSize: '13px', fontWeight: '800', color: '#ffffff' }}>
-              Consejos Financieros de IA
+              Recomendaciones
             </h4>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '11px', color: '#cbd5e1', lineHeight: '1.4' }}>
-            <p style={{ margin: 0 }}>
-              • <strong style={{ color: '#ffffff' }}>Gasto Crítico:</strong> Reduce los costos en <span style={{ color: '#38bdf8', textDecoration: 'underline' }}>Suministros</span>. Excediste el presupuesto un 15% este mes.
-            </p>
-            <p style={{ margin: 0 }}>
-              • <strong style={{ color: '#ffffff' }}>Proyección:</strong> Se estima un crecimiento del <strong style={{ color: '#34d399' }}>8.4%</strong> para el próximo mes.
-            </p>
+            {recomendaciones.map((texto) => (
+              <p key={texto} style={{ margin: 0 }}>• {texto}</p>
+            ))}
           </div>
         </div>
 
-        <button style={{
+        <button onClick={() => navigate('/marketing')} style={{
           marginTop: '14px',
           width: '100%',
           padding: '8px 12px',
@@ -174,7 +170,7 @@ export default function FinanceTopRow({ summary, isMonth }) {
           cursor: 'pointer',
           transition: 'all 0.2s'
         }}>
-          Ver Análisis Completo
+          Crear una publicación para vender más
         </button>
       </div>
     </div>

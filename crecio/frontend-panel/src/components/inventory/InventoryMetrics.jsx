@@ -4,7 +4,7 @@ import { currency } from '../../utils/formatters'
 export default function InventoryMetrics({ metrics }) {
   const total = metrics?.totalProductos ?? 0
   const alertas = metrics?.alertasStockBajo ?? 0
-  const ventas = metrics?.unidadesStock ?? 0
+  const unidadesStock = metrics?.unidadesStock ?? 0
   const valor = metrics?.valorInventario ?? 0
 
   return (
@@ -33,9 +33,9 @@ export default function InventoryMetrics({ metrics }) {
 
       <div className="inv-metric-card">
         <div>
-          <span className="metric-label">Ventas totales</span>
-          <div className="metric-num">{ventas}</div>
-          <small className="metric-sub">unidades en stock</small>
+          <span className="metric-label">Unidades en stock</span>
+          <div className="metric-num">{unidadesStock}</div>
+          <small className="metric-sub">sumando todos los productos</small>
         </div>
         <div className="metric-icon-box mint-box">
           <ShoppingCart size={20} />

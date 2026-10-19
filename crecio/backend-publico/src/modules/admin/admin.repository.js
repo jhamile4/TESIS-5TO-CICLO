@@ -246,6 +246,40 @@ const getFinanceSummary = (negocioId) =>
     [negocioId]
   )
 
+// Ingresos (ventas pagadas) y gastos de los últimos 6 meses, en hora de Perú
+const getMonthlyHistory = (negocioId) =>
+  pool.query(
+    `WITH meses AS (
+       SELECT generate_series(
+         date_trunc('month', NOW() AT TIME ZONE 'America/Lima') - INTERVAL '5 months',
+         date_trunc('month', NOW() AT TIME ZONE 'America/Lima'),
+         INTERVAL '1 month'
+       )::date AS mes
+     )
+     SELECT m.mes,
+            COALESCE((SELECT SUM(monto_total) FROM pedido_pago
+                      WHERE fk_negocio_id = $1 AND estado = 'pagado'
+                        AND date_trunc('month', (created_at AT TIME ZONE 'UTC') AT TIME ZONE 'America/Lima')::date = m.mes), 0) AS ingresos,
+            COALESCE((SELECT SUM(monto) FROM gasto
+                      WHERE fk_negocio_id = $1 AND date_trunc('month', fecha)::date = m.mes), 0) AS gastos
+     FROM meses m
+     ORDER BY m.mes`,
+    [negocioId]
+  )
+
+// Estadísticas reales de la tienda (CRECIO no registra visitas, por eso no se muestran)
+const getStoreStats = (negocioId) =>
+  pool.query(
+    `SELECT n.activo, n.rating, n.total_resenas,
+            (SELECT COUNT(*) FROM pedido_pago
+             WHERE fk_negocio_id = $1 AND estado <> 'pendiente' AND numero_pedido NOT LIKE 'VTA-%'
+               AND created_at >= date_trunc('month', NOW())) AS pedidos_online_mes,
+            (SELECT COUNT(*) FROM pedido_whatsapp
+             WHERE fk_negocio_id = $1 AND created_at >= date_trunc('month', NOW())) AS pedidos_whatsapp_mes
+     FROM negocio n WHERE n.pk_id = $1`,
+    [negocioId]
+  )
+
 const setSalesGoal = (negocioId, meta) =>
   pool.query('UPDATE negocio SET meta_ventas_mes = $1 WHERE pk_id = $2 RETURNING meta_ventas_mes', [meta, negocioId])
 
@@ -280,12 +314,22 @@ const getBestSellingProducts = (negocioId) =>
     [negocioId]
   )
 
+// "ventas" = unidades vendidas de verdad (pedidos pagados y no cancelados). Los pedidos
+// antiguos no guardaban el id del producto, por eso también se compara por nombre.
 const getInventoryProducts = (negocioId) =>
   pool.query(
-    `SELECT pk_id, nombre, descripcion, precio, imagen_url, stock, categoria
-     FROM producto
-     WHERE fk_negocio_id = $1 AND activo = TRUE
-     ORDER BY created_at ASC`,
+    `SELECT p.pk_id, p.nombre, p.descripcion, p.precio, p.imagen_url, p.stock, p.categoria,
+            COALESCE((
+              SELECT SUM((item->>'cantidad')::int)
+              FROM pedido_pago pp, jsonb_array_elements(pp.items) AS item
+              WHERE pp.fk_negocio_id = p.fk_negocio_id
+                AND pp.estado = 'pagado'
+                AND pp.estado_pedido <> 'cancelado'
+                AND ((item->>'pk_id') = p.pk_id::text OR LOWER(TRIM(item->>'nombre')) = LOWER(TRIM(p.nombre)))
+            ), 0)::int AS ventas
+     FROM producto p
+     WHERE p.fk_negocio_id = $1 AND p.activo = TRUE
+     ORDER BY p.created_at ASC`,
     [negocioId]
   )
 
@@ -459,6 +503,8 @@ module.exports = {
   getClients,
   getFinanceSummary,
   setSalesGoal,
+  getStoreStats,
+  getMonthlyHistory,
   getFinanceTransactions,
   createExpense,
   getBestSellingProducts,

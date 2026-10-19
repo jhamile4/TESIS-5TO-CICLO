@@ -8,7 +8,8 @@ import ConfigQrTab from '../components/config/ConfigQrTab'
 import ConfigSecurityTab from '../components/config/ConfigSecurityTab'
 
 export default function ConfigPage() {
-  const [activeTab, setActiveTab] = useState('perfil')
+  const [activeTab, setActiveTab] = useState(new URLSearchParams(window.location.search).get('tab') || 'perfil')
+  const [negocioId, setNegocioId] = useState(null)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
@@ -65,8 +66,11 @@ export default function ConfigPage() {
   const loadBusinessData = () => {
     setLoading(true)
     getTienda()
-      .then((res) => {
+      .then((respuesta) => {
+        // La API responde { negocio, productos }: los datos de la tienda están en "negocio"
+        const res = respuesta?.negocio
         if (res) {
+          setNegocioId(res.pk_id)
           setForm({
             nombre: res.nombre || '',
             categoria: res.categoria || 'Ropa y Accesorios',
@@ -217,7 +221,7 @@ export default function ConfigPage() {
         <ConfigPreferencesTab />
       )}
       {activeTab === 'qr' && (
-        <ConfigQrTab nombre={form.nombre} />
+        <ConfigQrTab negocioId={negocioId} />
       )}
       {activeTab === 'seguridad' && (
         <ConfigSecurityTab />

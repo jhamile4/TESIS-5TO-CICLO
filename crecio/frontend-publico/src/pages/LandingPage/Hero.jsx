@@ -15,7 +15,7 @@ const Hero = () => {
   }
 
   return (
-    <section id="inicio" className="relative h-[100dvh] min-h-[600px] w-full overflow-hidden bg-[#0a0a0a]">
+    <section id="inicio" className="relative min-h-[100dvh] w-full overflow-hidden bg-[#0a0a0a]">
 
       {/* ── Video de fondo ── */}
       <div className="absolute inset-0 z-0">
@@ -47,7 +47,7 @@ const Hero = () => {
       </div>
 
       {/* ── Contenido ── */}
-      <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center">
+      <div className="relative z-10 flex min-h-[100dvh] flex-col items-center justify-center px-4 pt-28 pb-24 text-center">
 
         {/* Badge */}
         <div
@@ -60,7 +60,7 @@ const Hero = () => {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0D9488] opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[#0D9488]" />
             </span>
-            MÁS DE 2,400 NEGOCIOS YA CRECIENDO
+            HECHO PARA LOS NEGOCIOS DEL PERÚ
           </span>
         </div>
 
@@ -70,13 +70,13 @@ const Hero = () => {
             loaded ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'
           }`}
         >
-          <span className="block text-5xl font-bold leading-[1.15] tracking-tight text-white md:text-7xl lg:text-8xl pb-1">
+          <span className="block text-5xl font-bold leading-[1.15] tracking-tight text-white md:text-6xl lg:text-7xl xl:text-8xl pb-1">
             Transforma tu
           </span>
-          <span className="mt-2 block text-5xl font-bold leading-[1.15] tracking-tight text-white md:text-7xl lg:text-8xl pb-1">
+          <span className="mt-2 block text-5xl font-bold leading-[1.15] tracking-tight text-white md:text-6xl lg:text-7xl xl:text-8xl pb-1">
             negocio en una
           </span>
-          <span className="mt-2 block bg-gradient-to-r from-[#0D9488] via-[#14B8A6] to-[#2DD4BF] bg-clip-text text-5xl font-bold leading-[1.15] tracking-tight text-transparent md:text-7xl lg:text-8xl pb-3.5">
+          <span className="mt-2 block bg-gradient-to-r from-[#0D9488] via-[#14B8A6] to-[#2DD4BF] bg-clip-text text-5xl font-bold leading-[1.15] tracking-tight text-transparent md:text-6xl lg:text-7xl xl:text-8xl pb-3.5">
             empresa digital
           </span>
         </h1>
@@ -130,17 +130,8 @@ const Hero = () => {
         </div>
       </div>
 
-      {/* Fade a blanco abajo */}
-      <div className="absolute bottom-0 left-0 right-0 z-10 h-20 bg-gradient-to-t from-white to-transparent" />
-
-      {/* Indicador de scroll */}
-      <div className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2">
-        <div className="flex flex-col items-center gap-2 text-white/40">
-          <div className="h-8 w-[1px] overflow-hidden bg-white/20">
-            <div className="h-full w-full animate-bounce bg-white/60" style={{ transformOrigin: 'top' }} />
-          </div>
-        </div>
-      </div>
+      {/* Fade a blanco abajo: corto y pegado al borde para no tapar el contenido */}
+      <div className="absolute bottom-0 left-0 right-0 z-10 h-10 bg-gradient-to-t from-white to-transparent" />
     </section>
   )
 }
