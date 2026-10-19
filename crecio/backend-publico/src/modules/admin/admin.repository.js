@@ -217,22 +217,37 @@ const getClients = (negocioId) =>
     [negocioId]
   )
 
+// "Hoy" y "este mes" en hora de Perú: created_at se guarda en UTC y la base de datos
+// trabaja en UTC, así que sin convertir, las ventas de la noche contaban como del día siguiente
 const getFinanceSummary = (negocioId) =>
   pool.query(
-    `SELECT
-       COALESCE(SUM(monto_total) FILTER (WHERE estado = 'pagado' AND created_at::date = CURRENT_DATE), 0) AS ingresos_hoy,
-       COALESCE(SUM(monto_total) FILTER (WHERE estado = 'pagado' AND created_at >= date_trunc('month', CURRENT_DATE)), 0) AS ingresos_mes,
-       COUNT(*) FILTER (WHERE estado = 'pagado' AND created_at::date = CURRENT_DATE) AS operaciones_hoy,
-       COUNT(*) FILTER (WHERE estado = 'pagado' AND created_at >= date_trunc('month', CURRENT_DATE)) AS operaciones_mes,
-       COALESCE(SUM(monto_total) FILTER (WHERE estado = 'pagado' AND stripe_payment_intent IS NOT NULL AND created_at >= date_trunc('month', CURRENT_DATE)), 0) AS ingresos_tarjeta,
-       COALESCE(SUM(monto_total) FILTER (WHERE estado = 'pagado' AND stripe_payment_intent IS NULL AND created_at >= date_trunc('month', CURRENT_DATE)), 0) AS ingresos_efectivo,
-       COALESCE(SUM(monto_total) FILTER (WHERE estado = 'pagado' AND stripe_payment_intent IS NOT NULL AND created_at::date = CURRENT_DATE), 0) AS ingresos_tarjeta_hoy,
-       COALESCE(SUM(monto_total) FILTER (WHERE estado = 'pagado' AND stripe_payment_intent IS NULL AND created_at::date = CURRENT_DATE), 0) AS ingresos_efectivo_hoy,
-       COALESCE((SELECT SUM(monto) FROM gasto WHERE fk_negocio_id = $1 AND fecha = CURRENT_DATE), 0) AS gastos_hoy,
-       COALESCE((SELECT SUM(monto) FROM gasto WHERE fk_negocio_id = $1 AND fecha >= date_trunc('month', CURRENT_DATE)::date), 0) AS gastos_mes
-     FROM pedido_pago WHERE fk_negocio_id = $1`,
+    `WITH ventas AS (
+       SELECT monto_total, stripe_payment_intent,
+              ((created_at AT TIME ZONE 'UTC') AT TIME ZONE 'America/Lima')::date AS dia
+       FROM pedido_pago
+       WHERE fk_negocio_id = $1 AND estado = 'pagado'
+     ),
+     hoy AS (SELECT (NOW() AT TIME ZONE 'America/Lima')::date AS dia)
+     SELECT
+       COALESCE(SUM(v.monto_total) FILTER (WHERE v.dia = h.dia), 0) AS ingresos_hoy,
+       COALESCE(SUM(v.monto_total) FILTER (WHERE v.dia >= date_trunc('month', h.dia)), 0) AS ingresos_mes,
+       COUNT(v.*) FILTER (WHERE v.dia = h.dia) AS operaciones_hoy,
+       COUNT(v.*) FILTER (WHERE v.dia >= date_trunc('month', h.dia)) AS operaciones_mes,
+       COALESCE(SUM(v.monto_total) FILTER (WHERE v.stripe_payment_intent IS NOT NULL AND v.dia >= date_trunc('month', h.dia)), 0) AS ingresos_tarjeta,
+       COALESCE(SUM(v.monto_total) FILTER (WHERE v.stripe_payment_intent IS NULL AND v.dia >= date_trunc('month', h.dia)), 0) AS ingresos_efectivo,
+       COALESCE(SUM(v.monto_total) FILTER (WHERE v.stripe_payment_intent IS NOT NULL AND v.dia = h.dia), 0) AS ingresos_tarjeta_hoy,
+       COALESCE(SUM(v.monto_total) FILTER (WHERE v.stripe_payment_intent IS NULL AND v.dia = h.dia), 0) AS ingresos_efectivo_hoy,
+       COALESCE((SELECT SUM(monto) FROM gasto WHERE fk_negocio_id = $1 AND fecha = h.dia), 0) AS gastos_hoy,
+       COALESCE((SELECT SUM(monto) FROM gasto WHERE fk_negocio_id = $1 AND fecha >= date_trunc('month', h.dia)::date), 0) AS gastos_mes,
+       COALESCE((SELECT meta_ventas_mes FROM negocio WHERE pk_id = $1), 0) AS meta_ventas_mes
+     FROM hoy h
+     LEFT JOIN ventas v ON TRUE
+     GROUP BY h.dia`,
     [negocioId]
   )
+
+const setSalesGoal = (negocioId, meta) =>
+  pool.query('UPDATE negocio SET meta_ventas_mes = $1 WHERE pk_id = $2 RETURNING meta_ventas_mes', [meta, negocioId])
 
 const getFinanceTransactions = (negocioId) =>
   pool.query(
@@ -443,6 +458,7 @@ module.exports = {
   markNotificationsRead,
   getClients,
   getFinanceSummary,
+  setSalesGoal,
   getFinanceTransactions,
   createExpense,
   getBestSellingProducts,

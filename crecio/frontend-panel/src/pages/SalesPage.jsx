@@ -185,7 +185,7 @@ export default function SalesPage() {
                     <td>
                       <div className="client-cell">
                         <strong>{sale.cliente_nombre || 'Cliente Directo'}</strong>
-                        <small>{sale.telefono_cliente || sale.cliente_email || '+51 987 654 321'}</small>
+                        <small>{sale.telefono_cliente || sale.cliente_email || 'Sin contacto'}</small>
                       </div>
                     </td>
                     <td>
@@ -210,10 +210,10 @@ export default function SalesPage() {
                       </span>
                     </td>
                     <td>
-                      {hasVoucher || payMethod === 'Yape' ? (
+                      {hasVoucher ? (
                         <button
                           className="comprobante-link"
-                          onClick={() => setVoucherUrl(sale.comprobante_url || 'https://images.unsplash.com/photo-1556742049-0a67daf4005a?w=400&auto=format&fit=crop&q=80')}
+                          onClick={() => setVoucherUrl(sale.comprobante_url)}
                         >
                           <ImageIcon size={14} /> Ver
                         </button>

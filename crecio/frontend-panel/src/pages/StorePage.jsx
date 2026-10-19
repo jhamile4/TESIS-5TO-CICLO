@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Smartphone, Monitor } from 'lucide-react'
 import { actualizarTienda, getTienda } from '../services/apiAdmin'
+import { PUBLIC_URL } from '../config/env'
 
 import StoreHeader from '../components/store/StoreHeader'
 import StoreTabsEditor from '../components/store/StoreTabsEditor'
@@ -33,12 +34,12 @@ export default function StorePage() {
   const [selectedFont, setSelectedFont] = useState(fonts[0])
 
   const [form, setForm] = useState({
-    nombre: 'Mi Tienda Crecio',
-    slogan: 'Los mejores productos al mejor precio',
-    whatsapp: '+51 999 123 456',
-    instagram: '@mitiendacrecio',
-    facebook: 'facebook.com/mitiendacrecio',
-    direccion: 'Av. Principal 123, Lima',
+    nombre: '',
+    slogan: '',
+    whatsapp: '',
+    instagram: '',
+    facebook: '',
+    direccion: '',
     logoUrl: ''
   })
 
@@ -77,7 +78,7 @@ export default function StorePage() {
   const toggleSection = (sec) => setSections({ ...sections, [sec]: !sections[sec] })
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(`https://crecio.app/${form.nombre.toLowerCase().replace(/\s+/g, '-')}`)
+    navigator.clipboard.writeText(`${PUBLIC_URL}/tienda/${data?.negocio?.pk_id || data?.negocio?.id || ''}`)
     setCopiedLink(true)
     setTimeout(() => setCopiedLink(false), 2000)
   }
@@ -104,13 +105,8 @@ export default function StorePage() {
     }
   }
 
-  const sampleProducts = data?.productos?.length
-    ? data.productos.slice(0, 3)
-    : [
-        { pk_id: 1, nombre: 'Camiseta Premium', precio: 89, imagen_url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=300&auto=format&fit=crop&q=80' },
-        { pk_id: 2, nombre: 'Mochila Urbana', precio: 149, imagen_url: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&auto=format&fit=crop&q=80' },
-        { pk_id: 3, nombre: 'Audífonos Pro', precio: 299, imagen_url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&auto=format&fit=crop&q=80' }
-      ]
+  // Vista previa con los productos reales de la tienda (si aún no tiene, se ve vacía)
+  const sampleProducts = (data?.productos || []).slice(0, 3)
 
   return (
     <section className="store-page-wrapper">

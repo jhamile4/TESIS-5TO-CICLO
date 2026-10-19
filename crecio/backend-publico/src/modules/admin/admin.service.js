@@ -135,8 +135,11 @@ const createProduct = async (clienteId, datos) => {
     throw { status: 400, message: 'Nombre, precio y stock son obligatorios y deben ser validos' }
   }
 
+  // Las fotos subidas o generadas llegan en base64: se guardan en Storage, no en la base de datos
+  const imagenUrl = await asegurarUrlPublica(datos.imagenUrl, `productos/${negocioResult.rows[0].pk_id}`)
   const result = await repository.createProduct(negocioResult.rows[0].pk_id, {
     ...datos,
+    imagenUrl,
     nombre: nombre.trim(),
     precio: Number(precio),
     stock: Number(stock),
@@ -153,8 +156,10 @@ const updateProduct = async (clienteId, productoId, datos) => {
     throw { status: 400, message: 'Nombre, precio y stock son obligatorios y deben ser validos' }
   }
 
+  const imagenUrl = await asegurarUrlPublica(datos.imagenUrl, `productos/${negocioResult.rows[0].pk_id}`)
   const result = await repository.updateProduct(negocioResult.rows[0].pk_id, productoId, {
     ...datos,
+    imagenUrl,
     nombre: nombre.trim(),
     precio: Number(precio),
     stock: Number(stock),
@@ -383,6 +388,15 @@ const getFinanzas = async (clienteId) => {
       metodo: transaction.stripe_payment_intent ? 'Tarjeta' : 'Efectivo',
     })),
   }
+}
+
+const setSalesGoal = async (clienteId, meta) => {
+  const negocioResult = await repository.findBusinessByOwner(clienteId)
+  if (negocioResult.rows.length === 0) throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
+  const valor = Number(meta)
+  if (!Number.isFinite(valor) || valor < 0) throw { status: 400, message: 'La meta debe ser un monto en soles mayor o igual a 0' }
+  const result = await repository.setSalesGoal(negocioResult.rows[0].pk_id, valor || null)
+  return { metaVentasMes: Number(result.rows[0].meta_ventas_mes || 0) }
 }
 
 const createExpense = async (clienteId, datos) => {
@@ -860,6 +874,7 @@ module.exports = {
   getClientes,
   getFinanzas,
   createExpense,
+  setSalesGoal,
   generateMarketing,
   generateProductImage,
   getMarketingPosts,

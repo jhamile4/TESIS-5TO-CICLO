@@ -11,7 +11,7 @@ export default function EditProductModal({ product, onClose, onUpdated, onDelete
     stock: product.stock || '',
     categoria: product.categoria || 'General',
     descripcion: product.descripcion || '',
-    imagenUrl: product.imagen_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&auto=format&fit=crop&q=80'
+    imagenUrl: product.imagen_url || ''
   })
 
   const [imgMode, setImgMode] = useState('subir')

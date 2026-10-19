@@ -16,6 +16,7 @@ const {
   getClientes,
   getFinanzas,
   createExpense,
+  setSalesGoal,
   generateMarketing,
   generateProductImage,
   getMarketingPosts,
@@ -44,6 +45,7 @@ router.post('/notificaciones/leidas', verifyToken, marcarNotificacionesLeidas)
 router.get('/clientes', verifyToken, getClientes)
 router.get('/finanzas', verifyToken, getFinanzas)
 router.post('/gastos', verifyToken, createExpense)
+router.put('/finanzas/meta', verifyToken, setSalesGoal)
 router.post('/marketing/generar', verifyToken, generateMarketing)
 router.get('/marketing/publicaciones', verifyToken, getMarketingPosts)
 router.post('/marketing/publicaciones', verifyToken, saveMarketingPost)

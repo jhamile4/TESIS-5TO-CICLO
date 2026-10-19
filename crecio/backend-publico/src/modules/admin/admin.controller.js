@@ -192,6 +192,14 @@ const disconnectSocialAccount = async (req, res, next) => {
   }
 }
 
+const setSalesGoal = async (req, res, next) => {
+  try {
+    res.json(await adminService.setSalesGoal(req.user.id, req.body.meta))
+  } catch (error) {
+    next(error)
+  }
+}
+
 const getMetaAuthUrl = async (req, res, next) => {
   try {
     const redirectUri = req.query.redirectUri || `${process.env.PANEL_URL || 'http://localhost:5174'}/configuracion`
@@ -236,6 +244,7 @@ module.exports = {
   getClientes,
   getFinanzas,
   createExpense,
+  setSalesGoal,
   generateMarketing,
   generateProductImage,
   getMarketingPosts,

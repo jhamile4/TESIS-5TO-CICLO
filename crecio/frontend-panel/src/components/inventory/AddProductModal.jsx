@@ -11,7 +11,7 @@ export default function AddProductModal({ onClose, onCreated }) {
     stock: '',
     categoria: '',
     descripcion: '',
-    imagenUrl: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&auto=format&fit=crop&q=80'
+    imagenUrl: ''
   })
 
   // Image mode state
@@ -138,7 +138,7 @@ export default function AddProductModal({ onClose, onCreated }) {
         {/* AI Image Creation Box */}
         <div className="ai-image-preview-block">
           <div className="img-preview-box">
-            <img src={form.imagenUrl} alt="Preview" />
+            {form.imagenUrl ? <img src={form.imagenUrl} alt="Preview" /> : <div style={{ height: '100%', minHeight: '160px', display: 'grid', placeItems: 'center', background: '#f1f5f9', color: '#94a3b8', fontSize: '12px', textAlign: 'center', padding: '12px' }}>Sube una foto o genérala con IA</div>}
 
             {generatingAi && (
               <div className="ai-loading-overlay">

@@ -124,7 +124,8 @@ export default function FinanceTopRow({ summary, isMonth }) {
         </div>
         <div style={{ width: '100%', height: '4px', background: '#f1f5f9', borderRadius: '2px', overflow: 'hidden' }}>
           <div style={{
-            width: netProfit >= 0 ? '70%' : '30%',
+            // Margen real: qué parte de lo vendido queda como ganancia
+            width: `${Math.max(4, Math.min(100, Math.abs(Number(summary?.ingresos_hoy) > 0 ? (netProfit / Number(summary.ingresos_hoy)) * 100 : 0)))}%`,
             height: '100%',
             background: netProfit >= 0 ? '#10b981' : '#ef4444'
           }}></div>

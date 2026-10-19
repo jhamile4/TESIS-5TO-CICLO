@@ -1,7 +1,12 @@
-import { Calendar, ShieldCheck, Package, DollarSign } from 'lucide-react'
+import { useState } from 'react'
+import { Calendar, ShieldCheck, Package, DollarSign, Pencil } from 'lucide-react'
 import { currency } from '../../utils/formatters'
 
-export default function FinanceGoalsRow({ summary, isMonth }) {
+export default function FinanceGoalsRow({ summary, isMonth, onGuardarMeta }) {
+  const [editandoMeta, setEditandoMeta] = useState(false)
+  const [metaInput, setMetaInput] = useState('')
+  const [guardando, setGuardando] = useState(false)
+
   if (!isMonth) {
     // Vista Caja del Día
     const ingresosHoy = Number(summary?.ingresos_hoy || 0)
@@ -88,65 +93,112 @@ export default function FinanceGoalsRow({ summary, isMonth }) {
     )
   }
 
-  // Vista Resumen Mensual
+  // Vista Resumen Mensual: todo sale de las ventas y gastos reales del mes
   const actualVentas = Number(summary?.ingresos_mes ?? 0)
-  const metaVentas = 80000
-  const pctVentas = Math.min(100, Math.round((actualVentas / metaVentas) * 100))
+  const gastosMes = Number(summary?.gastos_mes ?? 0)
+  const operacionesMes = Number(summary?.operaciones_mes ?? 0)
+  const metaVentas = Number(summary?.meta_ventas_mes ?? 0)
+  const tieneMeta = metaVentas > 0
+  const pctVentas = tieneMeta ? Math.min(100, Math.round((actualVentas / metaVentas) * 100)) : 0
   const remanenteVentas = Math.max(0, metaVentas - actualVentas)
+  const ganancia = actualVentas - gastosMes
+  const margen = actualVentas > 0 ? Math.round((ganancia / actualVentas) * 100) : 0
+  const ticketPromedio = operacionesMes > 0 ? actualVentas / operacionesMes : 0
+
+  const guardar = async () => {
+    setGuardando(true)
+    try {
+      await onGuardarMeta(Number(metaInput) || 0)
+      setEditandoMeta(false)
+    } catch (err) {
+      alert(err.message)
+    } finally {
+      setGuardando(false)
+    }
+  }
 
   return (
     <div className="fin-goals-grid">
-      {/* Card 1: Meta de Ventas Mensual */}
+      {/* Card 1: Meta de Ventas Mensual (la define el dueño) */}
       <div className="fin-card fin-goal-card">
         <div className="fin-goal-header">
           <div>
             <h3 className="fin-card-title">Meta de Ventas Mensual</h3>
             <p className="fin-card-subtitle">
-              Objetivo: Generar S/ 80,000 en ventas netas antes del fin de mes.
+              {tieneMeta ? `Objetivo: ${currency.format(metaVentas)} en ventas este mes.` : 'Aún no defines una meta para este mes.'}
             </p>
           </div>
-          <span className="fin-badge badge-teal">En Progreso</span>
+          {!editandoMeta && (
+            <button
+              type="button"
+              className="fin-badge badge-teal"
+              style={{ border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+              onClick={() => { setMetaInput(tieneMeta ? String(metaVentas) : ''); setEditandoMeta(true) }}
+            >
+              <Pencil size={11} /> {tieneMeta ? 'Cambiar' : 'Definir meta'}
+            </button>
+          )}
         </div>
 
-        <div className="fin-goal-body">
-          <div className="radial-progress-wrapper">
-            <svg className="radial-progress-svg" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="40" className="radial-bg" strokeWidth="8" />
-              <circle
-                cx="50"
-                cy="50"
-                r="40"
-                className="radial-bar"
-                strokeWidth="8"
-                strokeDasharray={`${pctVentas * 2.51} 251`}
-                transform="rotate(-90 50 50)"
-              />
-            </svg>
-            <div className="radial-text">
-              <strong className="radial-pct">{pctVentas}%</strong>
-              <span className="radial-label">LOGRADO</span>
-            </div>
+        {editandoMeta ? (
+          <div style={{ display: 'flex', gap: '8px', marginTop: '14px', alignItems: 'center' }}>
+            <span style={{ fontWeight: 700, color: '#475569' }}>S/</span>
+            <input
+              type="number"
+              min="0"
+              step="100"
+              value={metaInput}
+              onChange={(e) => setMetaInput(e.target.value)}
+              placeholder="Ej: 5000"
+              autoFocus
+              style={{ flex: 1, padding: '8px 10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+            />
+            <button type="button" className="btn-ui-primary" onClick={guardar} disabled={guardando}>
+              {guardando ? 'Guardando...' : 'Guardar'}
+            </button>
+            <button type="button" className="btn-ui-outline" onClick={() => setEditandoMeta(false)}>Cancelar</button>
           </div>
+        ) : (
+          <div className="fin-goal-body">
+            <div className="radial-progress-wrapper">
+              <svg className="radial-progress-svg" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" className="radial-bg" strokeWidth="8" />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  className="radial-bar"
+                  strokeWidth="8"
+                  strokeDasharray={`${pctVentas * 2.51} 251`}
+                  transform="rotate(-90 50 50)"
+                />
+              </svg>
+              <div className="radial-text">
+                <strong className="radial-pct">{tieneMeta ? `${pctVentas}%` : '—'}</strong>
+                <span className="radial-label">LOGRADO</span>
+              </div>
+            </div>
 
-          <div className="goal-stats-col">
-            <div className="stat-box">
-              <span className="stat-box-label">Actual</span>
-              <strong className="stat-box-val">{currency.format(actualVentas)}</strong>
-            </div>
-            <div className="stat-box">
-              <span className="stat-box-label">Remanente</span>
-              <strong className="stat-box-val">{currency.format(remanenteVentas)}</strong>
+            <div className="goal-stats-col">
+              <div className="stat-box">
+                <span className="stat-box-label">Vendido</span>
+                <strong className="stat-box-val">{currency.format(actualVentas)}</strong>
+              </div>
+              <div className="stat-box">
+                <span className="stat-box-label">Falta</span>
+                <strong className="stat-box-val">{tieneMeta ? currency.format(remanenteVentas) : '—'}</strong>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         <div className="fin-goal-footer">
           <Calendar size={13} />
-          <span>Resumen de metas del mes en curso</span>
+          <span>Mes en curso · ventas pagadas</span>
         </div>
       </div>
 
-      {/* Card 2: Fondo de Emergencia */}
+      {/* Card 2: Ganancia del mes */}
       <div className="fin-card fin-goal-card flex-between-card">
         <div>
           <div className="fin-goal-icon-header">
@@ -154,28 +206,28 @@ export default function FinanceGoalsRow({ summary, isMonth }) {
               <ShieldCheck size={18} />
             </div>
             <div className="goal-title-flex">
-              <h3 className="fin-card-title">Fondo de Emergencia</h3>
-              <p className="fin-card-subtitle">Reserva acumulada para contingencias.</p>
+              <h3 className="fin-card-title">Ganancia del Mes</h3>
+              <p className="fin-card-subtitle">Ventas pagadas menos gastos registrados.</p>
             </div>
           </div>
 
           <div className="emergency-fund-content">
             <div className="progress-label-row">
-              <span className="prog-title">Progreso</span>
-              <span className="prog-pct-green">42%</span>
+              <span className="prog-title">Margen</span>
+              <span className="prog-pct-green" style={{ color: ganancia < 0 ? '#ef4444' : undefined }}>{margen}%</span>
             </div>
             <div className="fin-progress-bar-track">
-              <div className="fin-progress-bar-fill green" style={{ width: '42%' }}></div>
+              <div className="fin-progress-bar-fill green" style={{ width: `${Math.max(0, Math.min(100, margen))}%` }}></div>
             </div>
             <div className="emergency-val-row">
-              <strong className="emerg-curr">S/ 4,200</strong>
-              <span className="emerg-target">Meta: S/ 10,000</span>
+              <strong className="emerg-curr" style={{ color: ganancia < 0 ? '#ef4444' : undefined }}>{currency.format(ganancia)}</strong>
+              <span className="emerg-target">Gastos: {currency.format(gastosMes)}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Card 3: Expansión de Inventario */}
+      {/* Card 3: Ticket promedio */}
       <div className="fin-card fin-goal-card flex-between-card">
         <div>
           <div className="fin-goal-icon-header">
@@ -183,29 +235,24 @@ export default function FinanceGoalsRow({ summary, isMonth }) {
               <Package size={18} />
             </div>
             <div className="goal-title-flex">
-              <h3 className="fin-card-title">Expansión de Inventario</h3>
-              <p className="fin-card-subtitle">Adquisición acumulada en el mes.</p>
+              <h3 className="fin-card-title">Ticket Promedio</h3>
+              <p className="fin-card-subtitle">Cuánto gasta en promedio cada cliente por compra.</p>
             </div>
-            <span className="fin-badge badge-teal">Casi Completado</span>
           </div>
 
           <div className="inventory-expansion-content">
-            <div className="fin-progress-bar-track">
-              <div className="fin-progress-bar-fill teal" style={{ width: '90%' }}></div>
-            </div>
-
             <div className="expansion-three-stats">
               <div className="exp-stat-col">
-                <span className="exp-label">Estado</span>
-                <strong className="exp-val">En proceso</strong>
+                <span className="exp-label">Promedio</span>
+                <strong className="exp-val teal-text">{currency.format(ticketPromedio)}</strong>
               </div>
               <div className="exp-stat-col">
-                <span className="exp-label">Invertido</span>
-                <strong className="exp-val teal-text">S/ 18,000</strong>
+                <span className="exp-label">Ventas</span>
+                <strong className="exp-val">{operacionesMes}</strong>
               </div>
               <div className="exp-stat-col">
-                <span className="exp-label">Meta final</span>
-                <strong className="exp-val">S/ 20,000</strong>
+                <span className="exp-label">Total</span>
+                <strong className="exp-val">{currency.format(actualVentas)}</strong>
               </div>
             </div>
           </div>

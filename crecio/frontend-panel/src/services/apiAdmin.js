@@ -62,6 +62,7 @@ export const actualizarEstadoPedido = (id, estado) => request(`/admin/ventas/${i
 
 export const getClientes = () => request('/admin/clientes')
 export const getFinanzas = () => request('/admin/finanzas')
+export const guardarMetaVentas = (meta) => request('/admin/finanzas/meta', { method: 'PUT', body: JSON.stringify({ meta }) })
 export const crearGasto = (gasto) => request('/admin/gastos', { method: 'POST', body: JSON.stringify(gasto) })
 export const generarMarketing = (contenido) => request('/admin/marketing/generar', {
   method: 'POST',

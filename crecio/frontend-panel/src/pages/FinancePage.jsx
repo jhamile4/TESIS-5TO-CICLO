@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getFinanzas } from '../services/apiAdmin'
+import { getFinanzas, guardarMetaVentas } from '../services/apiAdmin'
 
 import FinanceHeader from '../components/finance/FinanceHeader'
 import FinancePeriodTabs from '../components/finance/FinancePeriodTabs'
@@ -34,6 +34,11 @@ export default function FinancePage() {
     loadData()
   }, [])
 
+  const guardarMeta = async (meta) => {
+    await guardarMetaVentas(meta)
+    loadData()
+  }
+
   const summary = data?.resumen || {}
   const isMonth = period === 'month'
 
@@ -61,7 +66,7 @@ export default function FinancePage() {
         <>
           <FinanceMetricsMonthly summary={summary} />
           <FinanceChart data={data} />
-          <FinanceGoalsRow summary={summary} isMonth={true} />
+          <FinanceGoalsRow summary={summary} isMonth={true} onGuardarMeta={guardarMeta} />
           <FinanceBreakdownRowMonthly summary={summary} />
         </>
       )}
