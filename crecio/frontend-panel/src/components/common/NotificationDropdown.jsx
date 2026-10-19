@@ -1,55 +1,27 @@
-import { useState, useRef, useEffect } from 'react'
-import { ShoppingBag, Package, DollarSign, Sparkles } from 'lucide-react'
+import { useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ShoppingBag, Package, Star } from 'lucide-react'
 
-export default function NotificationDropdown({ isOpen, onClose }) {
+const TIPOS = {
+  pedido: { icon: ShoppingBag, iconBg: '#e6fffa', iconColor: '#0d9488', tag: 'Pedidos' },
+  resena: { icon: Star,        iconBg: '#fefce8', iconColor: '#ca8a04', tag: 'Reseñas' },
+  stock:  { icon: Package,     iconBg: '#fff7ed', iconColor: '#f97316', tag: 'Inventario' },
+}
+
+const hace = (fecha) => {
+  if (!fecha) return 'Ahora'
+  const min = Math.max(0, Math.floor((Date.now() - new Date(fecha).getTime()) / 60000))
+  if (min < 1) return 'Ahora'
+  if (min < 60) return `${min} min`
+  const horas = Math.floor(min / 60)
+  if (horas < 24) return `${horas} h`
+  const dias = Math.floor(horas / 24)
+  return dias === 1 ? 'Ayer' : `${dias} días`
+}
+
+export default function NotificationDropdown({ isOpen, onClose, notificaciones, noLeidas, onMarcarLeidas }) {
   const dropdownRef = useRef(null)
-
-  const notifications = [
-    {
-      id: 1,
-      type: 'order',
-      icon: ShoppingBag,
-      iconBg: '#e6fffa',
-      iconColor: '#0d9488',
-      text: 'Nueva orden recibida: ORD-009 por S/ 189.00',
-      time: '2 min',
-      tag: 'Órdenes',
-      unread: true,
-    },
-    {
-      id: 2,
-      type: 'inventory',
-      icon: Package,
-      iconBg: '#fff7ed',
-      iconColor: '#f97316',
-      text: 'Stock bajo: Botella Térmica (3 unidades restantes)',
-      time: '15 min',
-      tag: 'Inventario',
-      unread: true,
-    },
-    {
-      id: 3,
-      type: 'finance',
-      icon: DollarSign,
-      iconBg: '#f0fdf4',
-      iconColor: '#16a34a',
-      text: 'Pago confirmado: ORD-007 por S/ 245.00',
-      time: '1 h',
-      tag: 'Finanzas',
-      unread: false,
-    },
-    {
-      id: 4,
-      type: 'marketing',
-      icon: Sparkles,
-      iconBg: '#fdf2f8',
-      iconColor: '#ec4899',
-      text: "Campaña 'Promoción Verano' alcanzó 500 impresiones",
-      time: '3 h',
-      tag: 'Marketing IA',
-      unread: false,
-    },
-  ]
+  const navigate = useNavigate()
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -68,39 +40,54 @@ export default function NotificationDropdown({ isOpen, onClose }) {
 
   if (!isOpen) return null
 
+  const abrir = (n) => {
+    onClose()
+    navigate(n.link)
+  }
+
   return (
     <div className="notif-dropdown-popover" ref={dropdownRef}>
       <div className="notif-header">
         <h4>Notificaciones</h4>
-        <button className="notif-mark-all">Marcar todo</button>
+        {noLeidas > 0 && (
+          <button className="notif-mark-all" onClick={onMarcarLeidas}>Marcar todo como leído</button>
+        )}
       </div>
 
       <div className="notif-list">
-        {notifications.map((n) => {
-          const Icon = n.icon
+        {notificaciones.length === 0 && (
+          <p className="notif-text" style={{ padding: '24px 16px', textAlign: 'center', color: '#94a3b8' }}>
+            No tienes notificaciones por ahora.
+          </p>
+        )}
+        {notificaciones.map((n) => {
+          const tipo = TIPOS[n.tipo] || TIPOS.pedido
+          const Icon = tipo.icon
+          const unread = !n.leida
           return (
-            <div key={n.id} className={`notif-item ${n.unread ? 'unread' : ''}`}>
+            <div
+              key={n.id}
+              className={`notif-item ${unread ? 'unread' : ''}`}
+              onClick={() => abrir(n)}
+              style={{ cursor: 'pointer' }}
+            >
               <div
                 className="notif-icon-circle"
-                style={{ backgroundColor: n.iconBg, color: n.iconColor }}
+                style={{ backgroundColor: tipo.iconBg, color: tipo.iconColor }}
               >
-                {Icon && <Icon size={16} />}
+                <Icon size={16} />
               </div>
               <div className="notif-content">
-                <p className="notif-text">{n.text}</p>
+                <p className="notif-text">{n.texto}</p>
                 <div className="notif-meta">
-                  <span className="notif-time">{n.time}</span>
-                  <span className="notif-tag">{n.tag}</span>
+                  <span className="notif-time">{n.tipo === 'stock' ? 'Alerta activa' : hace(n.fecha)}</span>
+                  <span className="notif-tag">{tipo.tag}</span>
                 </div>
               </div>
-              {n.unread && <span className="notif-unread-dot" />}
+              {unread && n.tipo !== 'stock' && <span className="notif-unread-dot" />}
             </div>
           )
         })}
-      </div>
-
-      <div className="notif-footer">
-        <button className="notif-view-all">Ver todas</button>
       </div>
     </div>
   )

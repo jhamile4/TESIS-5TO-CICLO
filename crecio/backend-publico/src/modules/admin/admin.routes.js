@@ -11,6 +11,8 @@ const {
   getVentas,
   createSale,
   updateOrderStatus,
+  getNotificaciones,
+  marcarNotificacionesLeidas,
   getClientes,
   getFinanzas,
   createExpense,
@@ -35,6 +37,8 @@ router.put('/tienda', verifyToken, updateTienda)
 router.get('/ventas', verifyToken, getVentas)
 router.post('/ventas', verifyToken, createSale)
 router.put('/ventas/:id/estado', verifyToken, updateOrderStatus)
+router.get('/notificaciones', verifyToken, getNotificaciones)
+router.post('/notificaciones/leidas', verifyToken, marcarNotificacionesLeidas)
 router.get('/clientes', verifyToken, getClientes)
 router.get('/finanzas', verifyToken, getFinanzas)
 router.post('/gastos', verifyToken, createExpense)

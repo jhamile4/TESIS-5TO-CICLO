@@ -287,6 +287,63 @@ const updateOrderStatus = async (clienteId, pedidoId, nuevoEstado) => {
   return actualizado
 }
 
+const getNotificaciones = async (clienteId) => {
+  const negocioResult = await repository.findBusinessByOwner(clienteId)
+  if (negocioResult.rows.length === 0) {
+    throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
+  }
+  const negocioId = negocioResult.rows[0].pk_id
+
+  const [pedidos, resenas, stockBajo] = await Promise.all([
+    repository.getOrderNotifications(negocioId),
+    repository.getReviewNotifications(negocioId),
+    repository.getLowStockProducts(negocioId),
+  ])
+
+  const eventos = [
+    ...pedidos.rows.map((p) => ({
+      id: `pedido-${p.pk_id}`,
+      tipo: 'pedido',
+      texto: `Nuevo pedido #${p.numero_pedido} por S/ ${Number(p.monto_total).toFixed(2)} · ${p.tipo_entrega === 'recojo' ? 'recojo en tienda' : 'delivery'}`,
+      fecha: p.created_at,
+      leida: p.leida,
+      link: '/ventas',
+    })),
+    ...resenas.rows.map((r) => ({
+      id: `resena-${r.pk_id}`,
+      tipo: 'resena',
+      texto: `${r.nombre_autor} te dejó una reseña de ${r.estrellas} ${r.estrellas === 1 ? 'estrella' : 'estrellas'}`,
+      fecha: r.created_at,
+      leida: r.leida,
+      link: '/tienda',
+    })),
+  ].sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+
+  // El stock bajo es una alerta vigente, no un evento: se muestra mientras dure y no cuenta como no leída
+  const alertas = stockBajo.rows.map((p) => ({
+    id: `stock-${p.pk_id}`,
+    tipo: 'stock',
+    texto: p.stock === 0 ? `Sin stock: ${p.nombre}` : `Stock bajo: ${p.nombre} (${p.stock} ${p.stock === 1 ? 'unidad' : 'unidades'})`,
+    fecha: null,
+    leida: false,
+    link: '/inventario',
+  }))
+
+  return {
+    noLeidas: eventos.filter((e) => !e.leida).length,
+    notificaciones: [...alertas, ...eventos],
+  }
+}
+
+const marcarNotificacionesLeidas = async (clienteId) => {
+  const negocioResult = await repository.findBusinessByOwner(clienteId)
+  if (negocioResult.rows.length === 0) {
+    throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
+  }
+  await repository.markNotificationsRead(negocioResult.rows[0].pk_id)
+  return { message: 'Notificaciones marcadas como leídas' }
+}
+
 const getClientes = async (clienteId) => {
   const negocioResult = await repository.findBusinessByOwner(clienteId)
   if (negocioResult.rows.length === 0) {
@@ -708,6 +765,8 @@ module.exports = {
   getVentas,
   createSale,
   updateOrderStatus,
+  getNotificaciones,
+  marcarNotificacionesLeidas,
   getClientes,
   getFinanzas,
   createExpense,

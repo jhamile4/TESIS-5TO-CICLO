@@ -162,6 +162,46 @@ const updateOrderStatus = (dbClient, pedidoId, estadoPedido, estadoPago) =>
     [estadoPedido, estadoPago, pedidoId]
   )
 
+// Notificaciones: se calculan de los datos; "leída" = anterior a la última vez que el dueño las marcó
+const getOrderNotifications = (negocioId) =>
+  pool.query(
+    `SELECT pp.pk_id, pp.numero_pedido, pp.monto_total, pp.tipo_entrega, pp.created_at,
+            pp.created_at <= n.notificaciones_leidas_at AS leida
+     FROM pedido_pago pp
+     JOIN negocio n ON n.pk_id = pp.fk_negocio_id
+     WHERE pp.fk_negocio_id = $1
+       AND pp.estado <> 'pendiente'
+       AND pp.numero_pedido NOT LIKE 'VTA-%'
+       AND pp.created_at > NOW() - INTERVAL '30 days'
+     ORDER BY pp.created_at DESC
+     LIMIT 15`,
+    [negocioId]
+  )
+
+const getReviewNotifications = (negocioId) =>
+  pool.query(
+    `SELECT r.pk_id, r.nombre_autor, r.estrellas, r.created_at,
+            r.created_at <= n.notificaciones_leidas_at AS leida
+     FROM resena r
+     JOIN negocio n ON n.pk_id = r.fk_negocio_id
+     WHERE r.fk_negocio_id = $1 AND r.created_at > NOW() - INTERVAL '30 days'
+     ORDER BY r.created_at DESC
+     LIMIT 10`,
+    [negocioId]
+  )
+
+const getLowStockProducts = (negocioId) =>
+  pool.query(
+    `SELECT pk_id, nombre, stock FROM producto
+     WHERE fk_negocio_id = $1 AND activo = TRUE AND stock <= 5
+     ORDER BY stock ASC, nombre
+     LIMIT 10`,
+    [negocioId]
+  )
+
+const markNotificationsRead = (negocioId) =>
+  pool.query('UPDATE negocio SET notificaciones_leidas_at = NOW() WHERE pk_id = $1', [negocioId])
+
 const getClients = (negocioId) =>
   pool.query(
     `SELECT c.pk_id, c.nombre, c.email,
@@ -352,6 +392,10 @@ module.exports = {
   createSale,
   findOrderForUpdate,
   updateOrderStatus,
+  getOrderNotifications,
+  getReviewNotifications,
+  getLowStockProducts,
+  markNotificationsRead,
   getClients,
   getFinanceSummary,
   getFinanceTransactions,

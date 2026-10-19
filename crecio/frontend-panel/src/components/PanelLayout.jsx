@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import NotificationDropdown from './common/NotificationDropdown'
-import { getResumen } from '../services/apiAdmin'
+import { getResumen, getNotificaciones, marcarNotificacionesLeidas } from '../services/apiAdmin'
 import { PUBLIC_URL } from '../config/env'
 
 const titles = {
@@ -26,12 +26,29 @@ export default function PanelLayout() {
   const location = useLocation()
   const [business, setBusiness] = useState(null)
   const [showNotifs, setShowNotifs] = useState(false)
+  const [notifs, setNotifs] = useState({ noLeidas: 0, notificaciones: [] })
 
   useEffect(() => {
     getResumen()
       .then((result) => setBusiness(result.negocio))
       .catch(() => {})
   }, [])
+
+  // Revisa nuevas notificaciones cada 30 s (pedidos nuevos, reseñas, stock bajo)
+  useEffect(() => {
+    const cargar = () => getNotificaciones().then(setNotifs).catch(() => {})
+    cargar()
+    const intervalo = setInterval(cargar, 30000)
+    return () => clearInterval(intervalo)
+  }, [])
+
+  const marcarLeidas = () => {
+    setNotifs((prev) => ({
+      noLeidas: 0,
+      notificaciones: prev.notificaciones.map((n) => ({ ...n, leida: true })),
+    }))
+    marcarNotificacionesLeidas().catch(() => {})
+  }
 
   return (
     <div className="panel-shell">
@@ -57,17 +74,22 @@ export default function PanelLayout() {
 
             <div className="notif-wrapper">
               <button
-                className="icon-button notification"
+                className={`icon-button ${notifs.noLeidas > 0 ? 'notification' : ''}`}
                 onClick={() => setShowNotifs(!showNotifs)}
                 title="Notificaciones"
               >
                 <Bell size={19} />
-                <span className="notif-badge-count">7</span>
+                {notifs.noLeidas > 0 && (
+                  <span className="notif-badge-count">{notifs.noLeidas > 9 ? '9+' : notifs.noLeidas}</span>
+                )}
               </button>
 
               <NotificationDropdown
                 isOpen={showNotifs}
                 onClose={() => setShowNotifs(false)}
+                notificaciones={notifs.notificaciones}
+                noLeidas={notifs.noLeidas}
+                onMarcarLeidas={marcarLeidas}
               />
             </div>
           </div>

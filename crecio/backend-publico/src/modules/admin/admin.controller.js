@@ -62,6 +62,22 @@ const updateOrderStatus = async (req, res, next) => {
   }
 }
 
+const getNotificaciones = async (req, res, next) => {
+  try {
+    res.json(await adminService.getNotificaciones(req.user.id))
+  } catch (error) {
+    next(error)
+  }
+}
+
+const marcarNotificacionesLeidas = async (req, res, next) => {
+  try {
+    res.json(await adminService.marcarNotificacionesLeidas(req.user.id))
+  } catch (error) {
+    next(error)
+  }
+}
+
 const getClientes = async (req, res, next) => {
   try {
     const clientes = await adminService.getClientes(req.user.id)
@@ -199,6 +215,8 @@ module.exports = {
   getVentas,
   createSale,
   updateOrderStatus,
+  getNotificaciones,
+  marcarNotificacionesLeidas,
   getClientes,
   getFinanzas,
   createExpense,

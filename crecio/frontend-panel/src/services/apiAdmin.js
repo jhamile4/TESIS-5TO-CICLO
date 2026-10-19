@@ -42,6 +42,9 @@ export const cambiarPassword = (actual, nueva) => request('/auth/contrasena', {
   body: JSON.stringify({ actual, nueva }),
 })
 
+export const getNotificaciones = () => request('/admin/notificaciones')
+export const marcarNotificacionesLeidas = () => request('/admin/notificaciones/leidas', { method: 'POST' })
+
 export const getResumen = () => request('/admin/resumen')
 export const getInventario = () => request('/admin/inventario')
 export const getTienda = () => request('/admin/tienda')
