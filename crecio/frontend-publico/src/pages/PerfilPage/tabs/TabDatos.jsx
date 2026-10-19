@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import CambiarPassword from '../components/CambiarPassword'
 
 const formatFecha = (iso) => new Date(iso).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
 
@@ -100,6 +101,8 @@ function TabDatos({ perfil, onGuardar, onCerrarSesion }) {
           </div>
         </div>
       </div>
+
+      <CambiarPassword />
 
       {/* Direcciones */}
       <div className="bg-white rounded-2xl border border-[#E5E7EB] p-6">

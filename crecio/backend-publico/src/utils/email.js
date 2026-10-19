@@ -29,6 +29,27 @@ const enviarCodigoVerificacion = async (destinatario, codigo) => {
   })
 }
 
+const enviarCodigoRecuperacion = async (destinatario, codigo) => {
+  await transporter.sendMail({
+    from: `"CRECIO" <${process.env.EMAIL_USER}>`,
+    to: destinatario,
+    subject: 'Recupera tu contraseña de CRECIO',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 32px;">
+        <h2 style="color: #00B894; margin-bottom: 8px;">Recupera tu contraseña</h2>
+        <p style="color: #4A5568;">Recibimos una solicitud para cambiar la contraseña de tu cuenta. Usa este código:</p>
+        <div style="background: #F0FFF4; border: 2px solid #00B894; border-radius: 12px; padding: 28px; text-align: center; margin: 24px 0;">
+          <span style="font-size: 40px; font-weight: bold; letter-spacing: 10px; color: #00B894;">${codigo}</span>
+        </div>
+        <p style="color: #718096; font-size: 14px;">Este código expira en <strong>15 minutos</strong>.</p>
+        <p style="color: #718096; font-size: 14px;">Si no lo pediste, ignora este correo: tu contraseña no cambiará.</p>
+        <hr style="border: none; border-top: 1px solid #E2E8F0; margin: 24px 0;" />
+        <p style="color: #A0AEC0; font-size: 12px;">CRECIO - Plataforma de negocios locales</p>
+      </div>
+    `,
+  })
+}
+
 const MENSAJES_ESTADO = {
   preparando:   { titulo: 'Estamos preparando tu pedido', texto: 'El negocio ya está alistando tus productos.' },
   en_camino:    { titulo: 'Tu pedido va en camino',       texto: 'El negocio ya envió tu pedido a la dirección indicada.' },
@@ -58,4 +79,4 @@ const enviarEstadoPedido = async (destinatario, { cliente, negocio, numeroPedido
   })
 }
 
-module.exports = { enviarCodigoVerificacion, enviarEstadoPedido }
+module.exports = { enviarCodigoVerificacion, enviarCodigoRecuperacion, enviarEstadoPedido }

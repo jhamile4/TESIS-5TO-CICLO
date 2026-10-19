@@ -7,6 +7,7 @@ import LoginPage        from './pages/LoginPage/index.jsx'
 import VerificacionPage from './pages/VerificacionPage/index.jsx'
 import PerfilPage       from './pages/PerfilPage/index.jsx'
 import PagarPlanPage    from './pages/PagarPlanPage/index.jsx'
+import RecuperarPage    from './pages/RecuperarPage/index.jsx'
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/verificar"   element={<VerificacionPage />} />
         <Route path="/perfil"      element={<PerfilPage />}       />
         <Route path="/pagar-plan"  element={<PagarPlanPage />}    />
+        <Route path="/recuperar"   element={<RecuperarPage />}    />
       </Routes>
     </BrowserRouter>
   )

@@ -77,7 +77,28 @@ const verificarEmail = async (req, res, next) => {
   } catch (err) { next(err) }
 }
 
+const solicitarRecuperacion = async (req, res, next) => {
+  try {
+    res.json(await authService.solicitarRecuperacion(req.body.email))
+  } catch (err) { next(err) }
+}
+
+const restablecerPassword = async (req, res, next) => {
+  try {
+    const { email, codigo, nueva } = req.body
+    res.json(await authService.restablecerPassword(email, codigo, nueva))
+  } catch (err) { next(err) }
+}
+
+const cambiarPassword = async (req, res, next) => {
+  try {
+    const { actual, nueva } = req.body
+    res.json(await authService.cambiarPassword(req.user.id, actual, nueva))
+  } catch (err) { next(err) }
+}
+
 module.exports = {
   register, login, registroCompleto, registroComprador,
   verificarComprador, reenviarCodigo, verificarEmail, getSession, logout,
+  solicitarRecuperacion, restablecerPassword, cambiarPassword,
 }

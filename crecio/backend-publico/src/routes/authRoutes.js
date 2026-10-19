@@ -10,6 +10,9 @@ const {
   reenviarCodigo,
   verificarEmail,
   getSession,
+  solicitarRecuperacion,
+  restablecerPassword,
+  cambiarPassword,
   logout,
 } = require('../controllers/authController')
 
@@ -22,5 +25,8 @@ router.post('/registro-comprador',   registroComprador)
 router.post('/verificar-comprador',  verificarComprador)
 router.post('/reenviar-codigo',      reenviarCodigo)
 router.post('/verificar',            verificarEmail)
+router.post('/recuperar',            solicitarRecuperacion)
+router.post('/restablecer',          restablecerPassword)
+router.put('/contrasena',            verifyToken, cambiarPassword)
 
 module.exports = router

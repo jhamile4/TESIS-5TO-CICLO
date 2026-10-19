@@ -3,7 +3,7 @@ const jwt    = require('jsonwebtoken')
 const pool   = require('../config/db')
 const clienteModel = require('../models/clienteModel')
 const negocioModel = require('../models/negocioModel')
-const { enviarCodigoVerificacion } = require('../utils/email')
+const { enviarCodigoVerificacion, enviarCodigoRecuperacion } = require('../utils/email')
 
 const geocodificar = async (direccion) => {
   try {
@@ -163,6 +163,67 @@ const reenviarCodigo = async (email) => {
   return { message: 'Código reenviado' }
 }
 
+const MIN_PASSWORD = 6
+const MAX_INTENTOS_CODIGO = 5
+const intentosFallidos = new Map() // email → intentos fallidos con el código actual
+
+// Siempre responde lo mismo, exista o no la cuenta, para no revelar qué correos están registrados
+const solicitarRecuperacion = async (email) => {
+  const correo = (email || '').trim()
+  if (!correo) throw { status: 400, message: 'Ingresa tu correo' }
+
+  const result = await clienteModel.findByEmail(correo)
+  if (result.rows.length > 0) {
+    const { codigo, expira } = generarCodigo()
+    await clienteModel.updateCodigo(correo, codigo, expira)
+    intentosFallidos.delete(correo)
+    await enviarCodigoRecuperacion(correo, codigo)
+  }
+  return { message: 'Si el correo está registrado, te enviamos un código para recuperar tu contraseña.' }
+}
+
+const restablecerPassword = async (email, codigo, nueva) => {
+  const correo = (email || '').trim()
+  if (!nueva || nueva.length < MIN_PASSWORD)
+    throw { status: 400, message: `La nueva contraseña debe tener al menos ${MIN_PASSWORD} caracteres` }
+
+  const cliente = (await clienteModel.findByEmail(correo)).rows[0]
+  const invalido = { status: 400, message: 'El código es incorrecto o ya expiró. Solicita uno nuevo.' }
+  if (!cliente || !cliente.codigo_verificacion || new Date() > new Date(cliente.codigo_expira)) throw invalido
+
+  if (cliente.codigo_verificacion !== String(codigo || '').trim()) {
+    // Tras varios intentos fallidos el código se anula, para que no se pueda adivinar
+    const intentos = (intentosFallidos.get(correo) || 0) + 1
+    if (intentos >= MAX_INTENTOS_CODIGO) {
+      intentosFallidos.delete(correo)
+      await clienteModel.limpiarCodigo(cliente.pk_id)
+      throw { status: 400, message: 'Demasiados intentos. Solicita un código nuevo.' }
+    }
+    intentosFallidos.set(correo, intentos)
+    throw invalido
+  }
+
+  intentosFallidos.delete(correo)
+  await clienteModel.updatePassword(cliente.pk_id, await bcrypt.hash(nueva, 10), true)
+  return { message: 'Contraseña actualizada. Ya puedes iniciar sesión.' }
+}
+
+const cambiarPassword = async (clienteId, actual, nueva) => {
+  if (!actual) throw { status: 400, message: 'Ingresa tu contraseña actual' }
+  if (!nueva || nueva.length < MIN_PASSWORD)
+    throw { status: 400, message: `La nueva contraseña debe tener al menos ${MIN_PASSWORD} caracteres` }
+  if (actual === nueva)
+    throw { status: 400, message: 'La nueva contraseña debe ser distinta a la actual' }
+
+  const result = await clienteModel.findPassword(clienteId)
+  if (result.rows.length === 0) throw { status: 404, message: 'Usuario no encontrado' }
+  if (!(await bcrypt.compare(actual, result.rows[0].password)))
+    throw { status: 400, message: 'La contraseña actual no es correcta' }
+
+  await clienteModel.updatePassword(clienteId, await bcrypt.hash(nueva, 10))
+  return { message: 'Contraseña actualizada' }
+}
+
 const getSessionData = async (clienteId) => {
   const clienteResult = await clienteModel.findById(clienteId)
   if (clienteResult.rows.length === 0) return null
@@ -178,4 +239,7 @@ const getSessionData = async (clienteId) => {
   }
 }
 
-module.exports = { login, register, registroCompleto, registroComprador, verificarEmail, reenviarCodigo, getSessionData }
+module.exports = {
+  login, register, registroCompleto, registroComprador, verificarEmail, reenviarCodigo, getSessionData,
+  solicitarRecuperacion, restablecerPassword, cambiarPassword,
+}

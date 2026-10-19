@@ -53,8 +53,28 @@ const updateNombre = (id, nombre) =>
     [nombre, id]
   )
 
+const findPassword = (id) =>
+  pool.query('SELECT password FROM cliente WHERE pk_id = $1', [id])
+
+// Al cambiar la contraseña se invalida cualquier código pendiente. Si se hizo con un
+// código enviado al correo, también queda probado que el correo es suyo.
+const updatePassword = (id, hash, verificarEmail = false) =>
+  pool.query(
+    `UPDATE cliente
+     SET password = $1, codigo_verificacion = NULL, codigo_expira = NULL,
+         email_verificado = email_verificado OR $3
+     WHERE pk_id = $2`,
+    [hash, id, verificarEmail]
+  )
+
+const limpiarCodigo = (id) =>
+  pool.query('UPDATE cliente SET codigo_verificacion = NULL, codigo_expira = NULL WHERE pk_id = $1', [id])
+
 module.exports = {
   findByEmail,
+  findPassword,
+  updatePassword,
+  limpiarCodigo,
   findById,
   existeEmail,
   createSimple,

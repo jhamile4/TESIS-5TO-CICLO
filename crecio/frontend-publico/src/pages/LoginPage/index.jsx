@@ -262,6 +262,10 @@ function LoginPage() {
                 </button>
               </div>
               {errores.contrasena && <span className="text-xs text-red-500 flex items-center gap-1 mt-1"><i className="ri-error-warning-line" />{errores.contrasena}</span>}
+              <button type="button" onClick={() => navigate(`/recuperar${datos.email ? `?email=${encodeURIComponent(datos.email)}` : ''}`)}
+                className="self-end text-xs font-semibold text-[#0D9488] hover:underline cursor-pointer mt-1">
+                ¿Olvidaste tu contraseña?
+              </button>
             </div>
 
             {errorApi && (

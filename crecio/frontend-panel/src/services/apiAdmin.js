@@ -37,6 +37,11 @@ export const iniciarSesion = async (email, password) => {
   return data
 }
 
+export const cambiarPassword = (actual, nueva) => request('/auth/contrasena', {
+  method: 'PUT',
+  body: JSON.stringify({ actual, nueva }),
+})
+
 export const getResumen = () => request('/admin/resumen')
 export const getInventario = () => request('/admin/inventario')
 export const getTienda = () => request('/admin/tienda')

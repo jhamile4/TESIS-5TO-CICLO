@@ -138,6 +138,25 @@ export const verificarCodigo = async (email, codigo) => {
   return post('/auth/verificar', { email, codigo })
 }
 
+export const solicitarRecuperacion = async (email) => {
+  return post('/auth/recuperar', { email })
+}
+
+export const restablecerPassword = async (email, codigo, nueva) => {
+  return post('/auth/restablecer', { email, codigo, nueva })
+}
+
+export const cambiarPassword = async (actual, nueva, token) => {
+  const res  = await fetch(`${BASE_URL}/auth/contrasena`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ actual, nueva }),
+  })
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.message || 'No se pudo cambiar la contraseña')
+  return data
+}
+
 // ── Comprador (cliente que compra, no dueño de negocio) ──
 export const registrarComprador = async (datos) => {
   return post('/auth/registro-comprador', datos)
