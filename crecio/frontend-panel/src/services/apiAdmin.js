@@ -83,6 +83,7 @@ export const eliminarProducto = (id) => request(`/admin/productos/${id}`, {
   method: 'DELETE',
 })
 export const getPublicacionesMarketing = (estado) => request(`/admin/marketing/publicaciones${estado ? `?estado=${estado}` : ''}`)
+export const cancelarPublicacionMarketing = (id) => request(`/admin/marketing/publicaciones/${id}`, { method: 'DELETE' })
 export const guardarPublicacionMarketing = (postData) => request('/admin/marketing/publicaciones', {
   method: 'POST',
   body: JSON.stringify(postData),

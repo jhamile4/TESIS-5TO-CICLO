@@ -316,7 +316,7 @@ const deleteProduct = (negocioId, productoId) =>
 const getMarketingPosts = (negocioId, estado) => {
   if (estado) {
     return pool.query(
-      `SELECT pk_id, tipo_contenido, plantilla, tono, prompt_usado, caption, guion_video, media_url, plataformas, estado, fecha_programada, fecha_publicada, likes, comments, shares, created_at
+      `SELECT pk_id, tipo_contenido, plantilla, tono, prompt_usado, caption, guion_video, media_url, plataformas, estado, fecha_programada, fecha_publicada, resultado_publicacion, likes, comments, shares, created_at
        FROM publicacion_marketing
        WHERE fk_negocio_id = $1 AND estado = $2
        ORDER BY created_at DESC`,
@@ -324,7 +324,7 @@ const getMarketingPosts = (negocioId, estado) => {
     )
   }
   return pool.query(
-    `SELECT pk_id, tipo_contenido, plantilla, tono, prompt_usado, caption, guion_video, media_url, plataformas, estado, fecha_programada, fecha_publicada, likes, comments, shares, created_at
+    `SELECT pk_id, tipo_contenido, plantilla, tono, prompt_usado, caption, guion_video, media_url, plataformas, estado, fecha_programada, fecha_publicada, resultado_publicacion, likes, comments, shares, created_at
      FROM publicacion_marketing
      WHERE fk_negocio_id = $1
      ORDER BY created_at DESC`,
@@ -352,12 +352,39 @@ const updateMarketingPostStatus = (negocioId, postId, estado, resultadoPublicaci
     [estado, resultadoPublicacion ? JSON.stringify(resultadoPublicacion) : null, postId, negocioId]
   )
 
+// Solo se pueden cancelar las que aún no se publicaron
 const deleteMarketingPost = (negocioId, postId) =>
   pool.query(
     `DELETE FROM publicacion_marketing
-     WHERE pk_id = $1 AND fk_negocio_id = $2
+     WHERE pk_id = $1 AND fk_negocio_id = $2 AND estado IN ('programado', 'fallido')
      RETURNING pk_id`,
     [postId, negocioId]
+  )
+
+// Toma las programadas cuya hora ya llegó y las marca "publicando" en un solo paso,
+// para que dos procesos nunca publiquen la misma dos veces
+const claimDueScheduledPosts = (limite = 10) =>
+  pool.query(
+    `UPDATE publicacion_marketing SET estado = 'publicando'
+     WHERE pk_id IN (
+       SELECT pk_id FROM publicacion_marketing
+       WHERE estado = 'programado' AND fecha_programada <= NOW()
+       ORDER BY fecha_programada
+       LIMIT $1
+       FOR UPDATE SKIP LOCKED
+     )
+     RETURNING pk_id, fk_negocio_id, tipo_contenido, caption, media_url, plataformas`,
+    [limite]
+  )
+
+// Si el servidor se apagó a mitad de una publicación, no se reintenta (podría duplicarse)
+const failStuckPublishingPosts = () =>
+  pool.query(
+    `UPDATE publicacion_marketing
+     SET estado = 'fallido',
+         resultado_publicacion = '{"resultados": [], "errores": [{"plataforma": "general", "error": "Se interrumpió mientras se publicaba. Revisa tus redes antes de volver a programarla."}]}'::jsonb
+     WHERE estado = 'publicando' AND fecha_programada < NOW() - INTERVAL '15 minutes'
+     RETURNING pk_id`
   )
 
 // "vinculada" = tiene token de Meta y se puede publicar en ella (el token nunca se envía al navegador)
@@ -428,6 +455,8 @@ module.exports = {
   createMarketingPost,
   updateMarketingPostStatus,
   deleteMarketingPost,
+  claimDueScheduledPosts,
+  failStuckPublishingPosts,
   getSocialAccounts,
   getSocialTokens,
   deleteSocialAccount,

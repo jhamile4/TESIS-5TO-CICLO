@@ -5,6 +5,10 @@ const PLANES = {
   enterprise_anual: { nombre: 'CRECIO Enterprise Anual', monto: 118800, meses: 12 },
 }
 
+// Modelo de Groq para chatbots y marketing. Groq retira modelos cada cierto tiempo
+// (llama-3.1-8b-instant ya no existe): si pasa, se cambia aquí o con GROQ_MODEL en el .env
+const GROQ_MODEL = process.env.GROQ_MODEL || 'openai/gpt-oss-20b'
+
 const ENVIO_GRATIS_DESDE   = 200
 const COSTO_ENVIO          = 15
 const MAX_HISTORIAL_CHAT   = 6
@@ -15,6 +19,7 @@ const BUSCAR_PRODUCTOS_LIM = 8
 const BUSCAR_NEGOCIOS_LIM  = 4
 
 module.exports = {
+  GROQ_MODEL,
   PLANES,
   ENVIO_GRATIS_DESDE,
   COSTO_ENVIO,

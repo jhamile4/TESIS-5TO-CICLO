@@ -7,6 +7,7 @@ import {
   generarImagenProducto,
   getPublicacionesMarketing,
   guardarPublicacionMarketing,
+  cancelarPublicacionMarketing,
   publicarDirectoMarketing,
   getRedesSociales,
   desconectarRedSocial,
@@ -57,11 +58,11 @@ export default function MarketingPage() {
   const [business, setBusiness] = useState(null)
   const [productos, setProductos] = useState([])
 
-  const [tipo, setTipo] = useState('Detrás de Cámaras')
+  const [tipo, setTipo] = useState('Promoción / Oferta')
   const [tono, setTono] = useState(tones[0])
-  const [contentType, setContentType] = useState('Video')
-  const [prompt, setPrompt] = useState('Comparte un momento detrás de cámaras de tu negocio para humanizar tu marca')
-  const [content, setContent] = useState('🎬 Mira cómo nuestro producto transforma tu día a día. ¡Dale play! Guión generado por IA. #video #viral')
+  const [contentType, setContentType] = useState('Publicación')
+  const [prompt, setPrompt] = useState('')
+  const [content, setContent] = useState('')
   const [guionVideo, setGuionVideo] = useState(null)
   const [uploadedImage, setUploadedImage] = useState(null)
   const [accounts, setAccounts] = useState(cuentasSinConectar)
@@ -98,31 +99,50 @@ export default function MarketingPage() {
 
   const loadPosts = async () => {
     try {
-      const scheduled = await getPublicacionesMarketing('programado')
-      const published = await getPublicacionesMarketing('publicado')
-      if (Array.isArray(scheduled)) {
-        setScheduledPosts(scheduled.map(p => ({
-          id: p.pk_id,
-          image: p.media_url || null,
-          platforms: p.plataformas || [],
-          text: p.caption,
-          date: p.fecha_programada || p.created_at
-        })))
-      }
-      if (Array.isArray(published)) {
-        setPublishedPosts(published.map(p => ({
-          id: p.pk_id,
-          image: p.media_url || null,
-          platforms: p.plataformas || [],
-          text: p.caption,
-          date: p.fecha_publicada || p.created_at,
-          likes: p.likes || 0,
-          comments: p.comments || 0,
-          shares: p.shares || 0
-        })))
-      }
+      const posts = await getPublicacionesMarketing()
+      if (!Array.isArray(posts)) return
+      const pendientes = posts.filter((p) => ['programado', 'publicando', 'fallido'].includes(p.estado))
+      setScheduledPosts(pendientes.map((p) => ({
+        id: p.pk_id,
+        estado: p.estado,
+        image: p.media_url || null,
+        platforms: p.plataformas || [],
+        text: p.caption,
+        date: p.fecha_programada || p.created_at,
+        error: (p.resultado_publicacion?.errores || []).map((e) => `${e.plataforma}: ${e.error}`).join(' · ')
+      })))
+      setPublishedPosts(posts.filter((p) => p.estado === 'publicado').map((p) => ({
+        id: p.pk_id,
+        image: p.media_url || null,
+        platforms: p.plataformas || [],
+        text: p.caption,
+        date: p.fecha_publicada || p.created_at,
+        likes: p.likes || 0,
+        comments: p.comments || 0,
+        shares: p.shares || 0
+      })))
     } catch (err) {}
   }
+
+  // Mientras haya programadas pendientes, se refresca para ver cuando se publican solas
+  const hayPendientes = scheduledPosts.some((p) => p.estado === 'programado' || p.estado === 'publicando')
+  useEffect(() => {
+    if (!hayPendientes) return
+    const intervalo = setInterval(loadPosts, 30000)
+    return () => clearInterval(intervalo)
+  }, [hayPendientes])
+
+  const handleCancelScheduled = async (post) => {
+    const texto = post.estado === 'fallido' ? '¿Quitar esta publicación fallida?' : '¿Cancelar esta publicación programada? Ya no se publicará.'
+    if (!window.confirm(texto)) return
+    try {
+      await cancelarPublicacionMarketing(post.id)
+      await loadPosts()
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
 
   useEffect(() => {
     getResumen()
@@ -220,7 +240,7 @@ export default function MarketingPage() {
         setUploadedImage(res.imageUrl)
       }
     } catch (err) {
-      alert('No se pudo generar la imagen IA. Puedes subir una foto propia o intentarlo de nuevo.')
+      alert(err.message || 'No se pudo generar la imagen IA. Puedes subir una foto propia o intentarlo de nuevo.')
     } finally {
       setLoadingImage(false)
     }
@@ -266,6 +286,15 @@ export default function MarketingPage() {
     if (!content) return
     setPublishing(true)
     try {
+      // La hora elegida es hora local (Perú); se envía con zona horaria para que no se desfase
+      const fechaProgramada = publishMode === 'programar' && scheduleDate && scheduleTime
+        ? new Date(`${scheduleDate}T${scheduleTime}`).toISOString()
+        : null
+      if (publishMode === 'programar' && !fechaProgramada) {
+        alert('Elige la fecha y la hora en que quieres publicar')
+        return
+      }
+
       const payload = {
         tipo,
         tono,
@@ -279,7 +308,8 @@ export default function MarketingPage() {
         platforms: activeAccountsList.map((a) => a.id),
         publishMode,
         scheduleDate,
-        scheduleTime
+        scheduleTime,
+        fechaProgramada
       }
 
       if (publishMode === 'ahora') {
@@ -293,7 +323,7 @@ export default function MarketingPage() {
       } else {
         await guardarPublicacionMarketing(payload)
         await loadPosts()
-        alert('📅 Publicación guardada como programada. Todavía no se publica sola a esa hora: ese día publícala desde "Crear" con "Publicar ahora".')
+        alert(`📅 ¡Listo! Se publicará sola el ${new Date(fechaProgramada).toLocaleString('es-PE', { dateStyle: 'long', timeStyle: 'short' })}.`)
         setActiveMainTab('programadas')
       }
     } catch (err) {
@@ -370,7 +400,7 @@ export default function MarketingPage() {
       )}
 
       {activeMainTab === 'programadas' && (
-        <MarketingScheduledTab scheduledPosts={scheduledPosts} />
+        <MarketingScheduledTab scheduledPosts={scheduledPosts} onCancel={handleCancelScheduled} />
       )}
 
       {activeMainTab === 'publicadas' && (

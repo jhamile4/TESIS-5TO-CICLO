@@ -86,6 +86,20 @@ Anota la URL (por ejemplo `https://crecio-panel.vercel.app`).
 
 ---
 
+## 4.1 Publicaciones programadas (que no se duerma la API)
+
+La API revisa cada minuto si hay publicaciones programadas cuya hora llegó. En el plan gratis
+de Render la API se duerme sin visitas, y dormida no revisa. Para evitarlo:
+
+1. En Render agrega la variable `CRON_SECRET` con un texto largo inventado (mínimo 16 caracteres).
+2. Crea una cuenta gratis en [cron-job.org](https://cron-job.org) y un trabajo nuevo:
+   - **URL:** `https://TU-API.onrender.com/api/tareas/publicaciones-programadas`
+   - **Método:** `POST` · **Frecuencia:** cada 5 minutos
+   - **Cabecera (Header):** `x-cron-secret` = el mismo valor de `CRON_SECRET`
+3. Así la API se despierta y publica lo pendiente (con hasta 5 minutos de diferencia).
+
+---
+
 ## 5. Comprobar que todo funciona
 
 - [ ] La URL de la API muestra el mensaje de bienvenida.

@@ -176,6 +176,14 @@ const generateProductImage = async (req, res, next) => {
   }
 }
 
+const deleteMarketingPost = async (req, res, next) => {
+  try {
+    res.json(await adminService.deleteMarketingPost(req.user.id, req.params.id))
+  } catch (error) {
+    next(error)
+  }
+}
+
 const disconnectSocialAccount = async (req, res, next) => {
   try {
     res.json(await adminService.disconnectSocialAccount(req.user.id, req.params.id))
@@ -236,6 +244,7 @@ module.exports = {
   getSocialAccounts,
   connectSocialAccount,
   disconnectSocialAccount,
+  deleteMarketingPost,
   getMetaAuthUrl,
   handleMetaOAuthCallback,
   connectMetaManualToken,

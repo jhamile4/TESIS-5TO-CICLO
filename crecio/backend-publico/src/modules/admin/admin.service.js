@@ -2,6 +2,7 @@ const pool = require('../../config/db')
 const repository = require('./admin.repository')
 const socialPublisher = require('../../services/socialPublisherService')
 const Groq = require('groq-sdk')
+const { GROQ_MODEL } = require('../../config/constants')
 const productoModel = require('../../models/productoModel')
 const Stripe = require('stripe')
 const { enviarEstadoPedido } = require('../../utils/email')
@@ -434,7 +435,8 @@ CAPTION: [Texto del post para publicar con emojis, llamada a la acción y hashta
 
     try {
       completion = await groq.chat.completions.create({
-        model: 'openai/gpt-oss-20b',
+        model: GROQ_MODEL,
+        reasoning_effort: 'low',
         messages: [
           { role: 'system', content: systemInstruction },
           { role: 'user', content: `Plantilla: ${tipo}. Tono: ${tono}. Productos del catálogo: ${productos || 'disponibles en tienda'}. Solicitud del usuario: "${prompt}". Escribe el guión y caption enfocados con precisión en esta solicitud.` }
@@ -470,7 +472,8 @@ CAPTION: [Texto del post para publicar con emojis, llamada a la acción y hashta
   } else if (contentType === 'Story') {
     try {
       completion = await groq.chat.completions.create({
-        model: 'openai/gpt-oss-20b',
+        model: GROQ_MODEL,
+        reasoning_effort: 'low',
         messages: [
           { role: 'system', content: `Eres un copywriter experto para Instagram Stories y WhatsApp Status de "${negocio.nombre}" (${negocio.categoria || 'negocio'} en Perú). Tono: ${toneInstruction}. Genera un mensaje súper visual, directo al grano (máx 35 palabras), con emojis, precio/beneficio claro y llamado a tocar el sticker o responder al WhatsApp.` },
           { role: 'user', content: `Plantilla: ${tipo}. Tono: ${tono}. Idea: ${prompt}` }
@@ -486,7 +489,8 @@ CAPTION: [Texto del post para publicar con emojis, llamada a la acción y hashta
   } else {
     try {
       completion = await groq.chat.completions.create({
-        model: 'openai/gpt-oss-20b',
+        model: GROQ_MODEL,
+        reasoning_effort: 'low',
         messages: [
           { role: 'system', content: `Eres el community manager y copywriter profesional de "${negocio.nombre}" (${negocio.categoria || 'tienda'} en Perú).
 Tono solicitado: ${toneInstruction}.
@@ -516,7 +520,7 @@ Reglas:
   let mediaUrl = null
   if (generateImage) {
     const mediaGen = await generateProductImage(clienteId, { prompt, categoria: negocio.categoria, mode: 'studio' }).catch(() => ({}))
-    mediaUrl = mediaGen.imageUrl || getStudioFallback(prompt, negocio.categoria)
+    mediaUrl = mediaGen.imageUrl || null
   }
 
   return {
@@ -529,89 +533,77 @@ Reglas:
 }
 
 
-const categoryImages = {
-  ropa: [
-    'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=600&auto=format&fit=crop&q=80'
-  ],
-  accesorios: [
-    'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1627123424574-724758594e93?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&auto=format&fit=crop&q=80'
-  ],
-  electronica: [
-    'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1585060544812-6b45742d762f?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?w=600&auto=format&fit=crop&q=80'
-  ],
-  hogar: [
-    'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=600&auto=format&fit=crop&q=80'
-  ],
-  papeleria: [
-    'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1544816155-12df9643f363?w=600&auto=format&fit=crop&q=80'
-  ],
-  general: [
-    'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&auto=format&fit=crop&q=80'
-  ]
-}
-
-function getStudioFallback(prompt = '', cat = '') {
-  const text = `${prompt} ${cat}`.toLowerCase()
-  if (text.includes('ropa') || text.includes('polo') || text.includes('camisa') || text.includes('vestido') || text.includes('polera') || text.includes('casaca')) {
-    return categoryImages.ropa[Math.floor(Math.random() * categoryImages.ropa.length)]
+// El generador de imágenes entiende mejor una descripción corta en inglés que la instrucción
+// completa del dueño (con precios, WhatsApp, etc.), así que la IA de texto la redacta primero
+const crearPromptImagen = async (idea, categoria) => {
+  try {
+    const completion = await groq.chat.completions.create({
+      model: GROQ_MODEL,
+      reasoning_effort: 'low',
+      messages: [
+        {
+          role: 'system',
+          content: 'You write prompts for an AI image generator. Reply with ONE English sentence (max 35 words) describing a realistic, well-lit commercial photo of the main product or subject of the idea. Describe only what should be seen: the product, its colors, setting and style. Never include prices, phone numbers, written text, logos or watermarks.'
+        },
+        { role: 'user', content: `Type of business: ${categoria || 'local store'}. Idea: ${idea}` }
+      ],
+      max_tokens: 400,
+      temperature: 0.4
+    })
+    const texto = completion.choices[0].message.content.trim().replace(/^["']|["']$/g, '')
+    if (texto) return texto
+  } catch (err) {
+    console.error('No se pudo redactar el prompt de imagen:', err.message)
   }
-  if (text.includes('mochila') || text.includes('reloj') || text.includes('billetera') || text.includes('lentes') || text.includes('accesorios') || text.includes('bolso')) {
-    return categoryImages.accesorios[Math.floor(Math.random() * categoryImages.accesorios.length)]
-  }
-  if (text.includes('audifono') || text.includes('celular') || text.includes('laptop') || text.includes('electronica') || text.includes('gadget') || text.includes('parlante')) {
-    return categoryImages.electronica[Math.floor(Math.random() * categoryImages.electronica.length)]
-  }
-  if (text.includes('taza') || text.includes('vela') || text.includes('hogar') || text.includes('adorno') || text.includes('cojin')) {
-    return categoryImages.hogar[Math.floor(Math.random() * categoryImages.hogar.length)]
-  }
-  if (text.includes('cuaderno') || text.includes('papeleria') || text.includes('agenda') || text.includes('lapiz')) {
-    return categoryImages.papeleria[Math.floor(Math.random() * categoryImages.papeleria.length)]
-  }
-  return categoryImages.general[Math.floor(Math.random() * categoryImages.general.length)]
+  return `${idea}, ${categoria || ''} product, commercial photography`
 }
 
 const generateProductImage = async (clienteId, { mode, prompt, nombre, categoria }) => {
-  let textPrompt = prompt || nombre || 'Producto de catalogo e-commerce'
-  if (categoria && !textPrompt.toLowerCase().includes(categoria.toLowerCase())) {
-    textPrompt += ` categoria ${categoria}`
-  }
+  const idea = (prompt || nombre || '').trim()
+  if (!idea) throw { status: 400, message: 'Escribe qué producto o idea quieres en la imagen' }
 
-  const enhancedPrompt = `${textPrompt.trim()}, commercial product photography, white background, 4k`
+  const descripcion = await crearPromptImagen(idea, categoria)
+  const enhancedPrompt = `${descripcion}, professional product photography, high detail, no text, no watermark`
   const seed = Math.floor(Math.random() * 1000000)
-  const pollUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(enhancedPrompt)}?width=600&height=600&seed=${seed}&nologo=true`
+  const pollUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(enhancedPrompt)}?width=1024&height=1024&model=flux&seed=${seed}&nologo=true`
 
-  try {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 35000)
-    const response = await fetch(pollUrl, { signal: controller.signal })
-    clearTimeout(timeout)
+  // Sin clave, Pollinations permite 1 imagen cada ~45 s por servidor y pone marca de agua.
+  // Con POLLINATIONS_KEY (enter.pollinations.ai) no hay ese límite.
+  const headers = process.env.POLLINATIONS_KEY ? { Authorization: `Bearer ${process.env.POLLINATIONS_KEY}` } : {}
+  let esperaSugerida = 0
 
-    if (response.ok) {
-      const buffer = await response.arrayBuffer()
-      const base64 = Buffer.from(buffer).toString('base64')
-      const contentType = response.headers.get('content-type') || 'image/jpeg'
-      const dataUri = `data:${contentType};base64,${base64}`
-      return { imageUrl: dataUri, prompt: textPrompt, mode: mode || 'prompt', provider: 'pollinations_ai' }
+  for (let intento = 1; intento <= 2; intento++) {
+    try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 60000)
+      const response = await fetch(pollUrl, { headers, signal: controller.signal })
+      clearTimeout(timeout)
+
+      const contentType = response.headers.get('content-type') || ''
+      if (response.ok && contentType.startsWith('image/')) {
+        const buffer = await response.arrayBuffer()
+        const base64 = Buffer.from(buffer).toString('base64')
+        return { imageUrl: `data:${contentType};base64,${base64}`, prompt: idea, descripcion, mode: mode || 'prompt', provider: 'pollinations_ai' }
+      }
+
+      // Límite del plan gratuito: el servicio dice cuántos segundos esperar ("Retry after 20s")
+      const detalle = await response.json().catch(() => ({}))
+      const segundos = Number(/retry after (\d+)\s*s/i.exec(detalle?.error?.message || '')?.[1])
+      esperaSugerida = Number.isFinite(segundos) ? segundos : 0
+      console.error(`Pollinations respondió sin imagen (intento ${intento}):`, response.status, detalle?.error?.code || '')
+      if (![402, 429, 503].includes(response.status) || esperaSugerida > 50) break
+    } catch (err) {
+      console.error(`Pollinations no respondió (intento ${intento}):`, err.message)
     }
-  } catch (err) {
-    console.error('Info: Pollinations AI fallback triggered:', err.message)
+    if (intento < 2) await new Promise((r) => setTimeout(r, ((esperaSugerida || 5) + 1) * 1000))
   }
 
-  const fallbackUrl = getStudioFallback(textPrompt, categoria)
-  return { imageUrl: fallbackUrl, prompt: textPrompt, mode: mode || 'prompt', provider: 'studio_catalog' }
+  if (esperaSugerida > 0) {
+    throw { status: 429, message: `El generador gratuito permite una imagen cada 45 segundos. Espera unos ${esperaSugerida} segundos y vuelve a intentarlo.` }
+  }
+
+  // Sin imagen de relleno: una foto al azar podría no tener nada que ver con el negocio
+  throw { status: 502, message: 'El generador de imágenes no respondió. Inténtalo de nuevo en unos segundos o sube tu propia foto.' }
 }
 
 const getMarketingPosts = async (clienteId, estado) => {
@@ -635,10 +627,51 @@ const limpiarMarkdown = (texto = '') =>
 const normalizarPlataformas = (plataformas) =>
   [...new Set((plataformas || []).map((p) => String(p).toLowerCase()).filter((p) => PLATAFORMAS_META.includes(p)))]
 
+// Publica en las redes indicadas usando las cuentas conectadas del negocio.
+// Devuelve qué salió bien y qué falló en cada red (no lanza error si una red falla).
+const publicarEnRedes = async (negocioId, { caption, mediaUrl, contentType, plataformas }) => {
+  const tokens = (await repository.getSocialTokens(negocioId, plataformas)).rows
+  const errores = plataformas
+    .filter((p) => !tokens.some((t) => t.plataforma === p))
+    .map((p) => ({ plataforma: p, error: 'Esta red no está conectada con Meta' }))
+  if (tokens.length === 0) return { resultados: [], errores }
+
+  const publicado = await socialPublisher.publishToNetworks({
+    caption,
+    mediaUrl,
+    contentType: contentType || 'Publicación',
+    cuentas: tokens.map((t) => ({ plataforma: t.plataforma, cuentaId: t.cuenta_id_externa, accessToken: t.access_token })),
+  })
+  return { resultados: publicado.resultados, errores: [...publicado.errores, ...errores] }
+}
+
+// Fecha programada: ISO con zona horaria desde el navegador, o "AAAA-MM-DD HH:MM" en hora de Perú
+const leerFechaProgramada = (postData) => {
+  const valor = postData.fechaProgramada ||
+    (postData.scheduleDate ? `${postData.scheduleDate}T${postData.scheduleTime || '12:00'}:00-05:00` : null)
+  const fecha = valor ? new Date(valor) : null
+  if (!fecha || Number.isNaN(fecha.getTime())) throw { status: 400, message: 'Elige la fecha y la hora de publicación' }
+  if (fecha.getTime() < Date.now() + 60 * 1000) throw { status: 400, message: 'La fecha programada debe ser en el futuro' }
+  return fecha
+}
+
 const saveMarketingPost = async (clienteId, postData) => {
   const negocioResult = await repository.findBusinessByOwner(clienteId)
   if (negocioResult.rows.length === 0) throw { status: 403, message: 'Negocio no encontrado' }
   const negocioId = negocioResult.rows[0].pk_id
+
+  const programar = postData.estado === 'programado' || postData.publishMode === 'programar'
+  const plataformas = normalizarPlataformas(postData.platforms || postData.plataformas)
+  let fechaProgramada = null
+  if (programar) {
+    fechaProgramada = leerFechaProgramada(postData)
+    if (plataformas.length === 0) throw { status: 400, message: 'Elige al menos una red: Facebook o Instagram' }
+    const conectadas = (await repository.getSocialTokens(negocioId, plataformas)).rows
+    if (conectadas.length === 0)
+      throw { status: 400, message: 'Conecta tu Página de Facebook (y su Instagram) antes de programar' }
+    if (plataformas.includes('instagram') && !(postData.image || postData.mediaUrl))
+      throw { status: 400, message: 'Instagram exige una imagen: agrega una foto antes de programar' }
+  }
 
   // Se guarda la imagen en Storage para no llenar la base de datos con base64
   const mediaUrl = await asegurarUrlPublica(postData.image || postData.mediaUrl, `marketing/${negocioId}`)
@@ -648,12 +681,12 @@ const saveMarketingPost = async (clienteId, postData) => {
     plantilla: postData.tipo || postData.plantilla,
     tono: postData.tono,
     promptUsado: postData.prompt,
-    caption: postData.caption || postData.text || postData.contenido,
+    caption: limpiarMarkdown(postData.caption || postData.text || postData.contenido || ''),
     guionVideo: postData.guionVideo,
     mediaUrl,
-    plataformas: normalizarPlataformas(postData.platforms || postData.plataformas),
-    estado: postData.estado || (postData.publishMode === 'programar' ? 'programado' : 'borrador'),
-    fechaProgramada: postData.scheduleDate ? `${postData.scheduleDate} ${postData.scheduleTime || '12:00'}` : postData.fechaProgramada
+    plataformas,
+    estado: programar ? 'programado' : 'borrador',
+    fechaProgramada
   })
   return result.rows[0]
 }
@@ -671,20 +704,14 @@ const publishDirectlyMarketing = async (clienteId, postData) => {
     throw { status: 400, message: 'Elige al menos una red: Facebook o Instagram' }
 
   // Solo se publica en cuentas conectadas de verdad con Meta (con token)
-  const tokens = (await repository.getSocialTokens(negocioId, plataformas)).rows
-  const sinConectar = plataformas.filter((p) => !tokens.some((t) => t.plataforma === p))
-  if (tokens.length === 0)
+  const conectadas = (await repository.getSocialTokens(negocioId, plataformas)).rows
+  if (conectadas.length === 0)
     throw { status: 400, message: 'Conecta tu Página de Facebook (y su Instagram) con el botón "Conectar con Meta" antes de publicar' }
 
   const mediaUrl = await asegurarUrlPublica(postData.image || postData.uploadedImage || postData.mediaUrl, `marketing/${negocioId}`)
-
-  const { resultados, errores } = await socialPublisher.publishToNetworks({
-    caption,
-    mediaUrl,
-    contentType: postData.contentType || 'Publicación',
-    cuentas: tokens.map((t) => ({ plataforma: t.plataforma, cuentaId: t.cuenta_id_externa, accessToken: t.access_token })),
+  const { resultados, errores } = await publicarEnRedes(negocioId, {
+    caption, mediaUrl, contentType: postData.contentType, plataformas,
   })
-  sinConectar.forEach((p) => errores.push({ plataforma: p, error: 'Esta red no está conectada con Meta' }))
 
   // Si no se publicó en ninguna red, se informa el error y no se guarda como publicada
   if (resultados.length === 0) {
@@ -706,6 +733,39 @@ const publishDirectlyMarketing = async (clienteId, postData) => {
   const actualizado = await repository.updateMarketingPostStatus(negocioId, post.rows[0].pk_id, 'publicado', { resultados, errores })
 
   return { ...actualizado.rows[0], resultados, errores }
+}
+
+const deleteMarketingPost = async (clienteId, postId) => {
+  const negocioResult = await repository.findBusinessByOwner(clienteId)
+  if (negocioResult.rows.length === 0) throw { status: 403, message: 'Negocio no encontrado' }
+  const result = await repository.deleteMarketingPost(negocioResult.rows[0].pk_id, postId)
+  if (result.rows.length === 0) throw { status: 404, message: 'Solo se pueden cancelar publicaciones programadas o fallidas' }
+  return { message: 'Publicación cancelada' }
+}
+
+// La llama la tarea automática cada minuto: publica las programadas cuya hora ya llegó
+const publicarProgramadasPendientes = async () => {
+  await repository.failStuckPublishingPosts()
+  const pendientes = (await repository.claimDueScheduledPosts()).rows
+  const resumen = { publicadas: 0, fallidas: 0 }
+
+  for (const post of pendientes) {
+    let resultado
+    try {
+      resultado = await publicarEnRedes(post.fk_negocio_id, {
+        caption: post.caption,
+        mediaUrl: post.media_url || null,
+        contentType: post.tipo_contenido,
+        plataformas: normalizarPlataformas(post.plataformas),
+      })
+    } catch (err) {
+      resultado = { resultados: [], errores: [{ plataforma: 'general', error: err.message || 'Error al publicar' }] }
+    }
+    const estado = resultado.resultados.length > 0 ? 'publicado' : 'fallido'
+    await repository.updateMarketingPostStatus(post.fk_negocio_id, post.pk_id, estado, resultado)
+    resumen[estado === 'publicado' ? 'publicadas' : 'fallidas'] += 1
+  }
+  return resumen
 }
 
 const getSocialAccounts = async (clienteId) => {
@@ -808,6 +868,8 @@ module.exports = {
   getSocialAccounts,
   connectSocialAccount,
   disconnectSocialAccount,
+  deleteMarketingPost,
+  publicarProgramadasPendientes,
   getMetaAuthUrl,
   handleMetaOAuthCallback,
   connectMetaManualToken,

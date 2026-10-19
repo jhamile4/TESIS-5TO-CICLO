@@ -155,7 +155,7 @@ export default function MarketingPreviewCol({
                 className="editable-caption-textarea"
                 value={content}
                 onChange={(e) => setContent?.(e.target.value)}
-                placeholder="Escribe o edita el texto de tu publicación aquí..."
+                placeholder="Aquí aparecerá tu publicación cuando presiones «Generar Publicación con IA». También puedes escribirla tú."
                 rows={4}
               />
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
@@ -239,23 +239,21 @@ export default function MarketingPreviewCol({
                 <input
                   type="date"
                   value={scheduleDate}
+                  min={new Date().toLocaleDateString('en-CA')}
                   onChange={(e) => setScheduleDate(e.target.value)}
                 />
               </div>
               <div>
                 <label>Hora</label>
-                <select value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)}>
-                  <option value="">Seleccionar hora</option>
-                  <option value="09:00">09:00 AM (Recomendado)</option>
-                  <option value="12:00">12:00 PM</option>
-                  <option value="15:00">03:00 PM</option>
-                  <option value="18:00">06:00 PM (Recomendado)</option>
-                  <option value="21:00">09:00 PM</option>
-                </select>
+                <input
+                  type="time"
+                  value={scheduleTime}
+                  onChange={(e) => setScheduleTime(e.target.value)}
+                />
               </div>
             </div>
             <small className="recommendation-text">
-              <Clock size={12} /> Horarios de máxima interacción según tus redes conectadas.
+              <Clock size={12} /> Hora de Perú. Sugerencia: 9:00 a. m. o 6:00 p. m. suelen tener más interacción.
             </small>
           </div>
         )}
@@ -289,11 +287,16 @@ export default function MarketingPreviewCol({
             <small className="no-platforms-warn">Selecciona al menos una red</small>
           )}
         </div>
+        {!content?.trim() && (
+          <small className="no-platforms-warn" style={{ display: 'block', marginTop: '6px' }}>
+            Primero genera (o escribe) el texto de la publicación
+          </small>
+        )}
 
         <button
           type="button"
           className="main-publish-cta-btn"
-          disabled={activeAccountsList.length === 0 || publishing}
+          disabled={activeAccountsList.length === 0 || publishing || !content?.trim()}
           onClick={handlePublishOrSchedule}
         >
           {publishing ? (

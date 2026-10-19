@@ -1,7 +1,7 @@
 const Groq           = require('groq-sdk')
 const negocioModel   = require('../models/negocioModel')
 const productoModel  = require('../models/productoModel')
-const { MAX_HISTORIAL_CHAT, MAX_PRODUCTOS_CHAT } = require('../config/constants')
+const { MAX_HISTORIAL_CHAT, MAX_PRODUCTOS_CHAT, GROQ_MODEL } = require('../config/constants')
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
@@ -50,9 +50,10 @@ REGLAS ESTRICTAS — DEBES SEGUIRLAS SIN EXCEPCIÓN:
   ]
 
   const completion = await groq.chat.completions.create({
-    model:       'llama-3.1-8b-instant',
+    model:       GROQ_MODEL,
     messages,
-    max_tokens:  200,
+    reasoning_effort: 'low', // el modelo "piensa" antes de responder; en bajo es más rápido
+    max_tokens:  700,
     temperature: 0.3,
   })
 
@@ -100,9 +101,10 @@ REGLAS ESTRICTAS:
   ]
 
   const completion = await groq.chat.completions.create({
-    model:       'llama-3.1-8b-instant',
+    model:       GROQ_MODEL,
     messages,
-    max_tokens:  250,
+    reasoning_effort: 'low',
+    max_tokens:  700,
     temperature: 0.3,
   })
 

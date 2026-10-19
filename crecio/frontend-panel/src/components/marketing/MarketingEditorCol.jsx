@@ -83,7 +83,7 @@ export default function MarketingEditorCol({
       {/* Plantilla de contenido */}
       <div className="m-card">
         <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#1e293b', margin: '0 0 14px' }}>
-          Plantilla de contenido
+          1. Tipo de publicación
         </h3>
         <div className="template-button-grid">
           {templateItems.map((item) => {
@@ -109,14 +109,14 @@ export default function MarketingEditorCol({
         <div className="m-card-title">
           <Sparkles size={16} className="text-teal" />
           <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#1e293b', margin: 0 }}>
-            Prompt de IA
+            2. ¿Qué quieres publicar?
           </h3>
         </div>
 
         {productos && productos.length > 0 && (
           <div style={{ marginBottom: '10px' }}>
             <label style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, marginBottom: '4px' }}>
-              🛍️ O selecciona un producto de tu catálogo para promocionar:
+              🛍️ Elige un producto de tu catálogo (opcional), o escribe tu idea abajo:
             </label>
             <select
               style={{
@@ -133,7 +133,8 @@ export default function MarketingEditorCol({
                 if (!prodId) return
                 const selectedProd = productos.find(p => String(p.id || p.pk_id) === String(prodId))
                 if (selectedProd) {
-                  setPrompt(`¡Gran oportunidad! Promoción especial de ${selectedProd.nombre}: ${selectedProd.descripcion || 'calidad garantizada'}. Precio regular: S/${selectedProd.precio}. ¡Pide el tuyo por WhatsApp antes que se agote!`)
+                  // Es una instrucción para la IA (no el texto final): la IA redacta la publicación
+                  setPrompt(`Promocionar "${selectedProd.nombre}" a S/ ${selectedProd.precio}.${selectedProd.descripcion ? ` ${selectedProd.descripcion}.` : ''} Invitar a pedirlo por WhatsApp.`)
                   if (selectedProd.imagen_url && setUploadedImage) {
                     setUploadedImage(selectedProd.imagen_url)
                   }
@@ -155,15 +156,18 @@ export default function MarketingEditorCol({
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Describe tu producto, campaña o idea para que la IA genere el contenido perfecto..."
+            placeholder="Escribe una idea corta. Ej: oferta 2x1 en ramos de rosas por San Valentín, solo este fin de semana"
             maxLength={500}
           />
           <span className="prompt-counter">{prompt.length}/500</span>
         </div>
+        <p style={{ margin: '6px 0 0', fontSize: '11px', color: '#64748b' }}>
+          Esto es una instrucción para la IA, no se publica tal cual. Al presionar "Generar" la IA redacta el texto final a la derecha, y ahí lo puedes editar.
+        </p>
 
         <div style={{ marginTop: '14px' }}>
           <label style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, marginBottom: '6px' }}>
-            Imagen del post (opcional)
+            3. Imagen (obligatoria para Instagram)
           </label>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
             <label className="image-upload-dashed" style={{ margin: 0, padding: '10px 8px' }}>
@@ -208,6 +212,9 @@ export default function MarketingEditorCol({
           )}
         </div>
 
+        <label style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, margin: '14px 0 6px' }}>
+          4. Estilo del texto
+        </label>
         <div className="tone-pills-row">
           {tones.map((item) => (
             <button
@@ -235,7 +242,7 @@ export default function MarketingEditorCol({
           {loading
             ? 'Generando con IA...'
             : contentType === 'Video' || contentType === 'Reels / Short'
-            ? 'Generar Guión + Video'
+            ? 'Generar guion con IA'
             : 'Generar Publicación con IA'}
         </button>
 

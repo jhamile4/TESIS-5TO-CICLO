@@ -3,6 +3,7 @@ const express      = require('express')
 const cors         = require('cors')
 const routes       = require('./src/routes/index')
 const errorHandler = require('./src/middleware/errorHandler')
+const programadas  = require('./src/jobs/publicacionesProgramadas')
 
 const app  = express()
 const PORT = process.env.PORT || 3001
@@ -18,9 +19,11 @@ app.use(cors({
   origin: origenesPermitidos,
   credentials: true,
 }))
-app.use(express.json())
+app.use(express.json({ limit: '15mb' })) // las imágenes llegan en base64 desde el panel
 
 app.use('/api', routes)
+
+app.post('/api/tareas/publicaciones-programadas', programadas.rutaExterna)
 
 app.get('/', (req, res) => {
   res.json({ mensaje: 'API CRECIO funcionando' })
@@ -30,4 +33,5 @@ app.use(errorHandler)
 
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`)
+  programadas.iniciar()
 })

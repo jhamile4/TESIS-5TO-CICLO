@@ -24,6 +24,7 @@ const {
   getSocialAccounts,
   connectSocialAccount,
   disconnectSocialAccount,
+  deleteMarketingPost,
   getMetaAuthUrl,
   handleMetaOAuthCallback,
   connectMetaManualToken,
@@ -46,6 +47,7 @@ router.post('/gastos', verifyToken, createExpense)
 router.post('/marketing/generar', verifyToken, generateMarketing)
 router.get('/marketing/publicaciones', verifyToken, getMarketingPosts)
 router.post('/marketing/publicaciones', verifyToken, saveMarketingPost)
+router.delete('/marketing/publicaciones/:id', verifyToken, deleteMarketingPost)
 router.post('/marketing/publicar-directo', verifyToken, publishDirectlyMarketing)
 router.get('/marketing/redes', verifyToken, getSocialAccounts)
 router.post('/marketing/redes', verifyToken, connectSocialAccount)
