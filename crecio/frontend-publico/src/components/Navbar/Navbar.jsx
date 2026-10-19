@@ -54,7 +54,7 @@ const Navbar = () => {
     }
   }
 
-  const bgClass    = scrolled ? 'bg-white/80 backdrop-blur-lg border-b border-[#E5E7EB]/50 shadow-sm' : 'bg-transparent border-b border-transparent'
+  const bgClass    = scrolled ? 'bg-white/95 backdrop-blur-lg border-b border-[#E5E7EB]/50 shadow-sm' : 'bg-transparent border-b border-transparent'
   const textColor  = scrolled ? 'text-[#374151]' : 'text-white'
 
   const navLinks = [

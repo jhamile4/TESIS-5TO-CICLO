@@ -60,9 +60,9 @@ function Paso3Revisar({ datos, onAtras, onEnviar, enviando, error }) {
       {/* Términos */}
       <p className="text-xs text-[#9CA3AF] text-center leading-relaxed">
         Al enviar aceptas nuestros{' '}
-        <a href="#" className="text-[#0D9488] hover:underline">Términos de Servicio</a>
+        <a href="/terminos" target="_blank" rel="noreferrer" className="text-[#0D9488] hover:underline">Términos de Servicio</a>
         {' '}y{' '}
-        <a href="#" className="text-[#0D9488] hover:underline">Política de Privacidad</a>.
+        <a href="/privacidad" target="_blank" rel="noreferrer" className="text-[#0D9488] hover:underline">Política de Privacidad</a>.
       </p>
 
       {/* Botones */}

@@ -205,7 +205,7 @@ function DetallePedido({ pedido: p, onVolver, navigate, perfil }) {
       </div>
 
       {/* Botón comprar de nuevo */}
-      <button onClick={() => navigate(`/tienda/${p.negocio_id}`)}
+      <button onClick={() => repetirPedido(navigate, p)}
         className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#111827] hover:bg-[#374151] text-white font-bold text-sm cursor-pointer transition-all">
         <i className="ri-refresh-line" /> Comprar de nuevo
       </button>
@@ -222,7 +222,11 @@ function DetallePedido({ pedido: p, onVolver, navigate, perfil }) {
 }
 
 /* ── Vista lista ── */
-function FilaPedido({ p, expandidoId, setExpandidoId, onVerDetalle }) {
+// Abre la tienda del pedido con los mismos productos ya en el carrito
+const repetirPedido = (navigate, p) =>
+  navigate(`/tienda/${p.negocio_id}`, { state: { repetir: parseItems(p.items).map((i) => ({ pk_id: i.pk_id, nombre: i.nombre, cantidad: i.cantidad })) } })
+
+function FilaPedido({ p, expandidoId, setExpandidoId, onVerDetalle, navigate }) {
   const items    = parseItems(p.items)
   const cantItem = items.reduce((a, i) => a + i.cantidad, 0)
   const numPed   = numeroPedido(p)
@@ -258,7 +262,7 @@ function FilaPedido({ p, expandidoId, setExpandidoId, onVerDetalle }) {
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#111827] hover:bg-[#374151] text-white text-xs font-bold transition-all cursor-pointer">
             <i className="ri-eye-line" /> Ver detalle
           </button>
-          <button onClick={() => {}}
+          <button onClick={() => repetirPedido(navigate, p)}
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[#E5E7EB] bg-white hover:border-[#0D9488] hover:text-[#0D9488] text-[#374151] text-xs font-semibold transition-all cursor-pointer">
             <i className="ri-refresh-line" /> Repetir
           </button>
@@ -370,6 +374,7 @@ function TabPedidos({ pedidos, navigate, perfil }) {
               expandidoId={expandidoId}
               setExpandidoId={setExpandidoId}
               onVerDetalle={p => setDetalleId(p.pk_id)}
+              navigate={navigate}
             />
           ))
         )}
@@ -379,8 +384,8 @@ function TabPedidos({ pedidos, navigate, perfil }) {
       <div className="grid grid-cols-3 gap-3">
         {[
           { icon: 'ri-map-pin-time-line', titulo: 'Seguimiento',     desc: 'Cada vez que el negocio actualice tu pedido lo verás aquí y te avisaremos por correo.' },
-          { icon: 'ri-refresh-line',      titulo: 'Repetir compra',  desc: 'Volvé a pedir lo que te gustó con un solo click. Los productos van directo al carrito.' },
-          { icon: 'ri-shield-check-line', titulo: 'Compra protegida', desc: 'Todas tus compras en CRECIO están protegidas. Si hay un problema, te ayudamos.' },
+          { icon: 'ri-refresh-line',      titulo: 'Repetir compra',  desc: 'Con «Repetir» se abre la tienda con los mismos productos en tu carrito, a sus precios de hoy.' },
+          { icon: 'ri-shield-check-line', titulo: 'Pago seguro', desc: 'Las tarjetas las procesa Stripe, y si el negocio cancela un pedido pagado con tarjeta se te reembolsa automáticamente.' },
         ].map((f, i) => (
           <div key={i} className="bg-white rounded-2xl border border-[#E5E7EB] p-4">
             <i className={`${f.icon} text-[#0D9488] text-lg mb-2 block`} />

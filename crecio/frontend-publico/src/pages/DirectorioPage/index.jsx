@@ -262,8 +262,8 @@ function DirectorioPage() {
             </div>
             <div className="w-px h-3 bg-white/20" />
             <div className="flex items-center gap-2">
-              <i className="ri-shield-check-line text-[#0D9488] text-base" />
-              <span>Todos verificados</span>
+              <i className="ri-whatsapp-line text-[#0D9488] text-base" />
+              <span>Pide en línea o por WhatsApp</span>
             </div>
           </div>
         </div>

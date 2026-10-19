@@ -1,18 +1,9 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import '../Navbar/Navbar.css'
 import { PANEL_URL } from '../../config/env'
 
 function Footer() {
   const navigate = useNavigate()
-  const [email, setEmail] = useState('')
-  const [enviado, setEnviado] = useState(false)
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    setEnviado(true)
-    setEmail('')
-  }
 
   return (
     <footer className="relative bg-[#FAFAFA] overflow-hidden">
@@ -107,55 +98,21 @@ function Footer() {
               catálogos digitales e inteligencia artificial.
             </p>
 
-            <p className="text-xs font-semibold uppercase tracking-wider text-[#111827] mb-3">
-              Suscríbete a novedades
-            </p>
-            <form onSubmit={handleSubmit} className="flex gap-2">
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="Tu email"
-                required
-                className="flex-1 px-4 py-3 rounded-xl bg-white border border-[#E5E7EB] text-sm text-[#111827] placeholder-[#9CA3AF] outline-none focus:border-[#0D9488] transition-colors"
-              />
-              <button
-                type="submit"
-                className="px-5 py-3 rounded-xl bg-[#111827] text-white text-sm font-semibold transition-all hover:bg-[#0D9488] cursor-pointer whitespace-nowrap"
-              >
-                {enviado ? '¡Listo!' : 'Suscribir'}
-              </button>
-            </form>
-
-            {/* Social */}
-            <div className="flex gap-2 mt-6">
-              {[
-                'ri-instagram-line',
-                'ri-facebook-circle-line',
-                'ri-tiktok-line',
-                'ri-twitter-x-line',
-              ].map((icon) => (
-                <a
-                  key={icon}
-                  href="#"
-                  className="w-10 h-10 flex items-center justify-center bg-[#F3F4F6] hover:bg-[#0D9488] rounded-xl transition-all cursor-pointer text-[#6B7280] hover:text-white"
-                >
-                  <i className={`${icon} text-base`} />
-                </a>
-              ))}
-            </div>
           </div>
 
           {/* Producto */}
           <div className="md:col-span-2 md:col-start-7">
             <h5 className="text-xs font-semibold uppercase tracking-wider text-[#111827] mb-5">Producto</h5>
             <ul className="flex flex-col gap-3">
-              {['Cómo funciona', 'Precios', 'Herramientas IA', 'Buscador local', 'Panel de admin'].map((l) => (
-                <li key={l}>
-                  <a
-                    href={l === 'Panel de admin' ? PANEL_URL : '#'}
-                    className="text-[#6B7280] hover:text-[#0D9488] text-sm transition-colors"
-                  >{l}</a>
+              {[
+                ['Cómo funciona', '/#como-funciona'],
+                ['Precios', '/#precios'],
+                ['Herramientas IA', '/#ia-tools'],
+                ['Explorar tiendas', '/tiendas'],
+                ['Panel de mi negocio', PANEL_URL],
+              ].map(([texto, href]) => (
+                <li key={texto}>
+                  <a href={href} className="text-[#6B7280] hover:text-[#0D9488] text-sm transition-colors">{texto}</a>
                 </li>
               ))}
             </ul>
@@ -163,11 +120,15 @@ function Footer() {
 
           {/* Empresa */}
           <div className="md:col-span-2">
-            <h5 className="text-xs font-semibold uppercase tracking-wider text-[#111827] mb-5">Empresa</h5>
+            <h5 className="text-xs font-semibold uppercase tracking-wider text-[#111827] mb-5">Cuenta</h5>
             <ul className="flex flex-col gap-3">
-              {['Sobre nosotros', 'Blog', 'Casos de éxito', 'Contacto', 'Trabaja con nosotros'].map((l) => (
-                <li key={l}>
-                  <a href="#" className="text-[#6B7280] hover:text-[#0D9488] text-sm transition-colors">{l}</a>
+              {[
+                ['Crear mi tienda', '/registro'],
+                ['Iniciar sesión', '/login'],
+                ['Recuperar contraseña', '/recuperar'],
+              ].map(([texto, href]) => (
+                <li key={texto}>
+                  <a href={href} className="text-[#6B7280] hover:text-[#0D9488] text-sm transition-colors">{texto}</a>
                 </li>
               ))}
             </ul>
@@ -175,26 +136,14 @@ function Footer() {
 
           {/* Soporte */}
           <div className="md:col-span-3">
-            <h5 className="text-xs font-semibold uppercase tracking-wider text-[#111827] mb-5">Soporte</h5>
+            <h5 className="text-xs font-semibold uppercase tracking-wider text-[#111827] mb-5">Ayuda</h5>
             <ul className="flex flex-col gap-3">
-              <li>
-                <a href="mailto:soporte@crecio.pe" className="text-[#6B7280] hover:text-[#0D9488] text-sm transition-colors flex items-center gap-2">
-                  <i className="ri-mail-line text-sm" />
-                  soporte@crecio.pe
-                </a>
+              <li className="text-[#6B7280] text-sm flex items-start gap-2">
+                <i className="ri-robot-2-line text-sm mt-0.5" />
+                <span>Pregúntale al Asistente CRECIO, abajo a la derecha.</span>
               </li>
-              <li>
-                <a href="https://wa.me/51987654320" target="_blank" rel="noreferrer" className="text-[#6B7280] hover:text-[#0D9488] text-sm transition-colors flex items-center gap-2">
-                  <i className="ri-whatsapp-line text-sm" />
-                  +51 987 654 320
-                </a>
-              </li>
-              <li>
-                <span className="text-[#6B7280] text-sm flex items-center gap-2">
-                  <i className="ri-time-line text-sm" />
-                  Lun–Vie: 9:00 – 18:00
-                </span>
-              </li>
+              <li><a href="/privacidad" className="text-[#6B7280] hover:text-[#0D9488] text-sm transition-colors">Política de privacidad</a></li>
+              <li><a href="/terminos" className="text-[#6B7280] hover:text-[#0D9488] text-sm transition-colors">Términos de servicio</a></li>
             </ul>
           </div>
         </div>
@@ -207,9 +156,9 @@ function Footer() {
             &copy; 2026 CRECIO. Todos los derechos reservados.
           </p>
           <div className="flex gap-6">
-            {['Privacidad', 'Términos', 'Cookies'].map((l) => (
-              <a key={l} href="#" className="text-[#9CA3AF] hover:text-[#6B7280] text-xs transition-colors">
-                {l}
+            {[['Privacidad', '/privacidad'], ['Términos', '/terminos']].map(([texto, href]) => (
+              <a key={texto} href={href} className="text-[#9CA3AF] hover:text-[#6B7280] text-xs transition-colors">
+                {texto}
               </a>
             ))}
           </div>

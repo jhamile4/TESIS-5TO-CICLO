@@ -302,8 +302,8 @@ function LoginPage() {
 
           <p className="text-center text-xs text-[#9CA3AF] mt-6">
             © 2026 CRECIO ·{' '}
-            <a href="#" className="hover:text-[#6B7280]">Privacidad</a> ·{' '}
-            <a href="#" className="hover:text-[#6B7280]">Términos</a>
+            <a href="/privacidad" className="hover:text-[#6B7280]">Privacidad</a> ·{' '}
+            <a href="/terminos" className="hover:text-[#6B7280]">Términos</a>
           </p>
         </div>
       </div>

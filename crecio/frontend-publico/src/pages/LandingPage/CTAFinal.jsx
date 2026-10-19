@@ -5,6 +5,9 @@ function CTAFinal() {
   const navigate = useNavigate()
   const sectionRef = useRef(null)
   const [visible, setVisible] = useState(false)
+  const [inicio, setInicio] = useState({ nombre: '', email: '', whatsapp: '' })
+  // Los datos se pasan al formulario de registro para no escribirlos dos veces
+  const empezar = () => navigate('/registro', { state: inicio })
 
   useEffect(() => {
     const obs = new IntersectionObserver(
@@ -88,10 +91,10 @@ function CTAFinal() {
 
               <div className="text-center mb-7">
                 <h3 className="text-xl font-bold text-white mb-2">
-                  ¿Quieres que tu negocio aparezca aquí?
+                  Crea la tienda de tu negocio
                 </h3>
                 <p className="text-sm text-[#9CA3AF]">
-                  Déjanos tu email y te contactamos en menos de 24 horas para ayudarte a empezar.
+                  Escribe estos datos y continúa tu registro. Es gratis y toma unos minutos.
                 </p>
               </div>
 
@@ -99,28 +102,34 @@ function CTAFinal() {
                 <input
                   type="text"
                   placeholder="Nombre de tu negocio"
+                  value={inicio.nombre}
+                  onChange={(e) => setInicio({ ...inicio, nombre: e.target.value })}
                   className="w-full px-4 py-3.5 rounded-xl bg-[#1F2937] border border-[#374151] text-sm text-white placeholder-[#6B7280] focus:outline-none focus:border-[#0D9488] transition-colors"
                 />
                 <input
                   type="email"
                   placeholder="Tu correo electrónico"
+                  value={inicio.email}
+                  onChange={(e) => setInicio({ ...inicio, email: e.target.value })}
                   className="w-full px-4 py-3.5 rounded-xl bg-[#1F2937] border border-[#374151] text-sm text-white placeholder-[#6B7280] focus:outline-none focus:border-[#0D9488] transition-colors"
                 />
                 <input
                   type="tel"
                   placeholder="Número de WhatsApp"
+                  value={inicio.whatsapp}
+                  onChange={(e) => setInicio({ ...inicio, whatsapp: e.target.value })}
                   className="w-full px-4 py-3.5 rounded-xl bg-[#1F2937] border border-[#374151] text-sm text-white placeholder-[#6B7280] focus:outline-none focus:border-[#0D9488] transition-colors"
                 />
                 <button
-                  onClick={() => navigate('/registro')}
+                  onClick={empezar}
                   className="w-full py-3.5 rounded-xl bg-[#0D9488] text-white font-semibold text-sm hover:bg-[#0F766E] transition-all cursor-pointer shadow-lg shadow-[#0D9488]/20 hover:shadow-[#0D9488]/30 hover:scale-[1.02]"
                 >
-                  Quiero que mi negocio aparezca
+                  Continuar con mi registro
                 </button>
               </div>
 
               <p className="text-center text-xs text-[#6B7280] mt-4">
-                Sin compromiso. Te ayudamos gratis a crear tu perfil.
+                Sin tarjeta de crédito. Puedes empezar con el plan gratuito.
               </p>
 
               <div className="border-t border-[#1F2937] pt-4 mt-4 text-center">

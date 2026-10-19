@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import Navbar from '../../components/Navbar/Navbar'
 import Footer from '../../components/Footer/Footer'
 import ProductoGrid from './components/ProductoGrid'
@@ -8,6 +8,7 @@ import Carrito from './components/Carrito'
 import ChatNegocio from './components/ChatNegocio'
 import { getNegocio, getProductos, getResenas, getGaleria } from '../../services/apiPublico'
 import { irAlPanel } from '../../services/sesion'
+import { REDES, enlaceRed, redesConValor } from '../../utils/redes'
 
 function TiendaPage() {
   const { id } = useParams()
@@ -20,6 +21,7 @@ function TiendaPage() {
   const [error, setError]                   = useState(null)
   const [carrito, setCarrito]               = useState([])
   const [carritoAbierto, setCarritoAbierto] = useState(false)
+  const repetir = useLocation().state?.repetir
   const [tabActivo, setTabActivo]           = useState('productos')
   const [imgActiva, setImgActiva]           = useState(0)
   const intervalRef                         = useRef(null)
@@ -38,6 +40,20 @@ function TiendaPage() {
       })
       .catch(err => { console.error(err); setError('No se pudo cargar la tienda'); setCargando(false) })
   }, [id])
+
+  // "Repetir pedido" desde el perfil: carga en el carrito los productos que siguen disponibles
+  useEffect(() => {
+    if (!repetir?.length || productos.length === 0) return
+    const items = repetir
+      .map((r) => {
+        const prod = productos.find((p) => p.pk_id === r.pk_id) ||
+          productos.find((p) => p.nombre?.trim().toLowerCase() === r.nombre?.trim().toLowerCase())
+        return prod ? { ...prod, cantidad: r.cantidad } : null
+      })
+      .filter(Boolean)
+    if (items.length) { setCarrito(items); setCarritoAbierto(true) }
+    window.history.replaceState({}, '')
+  }, [repetir, productos])
 
   // Auto-slide cada 4 segundos
   useEffect(() => {
@@ -146,7 +162,7 @@ function TiendaPage() {
             {negocio.verificado && (
               <span className="bg-[#0D9488] text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
                 <i className="ri-verified-badge-fill text-xs" />
-                Verificado CRECIO
+                Correo verificado
               </span>
             )}
           </div>
@@ -322,14 +338,10 @@ function TiendaPage() {
                 <i className="ri-whatsapp-line text-base" />
                 Escribir por WhatsApp
               </a>
-              <button className="flex items-center justify-center gap-2 w-full py-3 mt-2 bg-white border border-[#E5E7EB] hover:border-[#0D9488]/30 hover:bg-[#FAFAFA] text-[#111827] rounded-xl font-bold text-sm transition-all cursor-pointer">
-                <i className="ri-external-link-line text-sm" />
-                Ver catálogo externo
-              </button>
             </div>
 
             <div className="bg-[#FAFAFA] rounded-2xl border border-[#E5E7EB] p-5">
-              <h4 className="font-bold text-[#111827] text-sm mb-3">Horario de atención</h4>
+              <h4 className="font-bold text-[#111827] text-sm mb-3">Horario y contacto</h4>
               {negocio.horario && (
                 <div className="flex items-center gap-2 text-sm text-[#6B7280]">
                   <div className="w-8 h-8 flex items-center justify-center bg-[#0D9488]/10 rounded-lg shrink-0">
@@ -346,15 +358,36 @@ function TiendaPage() {
                   <span>{negocio.telefono}</span>
                 </div>
               )}
+              {negocio.email && (
+                <a href={`mailto:${negocio.email}`} className="flex items-center gap-2 text-sm text-[#6B7280] mt-3 hover:text-[#0D9488] break-all">
+                  <div className="w-8 h-8 flex items-center justify-center bg-[#0D9488]/10 rounded-lg shrink-0">
+                    <i className="ri-mail-line text-[#0D9488] text-sm" />
+                  </div>
+                  <span>{negocio.email}</span>
+                </a>
+              )}
+              {!negocio.horario && !negocio.telefono && !negocio.email && (
+                <p className="text-xs text-[#9CA3AF]">El negocio aún no publicó su horario. Escríbele por WhatsApp.</p>
+              )}
+              {redesConValor(negocio.redes).length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {redesConValor(negocio.redes).map(([clave, valor]) => (
+                    <a key={clave} href={enlaceRed(clave, valor)} target="_blank" rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#E5E7EB] bg-white text-xs font-semibold text-[#374151] hover:border-[#0D9488] hover:text-[#0D9488] transition-colors">
+                      <i className={REDES[clave][0]} /> {REDES[clave][1]}
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
 
             {negocio.verificado && (
               <div className="bg-[#0D9488]/5 rounded-2xl border border-[#0D9488]/10 p-4">
                 <div className="flex items-center gap-2">
                   <i className="ri-shield-check-line text-[#0D9488] text-lg" />
-                  <span className="text-sm font-semibold text-[#0D9488]">Negocio verificado</span>
+                  <span className="text-sm font-semibold text-[#0D9488]">Correo del dueño verificado</span>
                 </div>
-                <p className="text-xs text-[#6B7280] mt-1">Este negocio pasó por nuestro proceso de verificación.</p>
+                <p className="text-xs text-[#6B7280] mt-1">El dueño confirmó su correo al registrarse en CRECIO.</p>
               </div>
             )}
           </div>

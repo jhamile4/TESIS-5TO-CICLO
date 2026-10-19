@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import '../../components/Navbar/Navbar.css'
 import StepIndicator from './components/StepIndicator'
@@ -13,9 +14,11 @@ function RegistroPage() {
   const [enviando, setEnviando] = useState(false)
   const [error, setError]     = useState(null)
   const [exitoso, setExitoso] = useState(false)
+  // Si viene desde el formulario de la portada, se completan esos datos
+  const desdePortada = useLocation().state || {}
   const [datos, setDatos]     = useState({
-    nombre: '', categoria: '', direccion: '', descripcion: '',
-    whatsapp: '', nombreCompleto: '', email: '', contrasena: '',
+    nombre: desdePortada.nombre || '', categoria: '', direccion: '', descripcion: '',
+    whatsapp: desdePortada.whatsapp || '', nombreCompleto: '', email: desdePortada.email || '', contrasena: '',
   })
 
   const actualizarDatos = (nuevos) => setDatos(prev => ({ ...prev, ...nuevos }))
@@ -170,8 +173,8 @@ function RegistroPage() {
           {/* Footer */}
           <p className="text-center text-xs text-[#9CA3AF] mt-6">
             © 2026 CRECIO ·{' '}
-            <a href="#" className="hover:text-[#6B7280]">Privacidad</a> ·{' '}
-            <a href="#" className="hover:text-[#6B7280]">Términos</a>
+            <a href="/privacidad" className="hover:text-[#6B7280]">Privacidad</a> ·{' '}
+            <a href="/terminos" className="hover:text-[#6B7280]">Términos</a>
           </p>
         </div>
       </div>

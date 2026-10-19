@@ -61,7 +61,7 @@ function ProductoCard({ p, navigate, token, favoritos, onToggleFav }) {
           {p.precio_oferta && <span className="text-[10px] text-[#9CA3AF] line-through">S/ {Number(p.precio).toFixed(2)}</span>}
         </div>
         {pctDesc && <p className="text-[10px] text-green-600 font-semibold mt-0.5">Ahorras S/ {(p.precio - p.precio_oferta).toFixed(2)}</p>}
-        <button className="mt-2 w-8 h-8 rounded-full bg-[#111827] flex items-center justify-center ml-auto hover:bg-[#374151] transition-all">
+        <button onClick={() => navigate(`/tienda/${p.negocio_id || p.fk_negocio_id}`)} title="Ver en su tienda" className="mt-2 w-8 h-8 rounded-full bg-[#111827] flex items-center justify-center ml-auto hover:bg-[#374151] transition-all cursor-pointer">
           <i className="ri-arrow-right-line text-white text-xs" />
         </button>
       </div>
