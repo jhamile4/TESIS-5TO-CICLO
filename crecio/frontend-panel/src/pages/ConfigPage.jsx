@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
-import { User, Palette, Sliders, QrCode, Shield, Save } from 'lucide-react'
+import { User, QrCode, Shield, Save } from 'lucide-react'
 import { getTienda, actualizarTienda, enviarMetaCallback } from '../services/apiAdmin'
 import ConfigProfileTab from '../components/config/ConfigProfileTab'
-import ConfigAppearanceTab from '../components/config/ConfigAppearanceTab'
-import ConfigPreferencesTab from '../components/config/ConfigPreferencesTab'
 import ConfigQrTab from '../components/config/ConfigQrTab'
 import ConfigSecurityTab from '../components/config/ConfigSecurityTab'
 
@@ -21,7 +19,10 @@ export default function ConfigPage() {
     descripcion: '',
     emailContacto: '',
     whatsapp: '',
+    telefono: '',
+    horario: '',
     direccion: '',
+    distrito: '',
     logoUrl: '',
     redesSociales: {
       instagram: '',
@@ -29,16 +30,7 @@ export default function ConfigPage() {
       tiktok: '',
       youtube: '',
       twitter: '',
-      whatsapp: '',
     },
-    toggles: {
-      instagram: true,
-      facebook: true,
-      tiktok: true,
-      youtube: true,
-      twitter: true,
-      whatsapp: true,
-    }
   })
 
   useEffect(() => {
@@ -77,7 +69,11 @@ export default function ConfigPage() {
             descripcion: res.descripcion || '',
             emailContacto: res.email_contacto || res.email || '',
             whatsapp: res.whatsapp || '',
+            telefono: res.telefono || '',
+            horario: res.horario && res.horario !== 'Por confirmar' ? res.horario : '',
             direccion: res.direccion || '',
+            distrito: res.distrito || '',
+            tieneUbicacion: res.latitud != null && res.longitud != null,
             logoUrl: res.logo_url || '',
             redesSociales: {
               instagram: res.redes_sociales?.instagram || '',
@@ -85,16 +81,7 @@ export default function ConfigPage() {
               tiktok: res.redes_sociales?.tiktok || '',
               youtube: res.redes_sociales?.youtube || '',
               twitter: res.redes_sociales?.twitter || '',
-              whatsapp: res.redes_sociales?.whatsapp || res.whatsapp || '',
             },
-            toggles: {
-              instagram: true,
-              facebook: true,
-              tiktok: true,
-              youtube: true,
-              twitter: true,
-              whatsapp: true,
-            }
           })
         }
       })
@@ -119,12 +106,6 @@ export default function ConfigPage() {
     }))
   }
 
-  const handleToggleChange = (key) => {
-    setForm((prev) => ({
-      ...prev,
-      toggles: { ...prev.toggles, [key]: !prev.toggles[key] }
-    }))
-  }
 
   const handleSave = async (e) => {
     if (e) e.preventDefault()
@@ -138,11 +119,15 @@ export default function ConfigPage() {
         descripcion: form.descripcion,
         emailContacto: form.emailContacto,
         whatsapp: form.whatsapp,
+        telefono: form.telefono,
+        horario: form.horario,
         direccion: form.direccion,
+        distrito: form.distrito,
         logoUrl: form.logoUrl,
         redesSociales: form.redesSociales,
       })
-      setMessage('Configuración guardada exitosamente.')
+      setMessage('Datos guardados. Ya se ven en tu tienda.')
+      loadBusinessData()
       setTimeout(() => setMessage(''), 3000)
     } catch (err) {
       setError(err.message || 'Error al guardar la configuración')
@@ -177,18 +162,6 @@ export default function ConfigPage() {
           <User size={15} /> Perfil del Negocio
         </button>
         <button
-          className={`config-pill-btn ${activeTab === 'apariencia' ? 'active' : ''}`}
-          onClick={() => setActiveTab('apariencia')}
-        >
-          <Palette size={15} /> Apariencia
-        </button>
-        <button
-          className={`config-pill-btn ${activeTab === 'preferencias' ? 'active' : ''}`}
-          onClick={() => setActiveTab('preferencias')}
-        >
-          <Sliders size={15} /> Preferencias
-        </button>
-        <button
           className={`config-pill-btn ${activeTab === 'qr' ? 'active' : ''}`}
           onClick={() => setActiveTab('qr')}
         >
@@ -209,16 +182,9 @@ export default function ConfigPage() {
           setForm={setForm}
           handleLogoUpload={handleLogoUpload}
           handleSocialChange={handleSocialChange}
-          handleToggleChange={handleToggleChange}
           handleSave={handleSave}
           setMessage={setMessage}
         />
-      )}
-      {activeTab === 'apariencia' && (
-        <ConfigAppearanceTab handleSave={handleSave} />
-      )}
-      {activeTab === 'preferencias' && (
-        <ConfigPreferencesTab />
       )}
       {activeTab === 'qr' && (
         <ConfigQrTab negocioId={negocioId} />

@@ -62,8 +62,11 @@ const normalizarNegocio = (n) => ({
   resenas:   String(n.total_resenas),
   direccion: n.direccion,
   distrito:  n.distrito,
-  horario:   n.horario,
+  // "Por confirmar" es lo que se guarda al registrarse; no se muestra como horario
+  horario:   n.horario && n.horario !== 'Por confirmar' ? n.horario : null,
   telefono:  n.telefono,
+  email:     n.email_contacto || null,
+  redes:     n.redes_sociales || {},
   whatsapp:  n.whatsapp,
   verificado: n.verificado,
   latitud:   n.latitud  ? Number(n.latitud)  : null,

@@ -78,6 +78,30 @@ const marcarNotificacionesLeidas = async (req, res, next) => {
   }
 }
 
+const getGaleria = async (req, res, next) => {
+  try {
+    res.json(await adminService.getGaleria(req.user.id))
+  } catch (error) {
+    next(error)
+  }
+}
+
+const agregarFotoGaleria = async (req, res, next) => {
+  try {
+    res.status(201).json(await adminService.agregarFotoGaleria(req.user.id, req.body.imagen))
+  } catch (error) {
+    next(error)
+  }
+}
+
+const quitarFotoGaleria = async (req, res, next) => {
+  try {
+    res.json(await adminService.quitarFotoGaleria(req.user.id, req.params.id))
+  } catch (error) {
+    next(error)
+  }
+}
+
 const getClientes = async (req, res, next) => {
   try {
     const clientes = await adminService.getClientes(req.user.id)
@@ -241,6 +265,9 @@ module.exports = {
   updateOrderStatus,
   getNotificaciones,
   marcarNotificacionesLeidas,
+  getGaleria,
+  agregarFotoGaleria,
+  quitarFotoGaleria,
   getClientes,
   getFinanzas,
   createExpense,

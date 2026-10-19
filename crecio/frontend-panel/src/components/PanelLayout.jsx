@@ -1,4 +1,4 @@
-import { Bell, Search, Globe } from 'lucide-react'
+import { Bell, Globe, Menu } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
@@ -27,6 +27,7 @@ export default function PanelLayout() {
   const location = useLocation()
   const [business, setBusiness] = useState(null)
   const [showNotifs, setShowNotifs] = useState(false)
+  const [menuMovil, setMenuMovil] = useState(false)
   const [notifs, setNotifs] = useState({ noLeidas: 0, notificaciones: [] })
 
   useEffect(() => {
@@ -53,11 +54,17 @@ export default function PanelLayout() {
 
   return (
     <div className="panel-shell">
-      <Sidebar business={business} />
+      <Sidebar business={business} abiertoMovil={menuMovil} onCerrarMovil={() => setMenuMovil(false)} />
+      {menuMovil && <div className="sidebar-mobile-backdrop" onClick={() => setMenuMovil(false)} />}
 
       <main className="dashboard">
         <header className="topbar">
-          <h1>{titles[location.pathname] || 'Panel de Control'}</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button className="icon-button mobile-menu-button" onClick={() => setMenuMovil(true)} title="Abrir menú">
+              <Menu size={20} />
+            </button>
+            <h1>{titles[location.pathname] || 'Panel de Control'}</h1>
+          </div>
 
           <div className="topbar-actions">
             <a
@@ -68,10 +75,6 @@ export default function PanelLayout() {
               <Globe size={16} />
               <span>Ir a comprar</span>
             </a>
-
-            <button className="icon-button" title="Buscar">
-              <Search size={19} />
-            </button>
 
             <div className="notif-wrapper">
               <button

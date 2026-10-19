@@ -49,6 +49,9 @@ export const getResumen = () => request('/admin/resumen')
 export const getInventario = () => request('/admin/inventario')
 export const getTienda = () => request('/admin/tienda')
 export const actualizarTienda = (tienda) => request('/admin/tienda', { method: 'PUT', body: JSON.stringify(tienda) })
+export const getGaleria = () => request('/admin/galeria')
+export const agregarFotoGaleria = (imagen) => request('/admin/galeria', { method: 'POST', body: JSON.stringify({ imagen }) })
+export const quitarFotoGaleria = (id) => request(`/admin/galeria/${id}`, { method: 'DELETE' })
 export const getVentas = () => request('/admin/ventas')
 export const crearVenta = (venta) => request('/admin/ventas', {
   method: 'POST',

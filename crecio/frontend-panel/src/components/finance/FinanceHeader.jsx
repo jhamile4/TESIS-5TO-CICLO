@@ -1,6 +1,6 @@
 import { Download, Plus } from 'lucide-react'
 
-export default function FinanceHeader({ businessName, onNewTransaction }) {
+export default function FinanceHeader({ businessName, onNewTransaction, onExport, exportando }) {
   return (
     <div className="finance-page-header">
       <div>
@@ -9,8 +9,8 @@ export default function FinanceHeader({ businessName, onNewTransaction }) {
       </div>
 
       <div className="finance-top-actions">
-        <button className="btn-export-outline">
-          <Download size={14} /> Exportar Reporte
+        <button className="btn-export-outline" onClick={onExport} disabled={exportando}>
+          <Download size={14} /> {exportando ? 'Preparando…' : 'Exportar reporte'}
         </button>
         <button className="btn-add-product-teal" onClick={onNewTransaction}>
           <Plus size={16} /> Nueva Transacción

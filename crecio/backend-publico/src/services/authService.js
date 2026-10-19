@@ -4,22 +4,7 @@ const pool   = require('../config/db')
 const clienteModel = require('../models/clienteModel')
 const negocioModel = require('../models/negocioModel')
 const { enviarCodigoVerificacion, enviarCodigoRecuperacion } = require('../utils/email')
-
-const geocodificar = async (direccion) => {
-  try {
-    const query = encodeURIComponent(direccion + ', Perú')
-    const res   = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1&countrycodes=pe`,
-      { headers: { 'User-Agent': 'CRECIO-App/1.0' } }
-    )
-    const data = await res.json()
-    if (data.length > 0)
-      return { latitud: parseFloat(data[0].lat), longitud: parseFloat(data[0].lon) }
-  } catch (err) {
-    console.error('Error geocodificando:', err.message)
-  }
-  return { latitud: null, longitud: null }
-}
+const { geocodificar } = require('../utils/geocodificar')
 
 const generarCodigo = () => ({
   codigo: Math.floor(100000 + Math.random() * 900000).toString(),

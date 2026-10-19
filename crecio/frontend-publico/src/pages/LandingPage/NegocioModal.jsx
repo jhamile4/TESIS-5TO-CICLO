@@ -69,7 +69,7 @@ function NegocioModal({ negocio, onClose }) {
             <div className="absolute top-4 left-4">
               <span className="bg-white text-[#0D9488] text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-md">
                 <i className="ri-verified-badge-fill text-[#0D9488]" />
-                Verificado CRECIO
+                Correo verificado
               </span>
             </div>
           )}

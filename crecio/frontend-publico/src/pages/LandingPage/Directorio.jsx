@@ -116,7 +116,7 @@ function Directorio() {
                       <div className="absolute top-3 right-3">
                         <span className="bg-[#0D9488] text-white text-xs font-medium px-2.5 py-1 rounded flex items-center gap-1">
                           <i className="ri-shield-check-line text-xs" />
-                          Verificado
+                          Correo verificado
                         </span>
                       </div>
                     )}

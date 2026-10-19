@@ -23,7 +23,7 @@ export default function FinanceMiddleRow({ transacciones, summary, isMonth }) {
   return (
     <div className="fin-middle-grid" style={{
       display: 'grid',
-      gridTemplateColumns: 'minmax(260px, 1fr) minmax(400px, 2fr)',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
       gap: '20px',
       marginBottom: '24px'
     }}>
@@ -41,9 +41,6 @@ export default function FinanceMiddleRow({ transacciones, summary, isMonth }) {
           <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#0f172a' }}>
             Fuentes de Ingreso
           </h3>
-          <button style={{ border: 'none', background: 'transparent', color: '#94a3b8', cursor: 'pointer' }}>
-            <MoreHorizontal size={18} />
-          </button>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>

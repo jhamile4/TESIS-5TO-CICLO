@@ -13,6 +13,9 @@ const {
   updateOrderStatus,
   getNotificaciones,
   marcarNotificacionesLeidas,
+  getGaleria,
+  agregarFotoGaleria,
+  quitarFotoGaleria,
   getClientes,
   getFinanzas,
   createExpense,
@@ -37,6 +40,9 @@ router.get('/resumen', verifyToken, getResumen)
 router.get('/inventario', verifyToken, getInventario)
 router.get('/tienda', verifyToken, getTienda)
 router.put('/tienda', verifyToken, updateTienda)
+router.get('/galeria', verifyToken, getGaleria)
+router.post('/galeria', verifyToken, agregarFotoGaleria)
+router.delete('/galeria/:id', verifyToken, quitarFotoGaleria)
 router.get('/ventas', verifyToken, getVentas)
 router.post('/ventas', verifyToken, createSale)
 router.put('/ventas/:id/estado', verifyToken, updateOrderStatus)

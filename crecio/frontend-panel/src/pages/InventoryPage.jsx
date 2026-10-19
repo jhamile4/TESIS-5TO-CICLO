@@ -8,6 +8,7 @@ import InventoryCard from '../components/inventory/InventoryCard'
 import AddProductModal from '../components/inventory/AddProductModal'
 import EditProductModal from '../components/inventory/EditProductModal'
 import DeleteProductModal from '../components/inventory/DeleteProductModal'
+import { descargarCsv, fechaArchivo } from '../utils/exportar'
 
 export default function InventoryPage() {
   const [data, setData] = useState(null)
@@ -59,7 +60,13 @@ export default function InventoryPage() {
 
   return (
     <section className="inventory-page-wrapper">
-      <InventoryHeader onAddClick={() => setShowAddModal(true)} />
+      <InventoryHeader
+        onAddClick={() => setShowAddModal(true)}
+        onExport={() => descargarCsv(`inventario-${fechaArchivo()}.csv`, [
+          ['Producto', 'Categoría', 'Precio (S/)', 'Stock', 'Unidades vendidas', 'Valor del stock (S/)'],
+          ...products.map((p) => [p.nombre, p.categoria, Number(p.precio).toFixed(2), p.stock, p.ventas || 0, (Number(p.precio) * Number(p.stock)).toFixed(2)]),
+        ])}
+      />
 
       {error && <div className="toast-error">{error}</div>}
 

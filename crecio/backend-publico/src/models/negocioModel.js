@@ -21,7 +21,8 @@ const findById = (id) =>
   pool.query(
     `SELECT pk_id, nombre, categoria, descripcion,
             direccion, distrito, whatsapp, logo_url, verificado,
-            horario, telefono, rating, total_resenas, latitud, longitud
+            horario, telefono, rating, total_resenas, latitud, longitud,
+            email_contacto, redes_sociales
      FROM negocio WHERE pk_id = $1 AND activo = TRUE`,
     [id]
   )

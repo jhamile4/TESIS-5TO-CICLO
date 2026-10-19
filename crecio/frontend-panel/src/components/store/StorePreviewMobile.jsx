@@ -122,8 +122,8 @@ export default function StorePreviewMobile({
           <div className="phone-socials-row">
             <small>Síguenos:</small>
             <div className="socials-icons">
-              <InstagramIcon size={14} />
-              <FacebookIcon size={14} />
+              {form.instagram && <InstagramIcon size={14} />}
+              {form.facebook && <FacebookIcon size={14} />}
             </div>
           </div>
         )}

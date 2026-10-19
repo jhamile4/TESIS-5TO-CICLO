@@ -2433,3 +2433,57 @@ input:checked + .slider { background-color: #10b981; }
 
 /* Los enlaces del menú lateral no van subrayados */
 .sidebar .nav-item { text-decoration: none; }
+
+/* Menú lateral contraído: solo íconos */
+.sidebar.is-collapsed { width: 78px; }
+.sidebar.is-collapsed .brand-logo-text,
+.sidebar.is-collapsed .nav-item span,
+.sidebar.is-collapsed .nav-item .active-dot-indicator,
+.sidebar.is-collapsed .collapse-button span,
+.sidebar.is-collapsed .business-info,
+.sidebar.is-collapsed .business-settings,
+.sidebar.is-collapsed .sleek-logout-btn span { display: none; }
+.sidebar.is-collapsed .sidebar-brand { justify-content: center; padding: 0; }
+.sidebar.is-collapsed .nav-item,
+.sidebar.is-collapsed .collapse-button,
+.sidebar.is-collapsed .business-profile-main,
+.sidebar.is-collapsed .sleek-logout-btn { justify-content: center; }
+.sidebar.is-collapsed .collapse-button svg { transform: none; }
+
+/* Celular: el menú se abre con el botón ☰ de la barra superior */
+.mobile-menu-button { display: none; }
+.sidebar-mobile-backdrop { position: fixed; inset: 0; z-index: 49; background: rgba(15, 23, 42, .4); }
+@media (max-width: 700px) {
+  .mobile-menu-button { display: grid; place-items: center; }
+  .sidebar.is-open-mobile { display: flex !important; position: fixed; top: 0; left: 0; z-index: 50; width: 260px; height: 100vh; box-shadow: 8px 0 24px rgba(15, 23, 42, .15); }
+  .sidebar.is-open-mobile.is-collapsed { width: 260px; }
+  .sidebar.is-open-mobile.is-collapsed .brand-logo-text,
+  .sidebar.is-open-mobile.is-collapsed .nav-item span,
+  .sidebar.is-open-mobile.is-collapsed .business-info { display: revert; }
+}
+
+/* ── Celular: las cuadrículas del panel pasan a una columna ── */
+@media (max-width: 700px) {
+  .dash-metrics-grid, .dash-middle-grid, .dash-bottom-grid, .dashboard-grid,
+  .sales-metrics, .sales-metrics-row,
+  .client-metrics, .client-metrics-grid, .client-grid, .clients-card-grid, .client-stats-row,
+  .finance-grid, .finance-metrics, .finance-metrics-grid, .fin-goals-grid, .fin-breakdown-grid, .finance-advice,
+  .inventory-metrics-grid,
+  .marketing-layout, .marketing-layout-grid, .posts-cards-grid,
+  .store-main-layout, .form-grid-2col, .modal-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .store-main-layout { display: grid !important; }
+  .inventory-cards-grid, .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .page-wrapper, .content, .finance-content { padding: 16px !important; }
+  .topbar { padding: 0 14px; gap: 8px; }
+  .topbar h1 { font-size: 16px; }
+  .go-public-btn span { display: none; }
+  .marketing-main-tabs, .config-nav-pills, .sales-filter-tabs { overflow-x: auto; flex-wrap: nowrap; }
+  .sales-heading-bar, .inventory-heading-flex, .finance-page-header, .config-heading-bar, .store-page-header, .clients-heading-bar {
+    flex-direction: column; align-items: stretch; gap: 12px;
+  }
+}
+@media (max-width: 700px) {
+  .marketing-main-tabs { max-width: 100%; }
+}

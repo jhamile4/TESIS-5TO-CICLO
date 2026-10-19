@@ -48,7 +48,7 @@ function NegocioCard({ n }) {
         </span>
         {n.verificado && (
           <span className="absolute top-3 right-3 bg-[#0D9488] text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-            <i className="ri-shield-check-line" /> Verificado
+            <i className="ri-shield-check-line" /> Correo verificado
           </span>
         )}
       </div>

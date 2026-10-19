@@ -7,6 +7,7 @@ const productoModel = require('../../models/productoModel')
 const Stripe = require('stripe')
 const { enviarEstadoPedido } = require('../../utils/email')
 const { asegurarUrlPublica } = require('../../utils/storage')
+const { geocodificar } = require('../../utils/geocodificar')
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
@@ -116,6 +117,15 @@ const updateTienda = async (clienteId, datos) => {
   // El logo subido llega en base64: se guarda en Storage y en la base de datos queda solo su URL
   const logoUrl = await asegurarUrlPublica((datos.logoUrl || '').trim() || null, `logos/${negocioResult.rows[0].pk_id}`)
 
+  // Si cambió la dirección o el distrito, se recalcula la ubicación del mapa de la tienda
+  const actual = (await repository.getBusinessForAdmin(clienteId)).rows[0]
+  const direccion = datos.direccion.trim()
+  const distrito = (datos.distrito || '').trim()
+  let coordenadas = {}
+  if (direccion && (direccion !== (actual.direccion || '') || distrito !== (actual.distrito || ''))) {
+    coordenadas = await geocodificar([direccion, distrito].filter(Boolean).join(', '))
+  }
+
   // Las redes escritas aquí son solo los enlaces que se muestran en la tienda (negocio.redes_sociales).
   // No se tocan las cuentas conectadas con Meta para publicar: antes se sobrescribían y se perdía el token.
   const result = await repository.updateBusiness(clienteId, {
@@ -126,7 +136,12 @@ const updateTienda = async (clienteId, datos) => {
     logoUrl: logoUrl || '',
     categoria: datos.categoria || 'Ropa y Accesorios',
     emailContacto: datos.emailContacto,
-    redesSociales: datos.redesSociales || {}
+    redesSociales: datos.redesSociales || {},
+    horario: (datos.horario || '').trim(),
+    telefono: (datos.telefono || '').trim(),
+    distrito,
+    latitud: coordenadas.latitud,
+    longitud: coordenadas.longitud
   })
   if (result.rows.length === 0) throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
 
@@ -302,6 +317,35 @@ const updateOrderStatus = async (clienteId, pedidoId, nuevoEstado) => {
   }
 
   return actualizado
+}
+
+const MAX_FOTOS_GALERIA = 8
+
+const negocioDelDueno = async (clienteId) => {
+  const result = await repository.findBusinessByOwner(clienteId)
+  if (result.rows.length === 0) throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
+  return result.rows[0]
+}
+
+const getGaleria = async (clienteId) => {
+  const negocio = await negocioDelDueno(clienteId)
+  return (await repository.getGallery(negocio.pk_id)).rows
+}
+
+const agregarFotoGaleria = async (clienteId, imagen) => {
+  const negocio = await negocioDelDueno(clienteId)
+  if (!imagen) throw { status: 400, message: 'Elige una foto' }
+  const actuales = (await repository.getGallery(negocio.pk_id)).rows.length
+  if (actuales >= MAX_FOTOS_GALERIA) throw { status: 400, message: `Puedes tener hasta ${MAX_FOTOS_GALERIA} fotos en tu galería` }
+  const url = await asegurarUrlPublica(imagen, `galeria/${negocio.pk_id}`)
+  return (await repository.addGalleryImage(negocio.pk_id, url)).rows[0]
+}
+
+const quitarFotoGaleria = async (clienteId, imagenId) => {
+  const negocio = await negocioDelDueno(clienteId)
+  const result = await repository.deleteGalleryImage(negocio.pk_id, imagenId)
+  if (result.rows.length === 0) throw { status: 404, message: 'Foto no encontrada' }
+  return { message: 'Foto eliminada' }
 }
 
 const getNotificaciones = async (clienteId) => {
@@ -887,6 +931,9 @@ module.exports = {
   updateOrderStatus,
   getNotificaciones,
   marcarNotificacionesLeidas,
+  getGaleria,
+  agregarFotoGaleria,
+  quitarFotoGaleria,
   getClientes,
   getFinanzas,
   createExpense,

@@ -12,11 +12,12 @@ const findBusinessByOwner = (clienteId) =>
 const getBusinessForAdmin = (clienteId) =>
   pool.query(
     `SELECT pk_id, nombre, categoria, descripcion, logo_url, direccion,
-            distrito, horario, telefono, whatsapp, email_contacto, redes_sociales
+            distrito, horario, telefono, whatsapp, email_contacto, redes_sociales, latitud, longitud
      FROM negocio WHERE fk_cliente_id = $1 LIMIT 1`,
     [clienteId]
   )
 
+// COALESCE: si un campo llega vacío (null) se conserva el valor anterior
 const updateBusiness = (clienteId, datos) =>
   pool.query(
     `UPDATE negocio SET
@@ -27,10 +28,15 @@ const updateBusiness = (clienteId, datos) =>
        whatsapp = COALESCE($5, whatsapp),
        categoria = COALESCE($6, categoria),
        email_contacto = COALESCE($7, email_contacto),
-       redes_sociales = COALESCE($8::jsonb, redes_sociales)
-     WHERE fk_cliente_id = $9
+       redes_sociales = COALESCE($8::jsonb, redes_sociales),
+       horario = COALESCE($9, horario),
+       telefono = COALESCE($10, telefono),
+       distrito = COALESCE($11, distrito),
+       latitud = COALESCE($12, latitud),
+       longitud = COALESCE($13, longitud)
+     WHERE fk_cliente_id = $14
      RETURNING pk_id, nombre, categoria, descripcion, logo_url, direccion,
-               distrito, horario, telefono, whatsapp, email_contacto, redes_sociales`,
+               distrito, horario, telefono, whatsapp, email_contacto, redes_sociales, latitud, longitud`,
     [
       datos.nombre || null,
       datos.descripcion || null,
@@ -40,9 +46,15 @@ const updateBusiness = (clienteId, datos) =>
       datos.categoria || null,
       datos.emailContacto || datos.email || null,
       datos.redesSociales ? JSON.stringify(datos.redesSociales) : null,
+      datos.horario || null,
+      datos.telefono || null,
+      datos.distrito || null,
+      datos.latitud ?? null,
+      datos.longitud ?? null,
       clienteId
     ]
   )
+
 
 const getMetrics = (negocioId) =>
   pool.query(
@@ -280,6 +292,20 @@ const getStoreStats = (negocioId) =>
     [negocioId]
   )
 
+const getGallery = (negocioId) =>
+  pool.query('SELECT pk_id, imagen_url, orden FROM galeria_negocio WHERE fk_negocio_id = $1 ORDER BY orden, pk_id', [negocioId])
+
+const addGalleryImage = (negocioId, imagenUrl) =>
+  pool.query(
+    `INSERT INTO galeria_negocio (fk_negocio_id, imagen_url, orden)
+     VALUES ($1, $2, COALESCE((SELECT MAX(orden) + 1 FROM galeria_negocio WHERE fk_negocio_id = $1), 1))
+     RETURNING pk_id, imagen_url, orden`,
+    [negocioId, imagenUrl]
+  )
+
+const deleteGalleryImage = (negocioId, imagenId) =>
+  pool.query('DELETE FROM galeria_negocio WHERE pk_id = $1 AND fk_negocio_id = $2 RETURNING pk_id', [imagenId, negocioId])
+
 const setSalesGoal = (negocioId, meta) =>
   pool.query('UPDATE negocio SET meta_ventas_mes = $1 WHERE pk_id = $2 RETURNING meta_ventas_mes', [meta, negocioId])
 
@@ -503,6 +529,9 @@ module.exports = {
   getClients,
   getFinanceSummary,
   setSalesGoal,
+  getGallery,
+  addGalleryImage,
+  deleteGalleryImage,
   getStoreStats,
   getMonthlyHistory,
   getFinanceTransactions,
