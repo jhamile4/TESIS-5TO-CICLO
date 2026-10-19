@@ -344,7 +344,9 @@ const createMarketingPost = (negocioId, { tipoContenido, plantilla, tono, prompt
 const updateMarketingPostStatus = (negocioId, postId, estado, resultadoPublicacion = null) =>
   pool.query(
     `UPDATE publicacion_marketing
-     SET estado = $1, fecha_publicada = CASE WHEN $1 = 'publicado' THEN NOW() ELSE fecha_publicada END, resultado_publicacion = $2
+     SET estado = $1::varchar,
+         fecha_publicada = CASE WHEN $1::varchar = 'publicado' THEN NOW() ELSE fecha_publicada END,
+         resultado_publicacion = $2::jsonb
      WHERE pk_id = $3 AND fk_negocio_id = $4
      RETURNING *`,
     [estado, resultadoPublicacion ? JSON.stringify(resultadoPublicacion) : null, postId, negocioId]
@@ -358,14 +360,29 @@ const deleteMarketingPost = (negocioId, postId) =>
     [postId, negocioId]
   )
 
+// "vinculada" = tiene token de Meta y se puede publicar en ella (el token nunca se envía al navegador)
 const getSocialAccounts = (negocioId) =>
   pool.query(
-    `SELECT pk_id, plataforma, cuenta_id_externa, nombre_cuenta, handle, estado, created_at
+    `SELECT pk_id, plataforma, cuenta_id_externa, nombre_cuenta, handle, estado, created_at,
+            (access_token IS NOT NULL AND access_token <> '') AS vinculada
      FROM red_social_cuenta
      WHERE fk_negocio_id = $1
      ORDER BY created_at ASC`,
     [negocioId]
   )
+
+// Solo para publicar desde el servidor
+const getSocialTokens = (negocioId, plataformas) =>
+  pool.query(
+    `SELECT plataforma, cuenta_id_externa, access_token
+     FROM red_social_cuenta
+     WHERE fk_negocio_id = $1 AND plataforma = ANY($2::text[])
+       AND access_token IS NOT NULL AND access_token <> '' AND cuenta_id_externa <> ''`,
+    [negocioId, plataformas]
+  )
+
+const deleteSocialAccount = (negocioId, cuentaId) =>
+  pool.query('DELETE FROM red_social_cuenta WHERE pk_id = $1 AND fk_negocio_id = $2 RETURNING pk_id', [cuentaId, negocioId])
 
 const upsertSocialAccount = async (negocioId, { plataforma, cuentaIdExterna, nombreCuenta, handle, accessToken, estado }) => {
   await pool.query(
@@ -375,7 +392,8 @@ const upsertSocialAccount = async (negocioId, { plataforma, cuentaIdExterna, nom
   return pool.query(
     `INSERT INTO red_social_cuenta (fk_negocio_id, plataforma, cuenta_id_externa, nombre_cuenta, handle, access_token, estado)
      VALUES ($1, $2, $3, $4, $5, $6, $7)
-     RETURNING *`,
+     RETURNING pk_id, plataforma, cuenta_id_externa, nombre_cuenta, handle, estado, created_at,
+               (access_token <> '') AS vinculada`,
     [negocioId, plataforma, cuentaIdExterna || '', nombreCuenta || plataforma, handle || '', accessToken || '', estado || 'conectado']
   )
 }
@@ -411,6 +429,8 @@ module.exports = {
   updateMarketingPostStatus,
   deleteMarketingPost,
   getSocialAccounts,
+  getSocialTokens,
+  deleteSocialAccount,
   upsertSocialAccount,
 }
 

@@ -4,13 +4,12 @@ import {
   generarMarketing,
   getResumen,
   getInventario,
-  getTienda,
   generarImagenProducto,
   getPublicacionesMarketing,
   guardarPublicacionMarketing,
   publicarDirectoMarketing,
   getRedesSociales,
-  conectarRedSocial,
+  desconectarRedSocial,
   getMetaAuthUrl,
   enviarMetaCallback,
   conectarMetaToken
@@ -46,14 +45,12 @@ const contentTypes = [
   { id: 'Video', label: 'Video / Reel (9:16)' }
 ]
 
-const defaultAccounts = [
-  { id: 'instagram', name: 'Instagram', handle: '@mitiendacrecio', active: true, connected: true, color: '#e1306c' },
-  { id: 'tiktok', name: 'TikTok', handle: '@mitiendacrecio', active: true, connected: true, color: '#000000' },
-  { id: 'facebook', name: 'Facebook', handle: 'MiTiendaCrecio', active: true, connected: true, color: '#1877f2' },
-  { id: 'youtube', name: 'YouTube', handle: 'Sin conectar', active: false, connected: false, color: '#ff0000' },
-  { id: 'twitter', name: 'X / Twitter', handle: 'Sin conectar', active: false, connected: false, color: '#000000' },
-  { id: 'whatsapp', name: 'WhatsApp Status', handle: 'Mi Tienda', active: true, connected: true, color: '#25d366' }
+// Redes donde se puede publicar automáticamente (API oficial de Meta)
+const REDES_META = [
+  { id: 'facebook', name: 'Facebook', color: '#1877f2' },
+  { id: 'instagram', name: 'Instagram', color: '#e1306c' }
 ]
+const cuentasSinConectar = REDES_META.map((red) => ({ ...red, handle: '', connected: false, active: false }))
 
 export default function MarketingPage() {
   const [activeMainTab, setActiveMainTab] = useState('crear')
@@ -67,7 +64,7 @@ export default function MarketingPage() {
   const [content, setContent] = useState('🎬 Mira cómo nuestro producto transforma tu día a día. ¡Dale play! Guión generado por IA. #video #viral')
   const [guionVideo, setGuionVideo] = useState(null)
   const [uploadedImage, setUploadedImage] = useState(null)
-  const [accounts, setAccounts] = useState(defaultAccounts)
+  const [accounts, setAccounts] = useState(cuentasSinConectar)
 
   const [loading, setLoading] = useState(false)
   const [loadingImage, setLoadingImage] = useState(false)
@@ -84,47 +81,16 @@ export default function MarketingPage() {
 
   const loadAccounts = async () => {
     try {
-      const realAccounts = await getRedesSociales()
-      if (Array.isArray(realAccounts) && realAccounts.length > 0) {
-        setAccounts((prev) =>
-          prev.map((acc) => {
-            const found = realAccounts.find((r) => r.plataforma.toLowerCase() === acc.id.toLowerCase())
-            if (found) {
-              return {
-                ...acc,
-                handle: found.handle || found.nombre_cuenta || `@${found.plataforma}`,
-                connected: true,
-                active: true
-              }
-            }
-            return acc
-          })
-        )
-      } else {
-        // Fallback: sincronizar con las redes configuradas en el perfil de la tienda
-        const tiendaData = await getTienda().catch(() => null)
-        if (tiendaData?.negocio) {
-          const redes = tiendaData.negocio.redes_sociales || {}
-          const wa = tiendaData.negocio.whatsapp
-          setAccounts((prev) =>
-            prev.map((acc) => {
-              let handleVal = null
-              if (acc.id === 'whatsapp' && wa) handleVal = wa
-              else if (redes[acc.id]) handleVal = redes[acc.id]
-
-              if (handleVal) {
-                return {
-                  ...acc,
-                  handle: handleVal,
-                  connected: true,
-                  active: true
-                }
-              }
-              return acc
-            })
-          )
-        }
-      }
+      const guardadas = await getRedesSociales()
+      setAccounts((prev) =>
+        REDES_META.map((red) => {
+          const cuenta = (guardadas || []).find((c) => c.plataforma === red.id && c.vinculada)
+          const anterior = prev.find((a) => a.id === red.id)
+          return cuenta
+            ? { ...red, pkId: cuenta.pk_id, handle: cuenta.handle || cuenta.nombre_cuenta, connected: true, active: anterior?.connected ? anterior.active : true }
+            : { ...red, handle: '', connected: false, active: false }
+        })
+      )
     } catch (err) {
       console.warn('No se pudieron cargar cuentas sociales:', err.message)
     }
@@ -137,22 +103,22 @@ export default function MarketingPage() {
       if (Array.isArray(scheduled)) {
         setScheduledPosts(scheduled.map(p => ({
           id: p.pk_id,
-          image: p.media_url || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&auto=format&fit=crop&q=80',
-          platforms: p.plataformas || ['Instagram', 'Facebook'],
+          image: p.media_url || null,
+          platforms: p.plataformas || [],
           text: p.caption,
-          date: p.fecha_programada || new Date().toISOString()
+          date: p.fecha_programada || p.created_at
         })))
       }
       if (Array.isArray(published)) {
         setPublishedPosts(published.map(p => ({
           id: p.pk_id,
-          image: p.media_url || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600&auto=format&fit=crop&q=80',
-          platforms: p.plataformas || ['Instagram', 'Facebook'],
+          image: p.media_url || null,
+          platforms: p.plataformas || [],
           text: p.caption,
-          date: p.fecha_publicada || new Date().toISOString(),
-          likes: p.likes || 12,
-          comments: p.comments || 3,
-          shares: p.shares || 5
+          date: p.fecha_publicada || p.created_at,
+          likes: p.likes || 0,
+          comments: p.comments || 0,
+          shares: p.shares || 0
         })))
       }
     } catch (err) {}
@@ -203,7 +169,7 @@ export default function MarketingPage() {
   }
 
   const handleManualTokenConnect = async () => {
-    const token = prompt('Pega tu Access Token de Meta (User o Page Access Token generado en Meta for Developers):')
+    const token = window.prompt('Pega un token de usuario de Meta (Graph API Explorer, con permisos pages_show_list, pages_manage_posts, instagram_basic e instagram_content_publish):')
     if (!token) return
     try {
       await conectarMetaToken(token.trim())
@@ -214,24 +180,13 @@ export default function MarketingPage() {
     }
   }
 
-  const handleConnectAccount = async (accountData) => {
+  const handleDisconnect = async (acc) => {
+    if (!window.confirm(`¿Desconectar ${acc.name}? Ya no se podrá publicar ahí hasta que vuelvas a conectar con Meta.`)) return
     try {
-      await conectarRedSocial(accountData)
-      setAccounts((prev) =>
-        prev.map((acc) => {
-          if (acc.id === accountData.plataforma) {
-            return {
-              ...acc,
-              handle: accountData.handle,
-              connected: true,
-              active: true
-            }
-          }
-          return acc
-        })
-      )
+      await desconectarRedSocial(acc.pkId)
+      await loadAccounts()
     } catch (err) {
-      console.error(err)
+      alert('No se pudo desconectar: ' + err.message)
     }
   }
 
@@ -305,7 +260,7 @@ export default function MarketingPage() {
     setTimeout(() => setCopied(false), 1800)
   }
 
-  const activeAccountsList = accounts.filter((a) => a.active)
+  const activeAccountsList = accounts.filter((a) => a.connected && a.active)
 
   const handlePublishOrSchedule = async () => {
     if (!content) return
@@ -321,7 +276,7 @@ export default function MarketingPage() {
         guionVideo,
         image: uploadedImage,
         mediaUrl: uploadedImage,
-        platforms: activeAccountsList.map((a) => a.name),
+        platforms: activeAccountsList.map((a) => a.id),
         publishMode,
         scheduleDate,
         scheduleTime
@@ -329,35 +284,16 @@ export default function MarketingPage() {
 
       if (publishMode === 'ahora') {
         const res = await publicarDirectoMarketing(payload)
-        const newPost = {
-          id: res.pk_id || Date.now(),
-          image: uploadedImage || res.media_url || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600&auto=format&fit=crop&q=80',
-          platforms: activeAccountsList.map((a) => a.name),
-          text: content,
-          date: new Date().toISOString().slice(0, 16).replace('T', ' '),
-          likes: 0,
-          comments: 0,
-          shares: 0
-        }
-        setPublishedPosts([newPost, ...publishedPosts])
-        const isRealMeta = res?.resultado_publicacion?.meta_post_id && !String(res.resultado_publicacion.meta_post_id).startsWith('ig_post_')
-        if (isRealMeta) {
-          alert('🚀 ¡Publicación enviada exitosamente a la API oficial de Meta y publicada en tus redes sociales!')
-        } else {
-          alert('🚀 ¡Publicación procesada exitosamente!\nRegistrada en tu base de datos y disponible en tu historial (Modo Demostración / Tesis activo).')
-        }
+        const nombres = { facebook: 'Facebook', instagram: 'Instagram' }
+        const ok = (res.resultados || []).map((r) => `✅ ${nombres[r.plataforma]}${r.url ? `: ${r.url}` : ''}`)
+        const fallos = (res.errores || []).map((e) => `⚠️ ${nombres[e.plataforma] || e.plataforma}: ${e.error}`)
+        alert(['¡Publicado en tus redes!', ...ok, ...fallos].join('\n'))
+        await loadPosts()
         setActiveMainTab('publicadas')
       } else {
-        const res = await guardarPublicacionMarketing(payload)
-        const newPost = {
-          id: res.pk_id || Date.now(),
-          image: uploadedImage || res.media_url || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&auto=format&fit=crop&q=80',
-          platforms: activeAccountsList.map((a) => a.name),
-          text: content,
-          date: `${scheduleDate || '2026-05-05'} ${scheduleTime || '12:00'}`
-        }
-        setScheduledPosts([newPost, ...scheduledPosts])
-        alert('📅 ¡Publicación programada correctamente en la base de datos!')
+        await guardarPublicacionMarketing(payload)
+        await loadPosts()
+        alert('📅 Publicación guardada como programada. Todavía no se publica sola a esa hora: ese día publícala desde "Crear" con "Publicar ahora".')
         setActiveMainTab('programadas')
       }
     } catch (err) {
@@ -399,11 +335,10 @@ export default function MarketingPage() {
             error={error}
             generate={generate}
             accounts={accounts}
-            activeAccountsList={activeAccountsList}
             toggleAccount={toggleAccount}
-            onConnectAccount={handleConnectAccount}
             onStartMetaAuth={handleStartMetaAuth}
             onManualTokenConnect={handleManualTokenConnect}
+            onDisconnect={handleDisconnect}
             business={business}
             productos={productos}
           />

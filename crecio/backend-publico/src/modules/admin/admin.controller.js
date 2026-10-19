@@ -176,6 +176,14 @@ const generateProductImage = async (req, res, next) => {
   }
 }
 
+const disconnectSocialAccount = async (req, res, next) => {
+  try {
+    res.json(await adminService.disconnectSocialAccount(req.user.id, req.params.id))
+  } catch (error) {
+    next(error)
+  }
+}
+
 const getMetaAuthUrl = async (req, res, next) => {
   try {
     const redirectUri = req.query.redirectUri || `${process.env.PANEL_URL || 'http://localhost:5174'}/configuracion`
@@ -227,6 +235,7 @@ module.exports = {
   publishDirectlyMarketing,
   getSocialAccounts,
   connectSocialAccount,
+  disconnectSocialAccount,
   getMetaAuthUrl,
   handleMetaOAuthCallback,
   connectMetaManualToken,

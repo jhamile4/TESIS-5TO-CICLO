@@ -5,6 +5,7 @@ const Groq = require('groq-sdk')
 const productoModel = require('../../models/productoModel')
 const Stripe = require('stripe')
 const { enviarEstadoPedido } = require('../../utils/email')
+const { asegurarUrlPublica } = require('../../utils/storage')
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
@@ -507,6 +508,11 @@ Reglas:
     }
   }
 
+  finalCaption = limpiarMarkdown(finalCaption)
+  if (guionVideo) {
+    guionVideo = Object.fromEntries(Object.entries(guionVideo).map(([clave, valor]) => [clave, limpiarMarkdown(valor)]))
+  }
+
   let mediaUrl = null
   if (generateImage) {
     const mediaGen = await generateProductImage(clienteId, { prompt, categoria: negocio.categoria, mode: 'studio' }).catch(() => ({}))
@@ -615,19 +621,38 @@ const getMarketingPosts = async (clienteId, estado) => {
   return result.rows
 }
 
+const PLATAFORMAS_META = ['facebook', 'instagram']
+
+// Facebook e Instagram no interpretan Markdown: "**oferta**" se vería con asteriscos
+const limpiarMarkdown = (texto = '') =>
+  texto
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/__(.+?)__/g, '$1')
+    .replace(/(^|\s)\*(\S.*?\S|\S)\*(?=\s|$|[.,!?])/g, '$1$2')
+    .replace(/^#{1,6}\s+/gm, '')
+    .trim()
+
+const normalizarPlataformas = (plataformas) =>
+  [...new Set((plataformas || []).map((p) => String(p).toLowerCase()).filter((p) => PLATAFORMAS_META.includes(p)))]
+
 const saveMarketingPost = async (clienteId, postData) => {
   const negocioResult = await repository.findBusinessByOwner(clienteId)
   if (negocioResult.rows.length === 0) throw { status: 403, message: 'Negocio no encontrado' }
-  const result = await repository.createMarketingPost(negocioResult.rows[0].pk_id, {
+  const negocioId = negocioResult.rows[0].pk_id
+
+  // Se guarda la imagen en Storage para no llenar la base de datos con base64
+  const mediaUrl = await asegurarUrlPublica(postData.image || postData.mediaUrl, `marketing/${negocioId}`)
+
+  const result = await repository.createMarketingPost(negocioId, {
     tipoContenido: postData.contentType || postData.tipoContenido || 'Publicación',
     plantilla: postData.tipo || postData.plantilla,
     tono: postData.tono,
     promptUsado: postData.prompt,
     caption: postData.caption || postData.text || postData.contenido,
     guionVideo: postData.guionVideo,
-    mediaUrl: postData.image || postData.mediaUrl,
-    plataformas: postData.platforms || postData.plataformas || ['Instagram', 'Facebook'],
-    estado: postData.estado || (postData.publishMode === 'programar' ? 'programado' : 'publicado'),
+    mediaUrl,
+    plataformas: normalizarPlataformas(postData.platforms || postData.plataformas),
+    estado: postData.estado || (postData.publishMode === 'programar' ? 'programado' : 'borrador'),
     fechaProgramada: postData.scheduleDate ? `${postData.scheduleDate} ${postData.scheduleTime || '12:00'}` : postData.fechaProgramada
   })
   return result.rows[0]
@@ -638,58 +663,49 @@ const publishDirectlyMarketing = async (clienteId, postData) => {
   if (negocioResult.rows.length === 0) throw { status: 403, message: 'Negocio no encontrado' }
   const negocioId = negocioResult.rows[0].pk_id
 
-  // Obtener tokens guardados de redes sociales conectadas
-  let socialTokens = {}
-  try {
-    const redesResult = await repository.getSocialAccounts(negocioId)
-    if (redesResult.rows && redesResult.rows.length > 0) {
-      redesResult.rows.forEach((r) => {
-        if (r.plataforma === 'instagram') {
-          socialTokens.instagram = { igUserId: r.account_id, accessToken: r.access_token }
-        }
-        if (r.plataforma === 'facebook') {
-          socialTokens.facebook = { pageId: r.account_id, pageAccessToken: r.access_token }
-        }
-      })
-    }
-  } catch (err) {}
+  const caption = limpiarMarkdown(postData.caption || postData.text || postData.content || '')
+  if (!caption) throw { status: 400, message: 'Escribe o genera el texto de la publicación' }
 
-  let realPublishResult = null
-  try {
-    realPublishResult = await socialPublisher.publishToAllNetworks({
-      caption: postData.text || postData.content || postData.caption,
-      mediaUrl: postData.image || postData.uploadedImage || postData.mediaUrl,
-      contentType: postData.contentType || 'Publicación',
-      socialTokens
-    })
-  } catch (err) {
-    console.error('Info: Real social publish fallback mode active:', err.message)
+  const plataformas = normalizarPlataformas(postData.platforms || postData.plataformas)
+  if (plataformas.length === 0)
+    throw { status: 400, message: 'Elige al menos una red: Facebook o Instagram' }
+
+  // Solo se publica en cuentas conectadas de verdad con Meta (con token)
+  const tokens = (await repository.getSocialTokens(negocioId, plataformas)).rows
+  const sinConectar = plataformas.filter((p) => !tokens.some((t) => t.plataforma === p))
+  if (tokens.length === 0)
+    throw { status: 400, message: 'Conecta tu Página de Facebook (y su Instagram) con el botón "Conectar con Meta" antes de publicar' }
+
+  const mediaUrl = await asegurarUrlPublica(postData.image || postData.uploadedImage || postData.mediaUrl, `marketing/${negocioId}`)
+
+  const { resultados, errores } = await socialPublisher.publishToNetworks({
+    caption,
+    mediaUrl,
+    contentType: postData.contentType || 'Publicación',
+    cuentas: tokens.map((t) => ({ plataforma: t.plataforma, cuentaId: t.cuenta_id_externa, accessToken: t.access_token })),
+  })
+  sinConectar.forEach((p) => errores.push({ plataforma: p, error: 'Esta red no está conectada con Meta' }))
+
+  // Si no se publicó en ninguna red, se informa el error y no se guarda como publicada
+  if (resultados.length === 0) {
+    throw { status: 502, message: `No se pudo publicar. ${errores.map((e) => `${e.plataforma}: ${e.error}`).join(' · ')}` }
   }
-
-  const metaResult = realPublishResult && realPublishResult.success
-    ? realPublishResult
-    : {
-        meta_post_id: `ig_post_${Date.now()}`,
-        status: 'published_successfully',
-        timestamp: new Date().toISOString()
-      }
 
   const post = await repository.createMarketingPost(negocioId, {
     tipoContenido: postData.contentType || 'Publicación',
     plantilla: postData.tipo || 'Promoción',
     tono: postData.tono || 'Modo Creativo',
     promptUsado: postData.prompt || '',
-    caption: postData.text || postData.content || postData.caption,
+    caption,
     guionVideo: postData.guionVideo,
-    mediaUrl: postData.image || postData.uploadedImage || postData.mediaUrl,
-    plataformas: postData.platforms || ['Instagram', 'Facebook'],
+    mediaUrl,
+    plataformas: resultados.map((r) => r.plataforma),
     estado: 'publicado',
     fechaProgramada: null
   })
+  const actualizado = await repository.updateMarketingPostStatus(negocioId, post.rows[0].pk_id, 'publicado', { resultados, errores })
 
-  await repository.updateMarketingPostStatus(negocioId, post.rows[0].pk_id, 'publicado', metaResult)
-
-  return { ...post.rows[0], estado: 'publicado', resultado_publicacion: metaResult }
+  return { ...actualizado.rows[0], resultados, errores }
 }
 
 const getSocialAccounts = async (clienteId) => {
@@ -706,27 +722,42 @@ const connectSocialAccount = async (clienteId, accountData) => {
   return result.rows[0]
 }
 
+const disconnectSocialAccount = async (clienteId, cuentaId) => {
+  const negocioResult = await repository.findBusinessByOwner(clienteId)
+  if (negocioResult.rows.length === 0) throw { status: 403, message: 'Negocio no encontrado' }
+  const result = await repository.deleteSocialAccount(negocioResult.rows[0].pk_id, cuentaId)
+  if (result.rows.length === 0) throw { status: 404, message: 'Cuenta no encontrada' }
+  return { message: 'Cuenta desconectada' }
+}
+
 const getMetaAuthUrl = (redirectUri) => {
   return socialPublisher.getMetaAuthUrl(redirectUri)
+}
+
+// Si el usuario administra varias Páginas, se usa la que tiene Instagram vinculado (o la primera)
+const guardarCuentasMeta = async (negocioId, accounts) => {
+  const igCuenta = accounts.find((a) => a.plataforma === 'instagram')
+  const paginas = accounts.filter((a) => a.plataforma === 'facebook')
+  const pagina = (igCuenta && paginas.find((p) => p.accessToken === igCuenta.accessToken)) || paginas[0]
+
+  const savedAccounts = []
+  for (const acc of [pagina, igCuenta].filter(Boolean)) {
+    const res = await repository.upsertSocialAccount(negocioId, acc)
+    savedAccounts.push(res.rows[0])
+  }
+  return savedAccounts
 }
 
 const handleMetaOAuthCallback = async (clienteId, { code, redirectUri }) => {
   const negocioResult = await repository.findBusinessByOwner(clienteId)
   if (negocioResult.rows.length === 0) throw { status: 403, message: 'Negocio no encontrado' }
-  const negocioId = negocioResult.rows[0].pk_id
 
   // 1. Canjear código por Token de larga duración
   const token = await socialPublisher.exchangeMetaCode({ code, redirectUri })
 
-  // 2. Obtener páginas y cuentas vinculadas
+  // 2. Obtener páginas y cuentas vinculadas, y guardarlas
   const accounts = await socialPublisher.fetchMetaAccounts(token)
-
-  // 3. Guardar en base de datos
-  const savedAccounts = []
-  for (const acc of accounts) {
-    const res = await repository.upsertSocialAccount(negocioId, acc)
-    savedAccounts.push(res.rows[0])
-  }
+  const savedAccounts = await guardarCuentasMeta(negocioResult.rows[0].pk_id, accounts)
 
   return {
     success: true,
@@ -738,14 +769,13 @@ const handleMetaOAuthCallback = async (clienteId, { code, redirectUri }) => {
 const connectMetaManualToken = async (clienteId, { accessToken }) => {
   const negocioResult = await repository.findBusinessByOwner(clienteId)
   if (negocioResult.rows.length === 0) throw { status: 403, message: 'Negocio no encontrado' }
-  const negocioId = negocioResult.rows[0].pk_id
 
-  const accounts = await socialPublisher.fetchMetaAccounts(accessToken)
-  const savedAccounts = []
-  for (const acc of accounts) {
-    const res = await repository.upsertSocialAccount(negocioId, acc)
-    savedAccounts.push(res.rows[0])
-  }
+  if (!accessToken?.trim()) throw { status: 400, message: 'Pega el token de Meta' }
+  const tokenLargo = await socialPublisher.extendUserToken(accessToken.trim())
+  const accounts = await socialPublisher.fetchMetaAccounts(tokenLargo).catch((err) => {
+    throw { status: 400, message: `Meta rechazó el token: ${err.message}` }
+  })
+  const savedAccounts = await guardarCuentasMeta(negocioResult.rows[0].pk_id, accounts)
 
   return {
     success: true,
@@ -777,6 +807,7 @@ module.exports = {
   publishDirectlyMarketing,
   getSocialAccounts,
   connectSocialAccount,
+  disconnectSocialAccount,
   getMetaAuthUrl,
   handleMetaOAuthCallback,
   connectMetaManualToken,

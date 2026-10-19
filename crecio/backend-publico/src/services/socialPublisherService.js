@@ -1,271 +1,116 @@
 /**
- * Servicio de Publicación Real en Redes Sociales (Meta Graph API & TikTok API)
- * Conecta el Backend de Crecio directamente con las APIs oficiales de:
- * 1. Instagram Business API (Fotos, Carruseles y Reels)
- * 2. Facebook Pages API (Publicación en Muros de Páginas)
- * 3. TikTok Content Posting API (Videos y Shorts)
+ * Publicación real en redes sociales mediante la Graph API oficial de Meta:
+ * 1. Facebook: publicaciones en la Página del negocio (no en perfiles personales)
+ * 2. Instagram: fotos, historias y reels en cuentas profesionales (Business o Creator)
+ *    vinculadas a esa Página
  *
  * Utiliza fetch nativo de Node.js (cero dependencias externas).
  */
 
-/**
- * Publica una imagen en la cuenta de Instagram Business del usuario
- */
-async function publishToInstagramPhoto({ igUserId, accessToken, imageUrl, caption }) {
-  if (!igUserId || !accessToken) {
-    throw new Error('Cuenta de Instagram no vinculada. Se requiere Token y ID de Instagram Business.')
-  }
+const GRAPH = `https://graph.facebook.com/${process.env.META_GRAPH_VERSION || 'v23.0'}`
 
-  // Paso 1: Crear contenedor de imagen en Instagram Graph API
-  const containerRes = await fetch(`https://graph.facebook.com/v19.0/${igUserId}/media`, {
+const esVideo = (url = '') => /\.(mp4|mov)(\?|$)/i.test(url)
+
+async function graphPost(path, body) {
+  const res = await fetch(`${GRAPH}/${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      image_url: imageUrl,
-      caption: caption,
-      access_token: accessToken
-    })
+    body: JSON.stringify(body),
   })
-
-  const containerData = await containerRes.json()
-  if (!containerRes.ok || !containerData.id) {
-    throw new Error(containerData.error?.message || 'Error al crear contenedor de imagen en Instagram API.')
-  }
-
-  const creationId = containerData.id
-
-  // Paso 2: Publicar el contenedor en el Feed oficial de Instagram
-  const publishRes = await fetch(`https://graph.facebook.com/v19.0/${igUserId}/media_publish`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      creation_id: creationId,
-      access_token: accessToken
-    })
-  })
-
-  const publishData = await publishRes.json()
-  if (!publishRes.ok) {
-    throw new Error(publishData.error?.message || 'Error al publicar en Instagram Feed.')
-  }
-
-  return {
-    platform: 'Instagram',
-    postId: publishData.id,
-    url: `https://www.instagram.com/p/${publishData.id}`,
-    status: 'published'
-  }
+  const data = await res.json()
+  if (!res.ok || data.error) throw new Error(data.error?.message || `Error de Meta (${res.status})`)
+  return data
 }
 
-/**
- * Publica un Reel / Video en la cuenta de Instagram Business
- */
-async function publishToInstagramReel({ igUserId, accessToken, videoUrl, caption }) {
-  if (!igUserId || !accessToken) {
-    throw new Error('Cuenta de Instagram no vinculada para Reels.')
-  }
+async function graphGet(path, params) {
+  const res = await fetch(`${GRAPH}/${path}?${new URLSearchParams(params)}`)
+  const data = await res.json()
+  if (!res.ok || data.error) throw new Error(data.error?.message || `Error de Meta (${res.status})`)
+  return data
+}
 
-  // Paso 1: Crear contenedor tipo REELS
-  const containerRes = await fetch(`https://graph.facebook.com/v19.0/${igUserId}/media`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      media_type: 'REELS',
-      video_url: videoUrl,
-      caption: caption,
-      access_token: accessToken
-    })
-  })
-
-  const containerData = await containerRes.json()
-  if (!containerRes.ok || !containerData.id) {
-    throw new Error(containerData.error?.message || 'Error al crear contenedor de Reel.')
-  }
-
-  const creationId = containerData.id
-
-  // Paso 2: Esperar procesamiento del video por parte de Meta
-  let ready = false
-  let retries = 0
-
-  while (!ready && retries < 10) {
+// Instagram procesa la imagen o el video antes de poder publicarlo
+async function esperarContenedor(creationId, accessToken, intentos = 20) {
+  for (let i = 0; i < intentos; i++) {
+    const { status_code: estado } = await graphGet(creationId, { fields: 'status_code', access_token: accessToken })
+    if (estado === 'FINISHED') return
+    if (estado === 'ERROR' || estado === 'EXPIRED') throw new Error('Instagram no pudo procesar el archivo')
     await new Promise((r) => setTimeout(r, 3000))
-    const statusRes = await fetch(
-      `https://graph.facebook.com/v19.0/${creationId}?fields=status_code&access_token=${accessToken}`
-    )
-    const statusData = await statusRes.json()
-    if (statusData.status_code === 'FINISHED') {
-      ready = true
-    } else if (statusData.status_code === 'ERROR') {
-      throw new Error('Meta reportó error al procesar el video del Reel.')
-    }
-    retries++
   }
-
-  // Paso 3: Publicar Reel
-  const publishRes = await fetch(`https://graph.facebook.com/v19.0/${igUserId}/media_publish`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      creation_id: creationId,
-      access_token: accessToken
-    })
-  })
-
-  const publishData = await publishRes.json()
-  return {
-    platform: 'Instagram Reels',
-    postId: publishData.id,
-    status: 'published'
-  }
+  throw new Error('Instagram tardó demasiado en procesar el archivo; inténtalo de nuevo')
 }
 
 /**
- * Publica un Post en la Fanpage de Facebook del negocio
+ * Publica en la cuenta profesional de Instagram.
+ * formato: 'feed' (foto), 'story' (historia) o 'reel' (video)
  */
-async function publishToFacebookPage({ pageId, pageAccessToken, message, imageUrl }) {
-  if (!pageId || !pageAccessToken) {
-    throw new Error('Fanpage de Facebook no conectada.')
+async function publishToInstagram({ igUserId, accessToken, mediaUrl, caption, formato = 'feed' }) {
+  if (!mediaUrl) throw new Error('Instagram exige una imagen o un video para publicar')
+
+  const contenedor = { access_token: accessToken }
+  if (formato === 'story') {
+    contenedor.media_type = 'STORIES'
+    contenedor[esVideo(mediaUrl) ? 'video_url' : 'image_url'] = mediaUrl
+  } else if (esVideo(mediaUrl)) {
+    contenedor.media_type = 'REELS'
+    contenedor.video_url = mediaUrl
+    contenedor.caption = caption
+  } else {
+    contenedor.image_url = mediaUrl
+    contenedor.caption = caption
   }
 
-  const endpoint = imageUrl
-    ? `https://graph.facebook.com/v19.0/${pageId}/photos`
-    : `https://graph.facebook.com/v19.0/${pageId}/feed`
+  const { id: creationId } = await graphPost(`${igUserId}/media`, contenedor)
+  await esperarContenedor(creationId, accessToken)
+  const { id: postId } = await graphPost(`${igUserId}/media_publish`, { creation_id: creationId, access_token: accessToken })
 
-  const payload = imageUrl
-    ? { url: imageUrl, caption: message, access_token: pageAccessToken }
-    : { message: message, access_token: pageAccessToken }
-
-  const res = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  })
-
-  const data = await res.json()
-  if (!res.ok) {
-    throw new Error(data.error?.message || 'Error al publicar en la Fanpage de Facebook.')
-  }
-
-  return {
-    platform: 'Facebook',
-    postId: data.id || data.post_id,
-    status: 'published'
-  }
+  // El enlace real lo da Meta (el id de la publicación no es el código de la URL)
+  const { permalink } = await graphGet(postId, { fields: 'permalink', access_token: accessToken }).catch(() => ({}))
+  return { plataforma: 'instagram', postId, url: permalink || null }
 }
 
 /**
- * Publica un video corto en TikTok Content Posting API
+ * Publica en la Página de Facebook del negocio (con foto si la hay)
  */
-async function publishToTikTok({ tiktokAccessToken, videoUrl, title }) {
-  if (!tiktokAccessToken) {
-    throw new Error('Cuenta de TikTok no conectada.')
+async function publishToFacebookPage({ pageId, pageAccessToken, message, mediaUrl }) {
+  let data
+  if (mediaUrl && esVideo(mediaUrl)) {
+    data = await graphPost(`${pageId}/videos`, { file_url: mediaUrl, description: message, access_token: pageAccessToken })
+  } else if (mediaUrl) {
+    data = await graphPost(`${pageId}/photos`, { url: mediaUrl, caption: message, access_token: pageAccessToken })
+  } else {
+    data = await graphPost(`${pageId}/feed`, { message, access_token: pageAccessToken })
   }
+  const postId = data.post_id || data.id
+  return { plataforma: 'facebook', postId, url: `https://www.facebook.com/${postId}` }
+}
 
-  const res = await fetch('https://open.tiktokapis.com/v2/post/publish/content/init/', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${tiktokAccessToken}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      post_info: {
-        title: title,
-        privacy_level: 'PUBLIC_TO_EVERYONE',
-        disable_duet: false,
-        disable_stitch: false,
-        disable_comment: false
-      },
-      source_info: {
-        source: 'PULL_FROM_URL',
-        video_url: videoUrl
+/**
+ * Publica en las redes elegidas y devuelve qué salió bien y qué falló en cada una.
+ * cuentas: [{ plataforma, cuentaId, accessToken }] con token real de Meta
+ */
+async function publishToNetworks({ caption, mediaUrl, contentType, cuentas }) {
+  const formato = contentType === 'Story' ? 'story' : 'feed'
+  const resultados = []
+  const errores = []
+
+  for (const cuenta of cuentas) {
+    try {
+      if (cuenta.plataforma === 'instagram') {
+        resultados.push(await publishToInstagram({
+          igUserId: cuenta.cuentaId, accessToken: cuenta.accessToken, mediaUrl, caption, formato,
+        }))
+      } else if (cuenta.plataforma === 'facebook') {
+        resultados.push(await publishToFacebookPage({
+          pageId: cuenta.cuentaId, pageAccessToken: cuenta.accessToken, message: caption, mediaUrl,
+        }))
       }
-    })
-  })
-
-  const data = await res.json()
-  if (!res.ok || data.error?.code !== 'ok') {
-    throw new Error(data.error?.message || 'Error al publicar en TikTok Content Posting API.')
-  }
-
-  return {
-    platform: 'TikTok',
-    publishId: data.data?.publish_id,
-    status: 'published'
-  }
-}
-
-/**
- * Función principal unificada para emitir la publicación a todas las redes conectadas
- */
-async function publishToAllNetworks({
-  caption,
-  mediaUrl,
-  contentType,
-  socialTokens = {}
-}) {
-  const results = []
-  const errors = []
-
-  // 1. Instagram (Post o Reel)
-  if (socialTokens.instagram?.igUserId && socialTokens.instagram?.accessToken) {
-    try {
-      let res
-      if (contentType === 'Reels / Short' || contentType === 'Video') {
-        res = await publishToInstagramReel({
-          igUserId: socialTokens.instagram.igUserId,
-          accessToken: socialTokens.instagram.accessToken,
-          videoUrl: mediaUrl,
-          caption
-        })
-      } else {
-        res = await publishToInstagramPhoto({
-          igUserId: socialTokens.instagram.igUserId,
-          accessToken: socialTokens.instagram.accessToken,
-          imageUrl: mediaUrl,
-          caption
-        })
-      }
-      results.push(res)
     } catch (err) {
-      errors.push({ platform: 'Instagram', error: err.message })
+      errores.push({ plataforma: cuenta.plataforma, error: err.message })
     }
   }
 
-  // 2. Facebook Page
-  if (socialTokens.facebook?.pageId && socialTokens.facebook?.pageAccessToken) {
-    try {
-      const res = await publishToFacebookPage({
-        pageId: socialTokens.facebook.pageId,
-        pageAccessToken: socialTokens.facebook.pageAccessToken,
-        message: caption,
-        imageUrl: mediaUrl
-      })
-      results.push(res)
-    } catch (err) {
-      errors.push({ platform: 'Facebook', error: err.message })
-    }
-  }
-
-  // 3. TikTok
-  if (socialTokens.tiktok?.accessToken && mediaUrl) {
-    try {
-      const res = await publishToTikTok({
-        tiktokAccessToken: socialTokens.tiktok.accessToken,
-        videoUrl: mediaUrl,
-        title: caption
-      })
-      results.push(res)
-    } catch (err) {
-      errors.push({ platform: 'TikTok', error: err.message })
-    }
-  }
-
-  return {
-    success: results.length > 0,
-    results,
-    errors
-  }
+  return { resultados, errores }
 }
 
 /**
@@ -274,16 +119,23 @@ async function publishToAllNetworks({
 function getMetaAuthUrl(redirectUri) {
   const appId = process.env.META_APP_ID
   if (!appId) throw new Error('META_APP_ID no configurado en .env')
-  
+
   const scopes = [
     'pages_show_list',
     'pages_read_engagement',
     'pages_manage_posts',
+    'business_management',
     'instagram_basic',
     'instagram_content_publish'
   ].join(',')
 
-  return `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}&response_type=code`
+  // Las apps de tipo "Negocios" usan Facebook Login for Business: los permisos se eligen en una
+  // "configuración" del panel de Meta y se envía su ID (META_CONFIG_ID) en lugar de la lista de scopes
+  const permisos = process.env.META_CONFIG_ID
+    ? `config_id=${encodeURIComponent(process.env.META_CONFIG_ID)}`
+    : `scope=${scopes}`
+
+  return `https://www.facebook.com/${process.env.META_GRAPH_VERSION || 'v23.0'}/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(redirectUri)}&${permisos}&response_type=code`
 }
 
 /**
@@ -295,45 +147,56 @@ async function exchangeMetaCode({ code, redirectUri }) {
   if (!appId || !appSecret) throw new Error('Credenciales de Meta incompletas en .env')
 
   // 1. Obtener Token de corta duración
-  const tokenUrl = `https://graph.facebook.com/v19.0/oauth/access_token?client_id=${appId}&redirect_uri=${encodeURIComponent(redirectUri)}&client_secret=${appSecret}&code=${code}`
-  const shortRes = await fetch(tokenUrl)
-  const shortData = await shortRes.json()
+  const shortData = await graphGet('oauth/access_token', {
+    client_id: appId, redirect_uri: redirectUri, client_secret: appSecret, code,
+  })
 
-  if (!shortRes.ok || !shortData.access_token) {
-    throw new Error(shortData.error?.message || 'Error al obtener access_token de Meta')
-  }
+  // 2. Canjear por Token de larga duración (60 días); los tokens de Página que se
+  //    obtienen con él no vencen mientras el usuario no cambie su contraseña o permisos
+  const longData = await graphGet('oauth/access_token', {
+    grant_type: 'fb_exchange_token', client_id: appId, client_secret: appSecret, fb_exchange_token: shortData.access_token,
+  }).catch(() => ({}))
 
-  // 2. Canjear por Token de larga duración (60 días)
-  const longTokenUrl = `https://graph.facebook.com/v19.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${appId}&client_secret=${appSecret}&fb_exchange_token=${shortData.access_token}`
-  const longRes = await fetch(longTokenUrl)
-  const longData = await longRes.json()
+  return longData.access_token || shortData.access_token
+}
 
-  const finalToken = longData.access_token || shortData.access_token
-  return finalToken
+/**
+ * Cambia un token de usuario de corta duración (por ejemplo, del Graph API Explorer, ~1 h)
+ * por uno de 60 días. Así los tokens de Página que se obtienen con él no vencen.
+ */
+async function extendUserToken(userAccessToken) {
+  const appId = process.env.META_APP_ID
+  const appSecret = process.env.META_APP_SECRET
+  if (!appId || !appSecret) return userAccessToken
+
+  const longData = await graphGet('oauth/access_token', {
+    grant_type: 'fb_exchange_token', client_id: appId, client_secret: appSecret, fb_exchange_token: userAccessToken,
+  }).catch(() => ({}))
+  return longData.access_token || userAccessToken
 }
 
 /**
  * Obtiene las Páginas de Facebook y las cuentas vinculadas de Instagram Business del usuario
  */
 async function fetchMetaAccounts(userAccessToken) {
-  const accountsUrl = `https://graph.facebook.com/v19.0/me/accounts?fields=id,name,access_token,instagram_business_account{id,username,name}&access_token=${userAccessToken}`
-  const res = await fetch(accountsUrl)
-  const data = await res.json()
-
-  if (!res.ok) {
-    throw new Error(data.error?.message || 'Error al obtener cuentas de Facebook e Instagram')
-  }
+  const data = await graphGet('me/accounts', {
+    fields: 'id,name,access_token,instagram_business_account{id,username,name}',
+    access_token: userAccessToken,
+  })
 
   const pages = data.data || []
-  const accounts = []
+  if (pages.length === 0) {
+    throw new Error('Tu cuenta de Facebook no administra ninguna Página. Crea una Página para tu negocio (no sirve un perfil personal) y vuelve a conectar.')
+  }
 
+  const accounts = []
   pages.forEach(page => {
     // Cuenta de Facebook Page
     accounts.push({
       plataforma: 'facebook',
       cuentaIdExterna: page.id,
       nombreCuenta: page.name,
-      handle: `facebook.com/${page.id}`,
+      handle: page.name,
       accessToken: page.access_token,
       estado: 'conectado'
     })
@@ -356,13 +219,11 @@ async function fetchMetaAccounts(userAccessToken) {
 }
 
 module.exports = {
-  publishToInstagramPhoto,
-  publishToInstagramReel,
+  publishToInstagram,
   publishToFacebookPage,
-  publishToTikTok,
-  publishToAllNetworks,
+  publishToNetworks,
   getMetaAuthUrl,
   exchangeMetaCode,
+  extendUserToken,
   fetchMetaAccounts
 }
-

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import MetaAccountsCard from './MetaAccountsCard'
 import {
   Tag,
   ShoppingBag,
@@ -8,19 +8,8 @@ import {
   Flame,
   Sparkles,
   ImagePlus,
-  WandSparkles,
-  Check,
-  X,
-  Pencil
+  WandSparkles
 } from 'lucide-react'
-import {
-  InstagramIcon,
-  FacebookIcon,
-  WhatsAppIcon,
-  TwitterIcon,
-  YoutubeIcon,
-  TikTokIcon
-} from '../common/SocialIcons'
 
 const templateItems = [
   { id: 'Promoción / Oferta', label: 'Promoción / Oferta', icon: Tag },
@@ -67,15 +56,13 @@ export default function MarketingEditorCol({
   error,
   generate,
   accounts,
-  activeAccountsList,
   toggleAccount,
-  onConnectAccount,
+  onStartMetaAuth,
+  onManualTokenConnect,
+  onDisconnect,
   business,
   productos = []
 }) {
-  const [connectModalAcc, setConnectModalAcc] = useState(null)
-  const [handleInput, setHandleInput] = useState('')
-  const [connecting, setConnecting] = useState(false)
 
   const handleSelectTemplate = (templateId) => {
     setTipo(templateId)
@@ -88,55 +75,6 @@ export default function MarketingEditorCol({
       setContentType('Video')
     } else if (templateId === 'Promoción / Oferta' && setContentType) {
       setContentType('Publicación')
-    }
-  }
-
-  const openConnectModal = (acc) => {
-    setConnectModalAcc(acc)
-    setHandleInput(acc.handle !== 'Sin conectar' ? acc.handle : '')
-  }
-
-  const handleSaveConnection = async (e) => {
-    e.preventDefault()
-    if (!connectModalAcc) return
-    setConnecting(true)
-    try {
-      await onConnectAccount({
-        plataforma: connectModalAcc.id,
-        nombreCuenta: connectModalAcc.name,
-        handle: handleInput || `@${connectModalAcc.name.toLowerCase()}`,
-        estado: 'conectado'
-      })
-      alert(`✅ ¡Cuenta de ${connectModalAcc.name} vinculada exitosamente!`)
-      setConnectModalAcc(null)
-    } catch (err) {
-      alert('Error al conectar la cuenta')
-    } finally {
-      setConnecting(false)
-    }
-  }
-
-  const getSocialIcon = (id) => {
-    switch (id) {
-      case 'instagram': return <InstagramIcon size={18} />
-      case 'tiktok': return <TikTokIcon size={18} />
-      case 'facebook': return <FacebookIcon size={18} />
-      case 'youtube': return <YoutubeIcon size={18} />
-      case 'twitter': return <TwitterIcon size={18} />
-      case 'whatsapp': return <WhatsAppIcon size={18} />
-      default: return <Sparkles size={18} />
-    }
-  }
-
-  const getSocialBadgeColor = (id) => {
-    switch (id) {
-      case 'instagram': return { bg: '#fdf2f8', color: '#db2777', border: '#fbcfe8' }
-      case 'tiktok': return { bg: '#0f172a', color: '#ffffff', border: '#0f172a' }
-      case 'facebook': return { bg: '#eff6ff', color: '#2563eb', border: '#bfdbfe' }
-      case 'youtube': return { bg: '#fef2f2', color: '#dc2626', border: '#fecaca' }
-      case 'twitter': return { bg: '#f8fafc', color: '#0f172a', border: '#e2e8f0' }
-      case 'whatsapp': return { bg: '#f0fdf4', color: '#16a34a', border: '#bbf7d0' }
-      default: return { bg: '#f8fafc', color: '#475569', border: '#e2e8f0' }
     }
   }
 
@@ -304,190 +242,13 @@ export default function MarketingEditorCol({
         {error && <p className="m-error-msg">{error}</p>}
       </div>
 
-      {/* Cuentas conectadas */}
-      <div className="m-card">
-        <div className="m-card-header-flex">
-          <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#1e293b' }}>
-            Cuentas conectadas
-          </h3>
-          <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 500 }}>
-            {activeAccountsList.length} activas
-          </span>
-        </div>
-
-        <div className="accounts-list">
-          {accounts.map((acc) => {
-            const badgeStyle = getSocialBadgeColor(acc.id)
-            const isConfigured = acc.handle && acc.handle !== 'Sin conectar'
-            return (
-              <div
-                key={acc.id}
-                className="account-item-figma"
-                onClick={() => {
-                  if (!isConfigured) {
-                    openConnectModal(acc)
-                  } else {
-                    toggleAccount(acc.id)
-                  }
-                }}
-                style={{ cursor: 'pointer' }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
-                  <div
-                    style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '10px',
-                      background: badgeStyle.bg,
-                      color: badgeStyle.color,
-                      border: `1px solid ${badgeStyle.border}`,
-                      display: 'grid',
-                      placeItems: 'center',
-                      flexShrink: 0
-                    }}
-                  >
-                    {getSocialIcon(acc.id)}
-                  </div>
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <strong style={{ display: 'block', fontSize: '13px', color: '#0f172a', fontWeight: 700 }}>
-                      {acc.name}
-                    </strong>
-                    <small
-                      style={{
-                        display: 'block',
-                        fontSize: '11px',
-                        color: isConfigured ? '#64748b' : '#94a3b8',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      {isConfigured ? acc.handle : 'Sin vincular (Clic para agregar)'}
-                    </small>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      openConnectModal(acc)
-                    }}
-                    title="Editar usuario o enlace de tu negocio"
-                    style={{
-                      background: '#f8fafc',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: '6px',
-                      padding: '4px 8px',
-                      fontSize: '11px',
-                      color: '#475569',
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      fontWeight: 600,
-                      transition: 'all 0.15s ease'
-                    }}
-                  >
-                    <Pencil size={11} />
-                    <span>{isConfigured ? 'Editar' : 'Vincular'}</span>
-                  </button>
-
-                  <div
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      toggleAccount(acc.id)
-                    }}
-                    title={acc.active ? 'Activa para publicar (clic para desactivar)' : 'Desactivada (clic para activar)'}
-                    style={{
-                      width: '22px',
-                      height: '22px',
-                      borderRadius: '50%',
-                      background: acc.active ? '#0f172a' : 'transparent',
-                      border: acc.active ? 'none' : '1.5px solid #cbd5e1',
-                      display: 'grid',
-                      placeItems: 'center',
-                      color: '#ffffff',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease'
-                    }}
-                  >
-                    {acc.active && <Check size={11} strokeWidth={3.5} />}
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-
-        <div style={{ marginTop: '12px', padding: '8px 10px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #f1f5f9', fontSize: '11px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span>💡</span>
-          <span>También puedes configurar tus redes desde <strong>Configuración &gt; Datos del Negocio</strong>.</span>
-        </div>
-      </div>
-
-      {/* MODAL PARA CONECTAR / EDITAR CUENTA */}
-      {connectModalAcc && (
-        <div className="modal-overlay-marketing" onClick={() => setConnectModalAcc(null)}>
-          <div className="modal-box-marketing" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header-marketing">
-              <div className="modal-title-flex">
-                <div className="acc-icon-badge-lg" style={{ backgroundColor: connectModalAcc.color + '20', color: connectModalAcc.color }}>
-                  {getSocialIcon(connectModalAcc.id)}
-                </div>
-                <div>
-                  <h4>Vincular {connectModalAcc.name}</h4>
-                  <p>Ingresa el usuario o enlace de tu tienda</p>
-                </div>
-              </div>
-              <button className="btn-close-modal" onClick={() => setConnectModalAcc(null)}><X size={18} /></button>
-            </div>
-
-            <div className="modal-body-marketing">
-              <form onSubmit={handleSaveConnection} className="manual-handle-form">
-                <label>
-                  {connectModalAcc.id === 'whatsapp'
-                    ? 'Número de WhatsApp de tu negocio'
-                    : connectModalAcc.id === 'facebook'
-                    ? 'Página o usuario de Facebook'
-                    : `Usuario o enlace de ${connectModalAcc.name}`}
-                </label>
-                <input
-                  type="text"
-                  placeholder={
-                    connectModalAcc.id === 'whatsapp'
-                      ? 'Ej: 987 654 321'
-                      : connectModalAcc.id === 'facebook'
-                      ? 'Ej: facebook.com/mitienda o MiTiendaPeru'
-                      : connectModalAcc.id === 'instagram'
-                      ? 'Ej: @mitiendaperu'
-                      : connectModalAcc.id === 'tiktok'
-                      ? 'Ej: @mitienda_tiktok'
-                      : `@${connectModalAcc.name.toLowerCase()}_tienda`
-                  }
-                  value={handleInput}
-                  onChange={(e) => setHandleInput(e.target.value)}
-                  autoFocus
-                  required
-                />
-                <div style={{ display: 'flex', gap: '8px', marginTop: '14px' }}>
-                  <button
-                    type="button"
-                    onClick={() => setConnectModalAcc(null)}
-                    style={{ flex: 1, padding: '10px', background: '#f1f5f9', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, color: '#475569' }}
-                  >
-                    Cancelar
-                  </button>
-                  <button type="submit" className="btn-save-handle" style={{ flex: 2 }} disabled={connecting}>
-                    {connecting ? 'Guardando...' : 'Guardar y Activar'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
+      <MetaAccountsCard
+        accounts={accounts}
+        toggleAccount={toggleAccount}
+        onStartMetaAuth={onStartMetaAuth}
+        onManualTokenConnect={onManualTokenConnect}
+        onDisconnect={onDisconnect}
+      />
     </div>
   )
 }

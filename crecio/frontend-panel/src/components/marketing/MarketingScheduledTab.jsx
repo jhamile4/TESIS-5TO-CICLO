@@ -12,7 +12,7 @@ export default function MarketingScheduledTab({ scheduledPosts }) {
         {scheduledPosts.map((post) => (
           <div key={post.id} className="scheduled-card">
             <div className="post-card-img-wrap">
-              <img src={post.image} alt="Scheduled post" />
+              {post.image ? <img src={post.image} alt="Scheduled post" /> : <div style={{ height: '100%', minHeight: '140px', display: 'grid', placeItems: 'center', background: '#f1f5f9', color: '#94a3b8', fontSize: '12px' }}>Solo texto</div>}
               <span className="status-badge orange-badge">PROGRAMADO</span>
             </div>
             <div className="post-card-body">

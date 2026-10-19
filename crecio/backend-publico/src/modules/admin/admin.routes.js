@@ -23,6 +23,7 @@ const {
   publishDirectlyMarketing,
   getSocialAccounts,
   connectSocialAccount,
+  disconnectSocialAccount,
   getMetaAuthUrl,
   handleMetaOAuthCallback,
   connectMetaManualToken,
@@ -48,6 +49,7 @@ router.post('/marketing/publicaciones', verifyToken, saveMarketingPost)
 router.post('/marketing/publicar-directo', verifyToken, publishDirectlyMarketing)
 router.get('/marketing/redes', verifyToken, getSocialAccounts)
 router.post('/marketing/redes', verifyToken, connectSocialAccount)
+router.delete('/marketing/redes/:id', verifyToken, disconnectSocialAccount)
 router.get('/marketing/meta/auth-url', verifyToken, getMetaAuthUrl)
 router.post('/marketing/meta/callback', verifyToken, handleMetaOAuthCallback)
 router.post('/marketing/meta/connect-token', verifyToken, connectMetaManualToken)

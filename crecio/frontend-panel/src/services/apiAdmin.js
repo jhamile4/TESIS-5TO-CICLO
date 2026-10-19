@@ -92,6 +92,7 @@ export const publicarDirectoMarketing = (postData) => request('/admin/marketing/
   body: JSON.stringify(postData),
 })
 export const getRedesSociales = () => request('/admin/marketing/redes')
+export const desconectarRedSocial = (id) => request(`/admin/marketing/redes/${id}`, { method: 'DELETE' })
 export const conectarRedSocial = (cuentaData) => request('/admin/marketing/redes', {
   method: 'POST',
   body: JSON.stringify(cuentaData),
