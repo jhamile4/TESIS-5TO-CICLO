@@ -9,8 +9,8 @@ import TabParaTi               from './tabs/TabParaTi'
 import TabTiendas              from './tabs/TabTiendas'
 import TabDatos                from './tabs/TabDatos'
 import { estaEntregado, estaEnCurso } from './estadoPedido'
+import { API_URL as BASE_URL } from '../../config/env'
 
-const BASE_URL = 'http://localhost:3001/api'
 
 const apiFetch = async (path, token, options = {}) => {
   const headers = { 'Content-Type': 'application/json' }

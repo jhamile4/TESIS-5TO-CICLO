@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
+import { API_URL as BASE_URL } from '../../../config/env'
 
-const BASE_URL = 'http://localhost:3001/api'
 
 function CardProducto({ p, badge, badgeColor, navigate }) {
   return (

@@ -1,5 +1,4 @@
-const BASE_URL  = 'http://localhost:3001/api'
-const PANEL_URL = import.meta.env.VITE_PANEL_URL || 'http://localhost:5174'
+import { API_URL as BASE_URL, PANEL_URL } from '../config/env'
 
 // Abre el panel con la misma cuenta. El token viaja en el fragmento (#), que el
 // navegador no envía a ningún servidor, y el panel lo borra de la URL al leerlo.

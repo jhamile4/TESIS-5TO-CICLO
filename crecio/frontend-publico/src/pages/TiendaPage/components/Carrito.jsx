@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import LoginCompradorModal from './LoginCompradorModal'
 import PagoStripeModal     from './PagoStripeModal'
+import { API_URL as BASE_URL } from '../../../config/env'
 
-const BASE_URL = 'http://localhost:3001/api'
 // Guarda item en BD si hay token
 const guardarEnBD = async (producto, negocioId, token) => {
   if (!token) return

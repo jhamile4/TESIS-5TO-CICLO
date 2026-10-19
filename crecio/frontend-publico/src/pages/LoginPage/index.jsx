@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import '../../components/Navbar/Navbar.css'
 import { irAlPanel } from '../../services/sesion'
+import { API_URL as BASE_URL } from '../../config/env'
 
-const BASE_URL = 'http://localhost:3001/api'
 
 function LoginPage() {
   const navigate = useNavigate()

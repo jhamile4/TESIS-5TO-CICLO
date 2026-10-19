@@ -11,9 +11,9 @@ import {
 } from '@stripe/react-stripe-js'
 import Navbar from '../../components/Navbar/Navbar'
 import logoCrecio from '../../assets/logoCrecio.png'
+import { API_URL as BASE_URL } from '../../config/env'
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
-const BASE_URL      = 'http://localhost:3001/api'
 
 const PLANES_INFO = {
   pro: {

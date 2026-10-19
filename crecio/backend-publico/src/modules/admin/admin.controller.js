@@ -178,7 +178,7 @@ const generateProductImage = async (req, res, next) => {
 
 const getMetaAuthUrl = async (req, res, next) => {
   try {
-    const redirectUri = req.query.redirectUri || 'http://localhost:5174/configuracion'
+    const redirectUri = req.query.redirectUri || `${process.env.PANEL_URL || 'http://localhost:5174'}/configuracion`
     const url = adminService.getMetaAuthUrl(redirectUri)
     res.json({ url })
   } catch (error) {

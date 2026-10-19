@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { estadoConfig, pasosSeguimiento, estaEntregado, estaEnCurso, claveEstado } from '../estadoPedido'
 import ResenaPedido from '../components/ResenaPedido'
+import { API_URL as BASE_URL } from '../../../config/env'
 
-const BASE_URL = 'http://localhost:3001/api'
 
 const formatFecha    = (iso) => new Date(iso).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
 const formatFechaHora = (iso) => new Date(iso).toLocaleString('es-PE', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })

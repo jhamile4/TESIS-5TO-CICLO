@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import '../Navbar/Navbar.css'
+import { PANEL_URL } from '../../config/env'
 
 function Footer() {
   const navigate = useNavigate()
@@ -152,7 +153,7 @@ function Footer() {
               {['Cómo funciona', 'Precios', 'Herramientas IA', 'Buscador local', 'Panel de admin'].map((l) => (
                 <li key={l}>
                   <a
-                    href={l === 'Panel de admin' ? (import.meta.env.VITE_PANEL_URL || 'http://localhost:5174') : '#'}
+                    href={l === 'Panel de admin' ? PANEL_URL : '#'}
                     className="text-[#6B7280] hover:text-[#0D9488] text-sm transition-colors"
                   >{l}</a>
                 </li>

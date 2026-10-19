@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { API_URL as BASE_URL } from '../../config/env'
 
-const BASE_URL = 'http://localhost:3001/api'
 
 const SUGERENCIAS = [
   '¿Cómo registro mi negocio?',

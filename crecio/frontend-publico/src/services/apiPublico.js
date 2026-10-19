@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:3001/api'
+import { API_URL as BASE_URL } from '../config/env'
 
 const get = async (path, token = null) => {
   const headers = { 'Content-Type': 'application/json' }

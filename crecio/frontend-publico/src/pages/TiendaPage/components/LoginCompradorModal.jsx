@@ -1,6 +1,6 @@
 import { useState } from 'react'
+import { API_URL as BASE_URL } from '../../../config/env'
 
-const BASE_URL = 'http://localhost:3001/api'
 
 const post = async (path, body) => {
   const res  = await fetch(`${BASE_URL}${path}`, {
