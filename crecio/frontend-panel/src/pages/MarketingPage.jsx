@@ -9,6 +9,7 @@ import {
   guardarPublicacionMarketing,
   cancelarPublicacionMarketing,
   publicarDirectoMarketing,
+  getPlan,
   getRedesSociales,
   desconectarRedSocial,
   getMetaAuthUrl,
@@ -16,6 +17,7 @@ import {
   conectarMetaToken
 } from '../services/apiAdmin'
 
+import { pagarProUrl } from '../config/env'
 import MarketingHeader from '../components/marketing/MarketingHeader'
 import MarketingTabs from '../components/marketing/MarketingTabs'
 import MarketingEditorCol from '../components/marketing/MarketingEditorCol'
@@ -79,6 +81,8 @@ export default function MarketingPage() {
 
   const [scheduledPosts, setScheduledPosts] = useState([])
   const [publishedPosts, setPublishedPosts] = useState([])
+  const [plan, setPlan] = useState(null)
+  const cargarPlan = () => getPlan().then(setPlan).catch(() => {})
 
   const loadAccounts = async () => {
     try {
@@ -145,6 +149,7 @@ export default function MarketingPage() {
 
 
   useEffect(() => {
+    cargarPlan()
     getResumen()
       .then((result) => setBusiness(result.negocio))
       .catch(() => {})
@@ -238,6 +243,7 @@ export default function MarketingPage() {
       })
       if (res?.imageUrl) {
         setUploadedImage(res.imageUrl)
+        cargarPlan()
       }
     } catch (err) {
       alert(err.message || 'No se pudo generar la imagen IA. Puedes subir una foto propia o intentarlo de nuevo.')
@@ -262,6 +268,7 @@ export default function MarketingPage() {
         generateImage: false // la imagen se crea solo si el dueño la pide (botón «Crear con IA»)
       })
       setContent(result.contenido)
+      cargarPlan()
       setGuionVideo(result.guionVideo || null)
       if (result.mediaUrl && !uploadedImage) {
         setUploadedImage(result.mediaUrl)
@@ -336,6 +343,15 @@ export default function MarketingPage() {
   return (
     <section className="marketing-page-wrapper">
       <MarketingHeader />
+      {plan?.plan === 'gratis' && (
+        <div className="mk-plan-aviso">
+          <span>
+            Plan Gratis: usaste <strong>{plan.uso.usosIaMes} de {plan.limites.usosIaMes}</strong> creaciones con IA este mes.
+            Publicar y programar en Facebook e Instagram es del plan Pro.
+          </span>
+          <a href={pagarProUrl()} className="mk-btn mk-btn-primary">Pasar a Pro · S/ 39</a>
+        </div>
+      )}
 
       <MarketingTabs
         activeMainTab={activeMainTab}
@@ -396,6 +412,7 @@ export default function MarketingPage() {
             handlePublishOrSchedule={handlePublishOrSchedule}
             publishing={publishing}
             loading={loading}
+            puedePublicar={plan ? plan.limites.publicarEnRedes : true}
           />
         </div>
       )}

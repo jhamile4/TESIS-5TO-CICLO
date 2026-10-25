@@ -7,6 +7,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 const crearIntentPlan = async (planId, clienteId, clienteEmail) => {
   const plan = PLANES[planId]
   if (!plan) throw { status: 400, message: 'Plan no válido' }
+  // El plan es del negocio: sin negocio no se cobra (si no, se pagaría por nada)
+  const negocio = await negocioModel.getPlan(clienteId)
+  if (negocio.rows.length === 0)
+    throw { status: 400, message: 'Primero crea tu tienda en CRECIO; el plan Pro se activa para tu negocio.' }
 
   const paymentIntent = await stripe.paymentIntents.create({
     amount:   plan.monto,
@@ -45,7 +49,11 @@ const confirmarPlan = async (paymentIntentId, planId, clienteId) => {
   if (metadata.aplicado === 'true')
     throw { status: 409, message: 'Este pago ya fue usado para activar un plan' }
 
-  const expira   = new Date()
+  // Si renueva antes de que venza, los meses nuevos se suman a los que le quedan
+  const actual = (await negocioModel.getPlan(clienteId)).rows[0]
+  if (!actual) throw { status: 400, message: 'Esta cuenta no tiene un negocio' }
+  const venceEn = actual.plan === 'pro' && actual.plan_expira ? new Date(actual.plan_expira) : null
+  const expira = venceEn && venceEn > new Date() ? venceEn : new Date()
   expira.setMonth(expira.getMonth() + plan.meses)
   const planBase = planId.replace('_anual', '')
 

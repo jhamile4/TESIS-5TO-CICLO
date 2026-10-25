@@ -8,6 +8,7 @@ const Stripe = require('stripe')
 const { enviarEstadoPedido } = require('../../utils/email')
 const { asegurarUrlPublica } = require('../../utils/storage')
 const { geocodificar } = require('../../utils/geocodificar')
+const limitesPlan = require('../../services/limitesPlan')
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
@@ -159,6 +160,7 @@ const createProduct = async (clienteId, datos) => {
   if (!nombre?.trim() || !Number.isFinite(Number(precio)) || Number(precio) < 0 || !Number.isInteger(Number(stock)) || Number(stock) < 0) {
     throw { status: 400, message: 'Nombre, precio y stock son obligatorios y deben ser validos' }
   }
+  await limitesPlan.exigirCupoProductos(negocioResult.rows[0])
 
   // Las fotos subidas o generadas llegan en base64: se guardan en Storage, no en la base de datos
   const imagenUrl = await asegurarUrlPublica(datos.imagenUrl, `productos/${negocioResult.rows[0].pk_id}`)
@@ -319,13 +321,13 @@ const updateOrderStatus = async (clienteId, pedidoId, nuevoEstado) => {
   return actualizado
 }
 
-const MAX_FOTOS_GALERIA = 8
-
 const negocioDelDueno = async (clienteId) => {
   const result = await repository.findBusinessByOwner(clienteId)
   if (result.rows.length === 0) throw { status: 403, message: 'Esta cuenta no tiene un negocio para administrar' }
   return result.rows[0]
 }
+
+const getPlan = async (clienteId) => limitesPlan.resumenPlan(await negocioDelDueno(clienteId))
 
 const getGaleria = async (clienteId) => {
   const negocio = await negocioDelDueno(clienteId)
@@ -336,7 +338,7 @@ const agregarFotoGaleria = async (clienteId, imagen) => {
   const negocio = await negocioDelDueno(clienteId)
   if (!imagen) throw { status: 400, message: 'Elige una foto' }
   const actuales = (await repository.getGallery(negocio.pk_id)).rows.length
-  if (actuales >= MAX_FOTOS_GALERIA) throw { status: 400, message: `Puedes tener hasta ${MAX_FOTOS_GALERIA} fotos en tu galería` }
+  await limitesPlan.exigirCupoFotos(negocio, actuales)
   const url = await asegurarUrlPublica(imagen, `galeria/${negocio.pk_id}`)
   return (await repository.addGalleryImage(negocio.pk_id, url)).rows[0]
 }
@@ -480,6 +482,7 @@ const generateMarketing = async (clienteId, { tipo = 'Promoción / Oferta', prom
   if (!prompt?.trim()) throw { status: 400, message: 'Describe el contenido que deseas generar' }
 
   const negocio = negocioResult.rows[0]
+  await limitesPlan.exigirCupoIa(negocio)
   const productosResult = await productoModel.findByNegocio(negocio.pk_id)
   const productos = productosResult.rows.slice(0, 8).map((p) => `${p.nombre} (S/${p.precio})`).join(', ')
 
@@ -593,9 +596,11 @@ Reglas:
 
   let mediaUrl = null
   if (generateImage) {
-    const mediaGen = await generateProductImage(clienteId, { prompt, categoria: negocio.categoria, mode: 'studio' }).catch(() => ({}))
+    const mediaGen = await crearImagenIa({ prompt, categoria: negocio.categoria, mode: 'studio' }).catch(() => ({}))
     mediaUrl = mediaGen.imageUrl || null
   }
+  // Una publicación generada (con o sin imagen) cuenta como un uso de IA
+  await limitesPlan.registrarUsoIa(negocio.pk_id, 'texto')
 
   return {
     negocio: { id: negocio.pk_id, nombre: negocio.nombre },
@@ -632,7 +637,16 @@ const crearPromptImagen = async (idea, categoria) => {
   return `${idea}, ${categoria || ''} product, commercial photography`
 }
 
-const generateProductImage = async (clienteId, { mode, prompt, nombre, categoria }) => {
+// Foto con IA desde Inventario: cuenta como un uso de IA del plan
+const generateProductImage = async (clienteId, datos) => {
+  const negocio = await negocioDelDueno(clienteId)
+  await limitesPlan.exigirCupoIa(negocio)
+  const imagen = await crearImagenIa({ ...datos, categoria: datos.categoria || negocio.categoria })
+  await limitesPlan.registrarUsoIa(negocio.pk_id, 'imagen')
+  return imagen
+}
+
+const crearImagenIa = async ({ mode, prompt, nombre, categoria }) => {
   const idea = (prompt || nombre || '').trim()
   if (!idea) throw { status: 400, message: 'Escribe qué producto o idea quieres en la imagen' }
 
@@ -738,6 +752,7 @@ const saveMarketingPost = async (clienteId, postData) => {
   const plataformas = normalizarPlataformas(postData.platforms || postData.plataformas)
   let fechaProgramada = null
   if (programar) {
+    limitesPlan.exigirPublicarEnRedes(negocioResult.rows[0])
     fechaProgramada = leerFechaProgramada(postData)
     if (plataformas.length === 0) throw { status: 400, message: 'Elige al menos una red: Facebook o Instagram' }
     const conectadas = (await repository.getSocialTokens(negocioId, plataformas)).rows
@@ -769,6 +784,7 @@ const publishDirectlyMarketing = async (clienteId, postData) => {
   const negocioResult = await repository.findBusinessByOwner(clienteId)
   if (negocioResult.rows.length === 0) throw { status: 403, message: 'Negocio no encontrado' }
   const negocioId = negocioResult.rows[0].pk_id
+  limitesPlan.exigirPublicarEnRedes(negocioResult.rows[0])
 
   const caption = limpiarMarkdown(postData.caption || postData.text || postData.content || '')
   if (!caption) throw { status: 400, message: 'Escribe o genera el texto de la publicación' }
@@ -826,6 +842,8 @@ const publicarProgramadasPendientes = async () => {
   for (const post of pendientes) {
     let resultado
     try {
+      // Si el Pro venció antes de la hora programada, no se publica
+      limitesPlan.exigirPublicarEnRedes(await limitesPlan.negocioConPlan(post.fk_negocio_id))
       resultado = await publicarEnRedes(post.fk_negocio_id, {
         caption: post.caption,
         mediaUrl: post.media_url || null,
@@ -920,6 +938,7 @@ const connectMetaManualToken = async (clienteId, { accessToken }) => {
 
 module.exports = {
   getResumen,
+  getPlan,
   getInventario,
   getTienda,
   updateTienda,

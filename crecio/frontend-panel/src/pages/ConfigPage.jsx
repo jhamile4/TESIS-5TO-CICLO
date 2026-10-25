@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { User, QrCode, Shield, Save } from 'lucide-react'
+import { User, QrCode, Shield, Save, Crown } from 'lucide-react'
 import { getTienda, actualizarTienda, enviarMetaCallback } from '../services/apiAdmin'
 import ConfigProfileTab from '../components/config/ConfigProfileTab'
 import ConfigQrTab from '../components/config/ConfigQrTab'
 import ConfigSecurityTab from '../components/config/ConfigSecurityTab'
+import ConfigPlanTab from '../components/config/ConfigPlanTab'
 
 export default function ConfigPage() {
   const [activeTab, setActiveTab] = useState(new URLSearchParams(window.location.search).get('tab') || 'perfil')
@@ -144,10 +145,12 @@ export default function ConfigPage() {
           <h2>Configuración</h2>
           <p>Administra tu negocio, preferencias y seguridad</p>
         </div>
-        <button className="btn-ui-primary" onClick={handleSave} disabled={saving}>
-          <Save size={16} />
-          {saving ? 'Guardando...' : 'Guardar Cambios'}
-        </button>
+        {activeTab === 'perfil' && (
+          <button className="btn-ui-primary" onClick={handleSave} disabled={saving}>
+            <Save size={16} />
+            {saving ? 'Guardando...' : 'Guardar Cambios'}
+          </button>
+        )}
       </div>
 
       {message && <div className="toast-success">{message}</div>}
@@ -173,6 +176,12 @@ export default function ConfigPage() {
         >
           <Shield size={15} /> Seguridad
         </button>
+        <button
+          className={`config-pill-btn ${activeTab === 'plan' ? 'active' : ''}`}
+          onClick={() => setActiveTab('plan')}
+        >
+          <Crown size={15} /> Mi plan
+        </button>
       </div>
 
       {/* Tab Content */}
@@ -192,6 +201,7 @@ export default function ConfigPage() {
       {activeTab === 'seguridad' && (
         <ConfigSecurityTab />
       )}
+      {activeTab === 'plan' && <ConfigPlanTab />}
     </section>
   )
 }

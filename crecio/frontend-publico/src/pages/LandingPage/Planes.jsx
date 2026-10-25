@@ -1,58 +1,44 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+// Mismos límites que aplica el servidor (backend-publico/src/config/constants.js)
 const planes = [
   {
     id: 'gratis',
-    nombre: 'Básico',
+    nombre: 'Gratis',
     precio: { mensual: 0, anual: 0 },
-    descripcion: 'Para empezar a digitalizarte sin costo.',
+    descripcion: 'Para empezar a vender por internet sin pagar nada.',
     features: [
-      'Catálogo con hasta 20 productos',
-      'Panel de administración básico',
-      'Perfil en buscador local',
-      'Soporte por email',
+      'Tienda online con carrito y pedidos',
+      'Hasta 20 productos',
+      'Aparece en el directorio de tu zona',
+      'Panel de pedidos, inventario y finanzas',
+      '10 creaciones con IA al mes',
+      '3 fotos en la galería',
     ],
-    noFeatures: ['Herramientas de IA', 'Dominio personalizado', 'Reportes avanzados'],
-    cta: 'Empezar Gratis',
+    noFeatures: ['Publicar y programar en Facebook e Instagram'],
+    cta: 'Crear mi tienda gratis',
     popular: false,
     accion: 'registro',
   },
   {
     id: 'pro',
     nombre: 'CRECIO Pro',
-    precio: { mensual: 49, anual: 39 },
-    descripcion: 'El plan favorito de los negocios que quieren crecer.',
+    // anual: lo que equivale por mes pagando S/ 390 al año
+    precio: { mensual: 39, anual: 32.5, totalAnual: 390 },
+    descripcion: 'Para el negocio que quiere vender más y ahorrar tiempo en redes.',
     features: [
-      'Catálogo ilimitado de productos',
-      'Panel de administración completo',
-      'Herramientas de IA incluidas',
-      'Dominio personalizado',
-      'Reportes y analíticas avanzadas',
-      'Soporte prioritario 24/7',
+      'Todo lo del plan Gratis',
+      'Productos ilimitados',
+      'IA ilimitada: textos e imágenes',
+      'Publica y programa en Facebook e Instagram',
+      '8 fotos en la galería',
+      'Sin comisión por venta',
     ],
     noFeatures: [],
-    cta: 'Empezar Prueba Gratis',
+    cta: 'Pasar a Pro',
     popular: true,
     accion: 'pagar',
-  },
-  {
-    id: 'enterprise',
-    nombre: 'Empresarial',
-    precio: { mensual: 129, anual: 99 },
-    descripcion: 'Para negocios con múltiples sucursales.',
-    features: [
-      'Todo lo de Pro',
-      'Múltiples sucursales',
-      'API personalizada',
-      'Usuarios ilimitados',
-      'Onboarding dedicado',
-      'SLA garantizado',
-    ],
-    noFeatures: [],
-    cta: 'Contactar Ventas',
-    popular: false,
-    accion: 'whatsapp',
   },
 ]
 
@@ -84,17 +70,11 @@ function Planes() {
       } else {
         navigate(`/pagar-plan?plan=${plan.id}&periodo=${periodo}`)
       }
-    } else if (plan.accion === 'whatsapp') {
-      window.open(
-        `https://wa.me/51987654321?text=${encodeURIComponent('Hola CRECIO, me interesa el plan Empresarial para mi negocio. ¿Podemos hablar?')}`,
-        '_blank'
-      )
     }
   }
 
   const ctaStyle = (plan) => {
     if (plan.popular) return 'bg-[#0D9488] text-white hover:bg-[#0F766E] shadow-lg shadow-[#0D9488]/20'
-    if (plan.id === 'enterprise') return 'border border-white/20 text-white hover:bg-white/5'
     return 'border border-white/20 text-white hover:bg-white/5'
   }
 
@@ -138,14 +118,14 @@ function Planes() {
             <span className={`text-sm font-medium transition-colors ${anual ? 'text-white' : 'text-[#6B7280]'}`}>Anual</span>
             {anual && (
               <span className="bg-[#0D9488]/20 text-[#0D9488] text-xs px-2 py-1 rounded font-semibold">
-                Ahorra 20%
+                2 meses gratis
               </span>
             )}
           </div>
         </div>
 
         {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6 items-start max-w-4xl mx-auto">
           {planes.map((plan, idx) => (
             <div
               key={plan.id}
@@ -177,7 +157,7 @@ function Planes() {
                     <span className="text-4xl md:text-5xl font-bold text-white tracking-tight">
                       {plan.precio.mensual === 0
                         ? 'Gratis'
-                        : `S/ ${anual ? plan.precio.anual : plan.precio.mensual}`}
+                        : `S/ ${anual ? plan.precio.anual.toFixed(2) : plan.precio.mensual}`}
                     </span>
                     {plan.precio.mensual > 0 && (
                       <span className="text-[#6B7280] text-sm">/mes</span>
@@ -185,7 +165,7 @@ function Planes() {
                   </div>
                   {anual && plan.precio.mensual > 0 && (
                     <p className="text-xs text-[#0D9488] font-medium mt-1">
-                      Ahorras S/ {(plan.precio.mensual - plan.precio.anual) * 12} al año
+                      S/ {plan.precio.totalAnual} al año · ahorras S/ {plan.precio.mensual * 12 - plan.precio.totalAnual}
                     </p>
                   )}
                   <p className="text-[#9CA3AF] text-sm mt-2">{plan.descripcion}</p>
@@ -196,12 +176,7 @@ function Planes() {
                   onClick={() => handleCTA(plan)}
                   className={`w-full py-3.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${ctaStyle(plan)}`}
                 >
-                  {plan.id === 'enterprise'
-                    ? <span className="flex items-center justify-center gap-2">
-                        <i className="ri-whatsapp-line" /> {plan.cta}
-                      </span>
-                    : plan.cta
-                  }
+                  {plan.cta}
                 </button>
 
                 {/* Features */}
@@ -229,7 +204,7 @@ function Planes() {
         </div>
 
         <p className="text-[#6B7280]/60 text-xs text-center mt-10">
-          Puedes empezar con el plan gratuito sin tarjeta de crédito y cambiar de plan cuando lo necesites.
+          Precios en soles con IGV incluido. Empiezas gratis y sin tarjeta; el Pro se paga por adelantado y no se renueva solo.
         </p>
       </div>
     </section>

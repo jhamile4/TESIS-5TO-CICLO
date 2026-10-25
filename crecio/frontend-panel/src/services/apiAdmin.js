@@ -16,7 +16,10 @@ const request = async (path, options = {}) => {
     if (response.status === 401) {
       localStorage.removeItem('crecio_admin_token')
     }
-    throw new Error(data.message || 'No se pudo procesar la solicitud')
+    // codigo 'PLAN_LIMITE': la acción es del plan Pro (la pantalla puede ofrecer "Pasar a Pro")
+    const error = new Error(data.message || 'No se pudo procesar la solicitud')
+    error.codigo = data.codigo
+    throw error
   }
   return data
 }
@@ -47,6 +50,7 @@ export const marcarNotificacionesLeidas = () => request('/admin/notificaciones/l
 
 export const getResumen = () => request('/admin/resumen')
 export const getInventario = () => request('/admin/inventario')
+export const getPlan = () => request('/admin/plan')
 export const getTienda = () => request('/admin/tienda')
 export const actualizarTienda = (tienda) => request('/admin/tienda', { method: 'PUT', body: JSON.stringify(tienda) })
 export const getGaleria = () => request('/admin/galeria')

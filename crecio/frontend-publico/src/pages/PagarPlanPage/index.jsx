@@ -12,36 +12,23 @@ import {
 import Navbar from '../../components/Navbar/Navbar'
 import logoCrecio from '../../assets/logoCrecio.png'
 import { API_URL as BASE_URL } from '../../config/env'
+import { irAlPanel } from '../../services/sesion'
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
 
+// Precios con IGV incluido; deben coincidir con PLANES del servidor (pro: 3900, pro_anual: 39000 céntimos)
 const PLANES_INFO = {
   pro: {
     nombre:      'CRECIO Pro',
-    precio:      { mensual: 49, anual: 39 },
-    descripcion: 'El plan favorito de los negocios que quieren crecer.',
+    precio:      { mensual: 39, anual: 390 },
+    descripcion: 'Para el negocio que quiere vender más y ahorrar tiempo en redes.',
     color:       '#0D9488',
     features: [
-      'Catálogo ilimitado de productos',
-      'Panel de administración completo',
-      'Herramientas de IA incluidas',
-      'Dominio personalizado',
-      'Reportes y analíticas avanzadas',
-      'Soporte prioritario 24/7',
-    ],
-  },
-  enterprise: {
-    nombre:      'CRECIO Enterprise',
-    precio:      { mensual: 129, anual: 99 },
-    descripcion: 'Para negocios con múltiples sucursales.',
-    color:       '#111827',
-    features: [
-      'Todo lo de Pro',
-      'Múltiples sucursales',
-      'API personalizada',
-      'Usuarios ilimitados',
-      'Onboarding dedicado',
-      'SLA garantizado',
+      'Productos ilimitados',
+      'IA ilimitada: textos e imágenes',
+      'Publica y programa en Facebook e Instagram',
+      '8 fotos en la galería de tu tienda',
+      'Sin comisión por venta',
     ],
   },
 }
@@ -112,7 +99,7 @@ function FormularioPago({ planId, esAnual, planInfo, onExito }) {
       if (!res2.ok) throw new Error(data2.message)
 
       setExito(true)
-      setTimeout(() => navigate('/perfil'), 3000)
+      setTimeout(() => irAlPanel(), 3000)
     } catch (err) {
       setError(err.message || 'Error al procesar el pago')
     } finally {
@@ -127,7 +114,7 @@ function FormularioPago({ planId, esAnual, planInfo, onExito }) {
       </div>
       <h2 className="text-2xl font-bold text-[#111827] mb-2">¡Plan activado!</h2>
       <p className="text-[#6B7280] mb-1">Tu plan <strong>{planInfo.nombre}</strong> está activo.</p>
-      <p className="text-sm text-[#9CA3AF]">Redirigiendo a tu perfil...</p>
+      <p className="text-sm text-[#9CA3AF]">Te llevamos a tu panel...</p>
     </div>
   )
 
@@ -212,15 +199,12 @@ function FormularioPago({ planId, esAnual, planInfo, onExito }) {
       >
         {cargando
           ? <><i className="ri-loader-4-line animate-spin" /> Procesando...</>
-          : <><i className="ri-lock-line" /> Pagar S/ {precioFinal * (esAnual ? 12 : 1)}.00 {esAnual ? '/ año' : '/ mes'}</>
+          : <><i className="ri-lock-line" /> Pagar S/ {precioFinal}.00 {esAnual ? 'por 1 año' : 'por 1 mes'}</>
         }
       </button>
 
       <p className="text-center text-xs text-[#9CA3AF]">
-        {esAnual
-          ? `Se cobra S/ ${precioFinal * 12}.00 por 12 meses. Cancela cuando quieras.`
-          : `Se cobra S/ ${precioFinal}.00 cada mes. Cancela cuando quieras.`
-        }
+        Pago único por {esAnual ? '12 meses' : '1 mes'}. No se renueva solo: cuando venza, tu tienda vuelve al plan Gratis sin perder nada.
       </p>
     </div>
   )
@@ -274,14 +258,14 @@ function PagarPlanPage() {
             <div className="bg-white rounded-2xl border border-[#E5E7EB] p-6">
               <div className="flex items-baseline gap-2 mb-1">
                 <span className="text-4xl font-bold text-[#111827]">S/ {precioFinal}</span>
-                <span className="text-[#6B7280] text-sm">/ mes</span>
+                <span className="text-[#6B7280] text-sm">{esAnual ? '/ año' : '/ mes'}</span>
               </div>
               {esAnual && (
                 <p className="text-xs text-[#0D9488] font-semibold mb-1">
-                  Facturado S/ {precioFinal * 12} anuales — ahorras 20%
+                  Equivale a S/ {(precioFinal / 12).toFixed(2)} al mes — 2 meses gratis
                 </p>
               )}
-              <p className="text-xs text-[#9CA3AF]">Sin compromiso · Cancela cuando quieras</p>
+              <p className="text-xs text-[#9CA3AF]">IGV incluido · Pago por adelantado, sin renovación automática</p>
 
               {/* Toggle periodo */}
               <div className="flex gap-2 mt-4">
@@ -301,7 +285,7 @@ function PagarPlanPage() {
                 >
                   Anual
                   <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${esAnual ? 'bg-white/20' : 'bg-[#0D9488] text-white'}`}>
-                    -20%
+                    2 meses gratis
                   </span>
                 </button>
               </div>

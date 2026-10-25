@@ -1,4 +1,5 @@
-import { Copy, Check, RotateCw, Send, CalendarDays, ImageIcon } from 'lucide-react'
+import { Copy, Check, RotateCw, Send, CalendarDays, ImageIcon, Lock } from 'lucide-react'
+import { pagarProUrl } from '../../config/env'
 import './marketing.css'
 
 const formatos = [
@@ -34,7 +35,8 @@ export default function MarketingPreviewCol({
   setScheduleTime,
   activeAccountsList,
   handlePublishOrSchedule,
-  publishing
+  publishing,
+  puedePublicar = true
 }) {
   const esVideo = contentType === 'Video'
   const esHistoria = contentType === 'Story'
@@ -130,46 +132,56 @@ export default function MarketingPreviewCol({
           </div>
         </div>
 
-        <div className="mk-segmented">
-          <button type="button" className={publishMode === 'ahora' ? 'is-active' : ''} onClick={() => setPublishMode('ahora')}>
-            Ahora
-          </button>
-          <button type="button" className={publishMode === 'programar' ? 'is-active' : ''} onClick={() => setPublishMode('programar')}>
-            Programar
-          </button>
-        </div>
-
-        {publishMode === 'programar' && (
-          <div className="mk-schedule">
-            <div>
-              <label>Fecha</label>
-              <input className="mk-input" type="date" value={scheduleDate} min={new Date().toLocaleDateString('en-CA')} onChange={(e) => setScheduleDate(e.target.value)} />
-            </div>
-            <div>
-              <label>Hora</label>
-              <input className="mk-input" type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} />
-            </div>
+        {!puedePublicar ? (
+          <div className="mk-plan-bloqueo">
+            <Lock size={18} />
+            <p>Publicar y programar en Facebook e Instagram es parte del <strong>plan Pro</strong>. Mientras tanto, copia el texto y súbelo tú desde la app.</p>
+            <a href={pagarProUrl()} className="mk-btn mk-btn-primary">Pasar a Pro · S/ 39 al mes</a>
           </div>
+        ) : (
+          <>
+          <div className="mk-segmented">
+            <button type="button" className={publishMode === 'ahora' ? 'is-active' : ''} onClick={() => setPublishMode('ahora')}>
+              Ahora
+            </button>
+            <button type="button" className={publishMode === 'programar' ? 'is-active' : ''} onClick={() => setPublishMode('programar')}>
+              Programar
+            </button>
+          </div>
+
+          {publishMode === 'programar' && (
+            <div className="mk-schedule">
+              <div>
+                <label>Fecha</label>
+                <input className="mk-input" type="date" value={scheduleDate} min={new Date().toLocaleDateString('en-CA')} onChange={(e) => setScheduleDate(e.target.value)} />
+              </div>
+              <div>
+                <label>Hora</label>
+                <input className="mk-input" type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} />
+              </div>
+            </div>
+          )}
+
+          <div className="mk-targets">
+            <span>Se publicará en:</span>
+            {sinRedes
+              ? <span style={{ color: '#b45309' }}>elige al menos una red conectada</span>
+              : activeAccountsList.map((acc) => <span key={acc.id} className="mk-target">{acc.name}</span>)}
+          </div>
+          {faltaTexto && <small className="mk-warn">Primero redacta o escribe el texto de la publicación.</small>}
+
+          <button
+            type="button"
+            className="mk-btn mk-btn-primary mk-btn-block"
+            disabled={sinRedes || publishing || faltaTexto || esVideo}
+            onClick={handlePublishOrSchedule}
+            title={esVideo ? 'Los guiones de video se graban y publican desde la app de cada red' : undefined}
+          >
+            {publishMode === 'programar' ? <CalendarDays size={16} /> : <Send size={16} />}
+            {publishing ? 'Enviando…' : publishMode === 'programar' ? 'Programar publicación' : 'Publicar ahora'}
+          </button>
+          </>
         )}
-
-        <div className="mk-targets">
-          <span>Se publicará en:</span>
-          {sinRedes
-            ? <span style={{ color: '#b45309' }}>elige al menos una red conectada</span>
-            : activeAccountsList.map((acc) => <span key={acc.id} className="mk-target">{acc.name}</span>)}
-        </div>
-        {faltaTexto && <small className="mk-warn">Primero redacta o escribe el texto de la publicación.</small>}
-
-        <button
-          type="button"
-          className="mk-btn mk-btn-primary mk-btn-block"
-          disabled={sinRedes || publishing || faltaTexto || esVideo}
-          onClick={handlePublishOrSchedule}
-          title={esVideo ? 'Los guiones de video se graban y publican desde la app de cada red' : undefined}
-        >
-          {publishMode === 'programar' ? <CalendarDays size={16} /> : <Send size={16} />}
-          {publishing ? 'Enviando…' : publishMode === 'programar' ? 'Programar publicación' : 'Publicar ahora'}
-        </button>
       </div>
     </div>
   )

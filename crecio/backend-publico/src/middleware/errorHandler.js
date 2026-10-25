@@ -4,7 +4,8 @@ const errorHandler = (err, req, res, next) => {
 
   if (status === 500) console.error('Error no controlado:', err)
 
-  res.status(status).json({ message })
+  // codigo: lo usa el panel para reconocer errores como el límite del plan
+  res.status(status).json(err.codigo ? { message, codigo: err.codigo } : { message })
 }
 
 module.exports = errorHandler

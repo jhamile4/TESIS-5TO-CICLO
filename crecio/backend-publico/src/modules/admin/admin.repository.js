@@ -2,7 +2,7 @@ const pool = require('../../config/db')
 
 const findBusinessByOwner = (clienteId) =>
   pool.query(
-    `SELECT pk_id, nombre, categoria, logo_url
+    `SELECT pk_id, nombre, categoria, logo_url, plan, plan_expira
      FROM negocio
      WHERE fk_cliente_id = $1
      LIMIT 1`,

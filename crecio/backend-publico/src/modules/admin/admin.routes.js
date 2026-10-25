@@ -3,6 +3,7 @@ const verifyToken = require('../../middleware/verifyToken')
 const {
   getResumen,
   getInventario,
+  getPlan,
   getTienda,
   updateTienda,
   createProduct,
@@ -38,6 +39,7 @@ const router = express.Router()
 
 router.get('/resumen', verifyToken, getResumen)
 router.get('/inventario', verifyToken, getInventario)
+router.get('/plan', verifyToken, getPlan)
 router.get('/tienda', verifyToken, getTienda)
 router.put('/tienda', verifyToken, updateTienda)
 router.get('/galeria', verifyToken, getGaleria)

@@ -71,9 +71,10 @@ SOBRE CRECIO:
 - Los clientes pueden hacer pedidos por WhatsApp o pagar con tarjeta directamente
 
 PLANES:
-- Plan Básico (Gratis): hasta 20 productos, perfil básico, soporte por email
-- Plan Pro (S/49/mes o S/39/mes anual): productos ilimitados, IA, dominio personalizado, reportes, soporte 24/7
-- Plan Empresarial (S/129/mes): múltiples sucursales, API, usuarios ilimitados, SLA
+- Plan Gratis (S/0): hasta 20 productos, tienda online con pedidos, directorio, panel de ventas e inventario, 10 creaciones con IA al mes, 3 fotos en la galería
+- Plan Pro (S/39 al mes o S/390 al año, IGV incluido): productos ilimitados, IA ilimitada, publicar y programar en Facebook e Instagram, 8 fotos en la galería
+- CRECIO no cobra comisión por venta en ningún plan
+- El pago es por adelantado y no se renueva solo; si el Pro vence, la tienda pasa a Gratis sin perder datos
 
 CÓMO REGISTRARSE:
 - Ir a la página y hacer clic en "Crear mi tienda gratis"

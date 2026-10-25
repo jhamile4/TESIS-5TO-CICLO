@@ -18,6 +18,10 @@ const getInventario = async (req, res, next) => {
   }
 }
 
+const getPlan = async (req, res, next) => {
+  try { res.json(await adminService.getPlan(req.user.id)) } catch (error) { next(error) }
+}
+
 const getTienda = async (req, res, next) => {
   try { res.json(await adminService.getTienda(req.user.id)) } catch (error) { next(error) }
 }
@@ -255,6 +259,7 @@ const connectMetaManualToken = async (req, res, next) => {
 module.exports = {
   getResumen,
   getInventario,
+  getPlan,
   getTienda,
   updateTienda,
   createProduct,

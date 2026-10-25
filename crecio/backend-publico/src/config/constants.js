@@ -1,8 +1,14 @@
+// Precios en céntimos (Stripe trabaja en la unidad mínima de la moneda). Ya incluyen IGV.
+// El anual equivale a 10 meses: 2 meses gratis.
 const PLANES = {
-  pro:              { nombre: 'CRECIO Pro',              monto: 4900,   meses: 1  },
-  pro_anual:        { nombre: 'CRECIO Pro Anual',        monto: 46800,  meses: 12 },
-  enterprise:       { nombre: 'CRECIO Enterprise',       monto: 12900,  meses: 1  },
-  enterprise_anual: { nombre: 'CRECIO Enterprise Anual', monto: 118800, meses: 12 },
+  pro:       { nombre: 'CRECIO Pro',       monto: 3900,  meses: 1  },
+  pro_anual: { nombre: 'CRECIO Pro Anual', monto: 39000, meses: 12 },
+}
+
+// Qué incluye cada plan. null = sin límite
+const LIMITES_PLAN = {
+  gratis: { productos: 20,   usosIaMes: 10,   fotosGaleria: 3, publicarEnRedes: false },
+  pro:    { productos: null, usosIaMes: null, fotosGaleria: 8, publicarEnRedes: true  },
 }
 
 // Modelo de Groq para chatbots y marketing. Groq retira modelos cada cierto tiempo
@@ -21,6 +27,7 @@ const BUSCAR_NEGOCIOS_LIM  = 4
 module.exports = {
   GROQ_MODEL,
   PLANES,
+  LIMITES_PLAN,
   ENVIO_GRATIS_DESDE,
   COSTO_ENVIO,
   MAX_HISTORIAL_CHAT,

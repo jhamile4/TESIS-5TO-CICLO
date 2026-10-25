@@ -186,3 +186,10 @@
 
 .mk-schedule { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
 .mk-schedule label { display: block; margin-bottom: 4px; font-size: 11.5px; font-weight: 600; color: #475569; }
+
+/* Avisos del plan Gratis */
+.mk-plan-aviso { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; padding: 12px 16px; border: 1px solid #99f6e4; background: #f0fdfa; border-radius: 12px; font-size: 13px; color: #0f766e; }
+.mk-plan-aviso .mk-btn { text-decoration: none; }
+.mk-plan-bloqueo { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px; border: 1px dashed #cbd5e1; border-radius: 12px; background: #f8fafc; color: #475569; font-size: 13px; }
+.mk-plan-bloqueo p { margin: 0; line-height: 1.5; }
+.mk-plan-bloqueo .mk-btn { text-decoration: none; }
