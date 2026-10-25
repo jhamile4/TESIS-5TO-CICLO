@@ -106,7 +106,8 @@ export const conectarRedSocial = (cuentaData) => request('/admin/marketing/redes
   method: 'POST',
   body: JSON.stringify(cuentaData),
 })
-export const getMetaAuthUrl = (redirectUri) => request(`/admin/marketing/meta/auth-url${redirectUri ? `?redirectUri=${encodeURIComponent(redirectUri)}` : ''}`)
+export const getMetaAuthUrl = (redirectUri, state) =>
+  request(`/admin/marketing/meta/auth-url?${new URLSearchParams({ redirectUri, state })}`)
 export const enviarMetaCallback = (code, redirectUri) => request('/admin/marketing/meta/callback', {
   method: 'POST',
   body: JSON.stringify({ code, redirectUri }),

@@ -1,7 +1,11 @@
 import { useNavigate } from 'react-router-dom'
 import logoCrecio from '../../assets/logoCrecio.png'
 
-const ACTUALIZADO = '19 de octubre de 2026'
+const ACTUALIZADO = '25 de octubre de 2026'
+
+// Correo para solicitudes de datos personales (se define en el hosting con VITE_CONTACTO_EMAIL)
+const CONTACTO = import.meta.env.VITE_CONTACTO_EMAIL || ''
+const escribenos = CONTACTO ? ` escribiendo a ${CONTACTO} desde el correo de tu cuenta` : ' escribiendo desde el correo de tu cuenta al contacto de CRECIO'
 
 const PRIVACIDAD = {
   titulo: 'Política de privacidad',
@@ -13,7 +17,7 @@ const PRIVACIDAD = {
     ['Facebook e Instagram', 'Si un negocio conecta su Página de Facebook o su cuenta de Instagram, CRECIO guarda un permiso de acceso (token) solo para publicar el contenido que el propio negocio decide publicar. El negocio puede desconectarlo cuando quiera desde su panel o desde la configuración de su cuenta de Facebook.'],
     ['Inteligencia artificial', 'Los textos que escribes para generar publicaciones o conversar con el asistente se envían a proveedores de IA (Groq y Pollinations) solo para generar la respuesta.'],
     ['Cookies y almacenamiento', 'Usamos el almacenamiento del navegador para mantener tu sesión iniciada y tu carrito. No usamos cookies de publicidad ni de seguimiento.'],
-    ['Tus derechos', 'Puedes pedir acceder, corregir o eliminar tus datos (Ley N.° 29733 de Protección de Datos Personales del Perú) escribiendo al correo de contacto de CRECIO. Los datos de tu tienda los puedes editar en todo momento desde tu panel.'],
+    ['Tus derechos', `Puedes pedir acceder, corregir o eliminar tus datos (Ley N.° 29733 de Protección de Datos Personales del Perú)${escribenos}. Los datos de tu tienda los puedes editar en todo momento desde tu panel. Más detalles en la página «Eliminación de datos».`],
   ],
 }
 
@@ -30,9 +34,22 @@ const TERMINOS = {
   ],
 }
 
+// Meta (Facebook) exige una página que explique cómo borrar los datos que la app obtiene de Facebook
+const ELIMINACION = {
+  titulo: 'Eliminación de datos',
+  secciones: [
+    ['Qué guarda CRECIO de Facebook e Instagram', 'Si conectaste tu Página de Facebook o tu cuenta de Instagram, CRECIO guarda el nombre de la cuenta, su identificador y un permiso de acceso (token) para publicar lo que tú decides. No guarda tus mensajes, amigos ni datos personales de tu perfil.'],
+    ['Quitar la conexión desde CRECIO', 'Entra a tu panel → Marketing IA → Redes conectadas y presiona «Desconectar» en cada cuenta. El permiso de acceso se borra de inmediato de nuestra base de datos.'],
+    ['Quitar la conexión desde Facebook', 'En Facebook ve a Configuración y privacidad → Configuración → Integraciones comerciales (o Apps y sitios web), elige la app de CRECIO y presiona «Eliminar». Desde ese momento CRECIO ya no puede publicar en tu nombre.'],
+    ['Borrar toda tu cuenta de CRECIO', `Para borrar tu cuenta, tu tienda, tus productos, pedidos y cualquier dato que obtuvimos de Facebook, solicítalo${escribenos} indicando «Eliminar mi cuenta». Lo hacemos en un máximo de 30 días y te confirmamos por correo. Los comprobantes de pagos se conservan solo el tiempo que exige la ley.`],
+  ],
+}
+
+const DOCUMENTOS = { terminos: TERMINOS, privacidad: PRIVACIDAD, eliminacion: ELIMINACION }
+
 function LegalPage({ tipo }) {
   const navigate = useNavigate()
-  const doc = tipo === 'terminos' ? TERMINOS : PRIVACIDAD
+  const doc = DOCUMENTOS[tipo] || PRIVACIDAD
 
   return (
     <div className="min-h-screen bg-[#FAFAFA]">

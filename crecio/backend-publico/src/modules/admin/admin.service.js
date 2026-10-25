@@ -882,8 +882,8 @@ const disconnectSocialAccount = async (clienteId, cuentaId) => {
   return { message: 'Cuenta desconectada' }
 }
 
-const getMetaAuthUrl = (redirectUri) => {
-  return socialPublisher.getMetaAuthUrl(redirectUri)
+const getMetaAuthUrl = (redirectUri, state) => {
+  return socialPublisher.getMetaAuthUrl(redirectUri, state)
 }
 
 // Si el usuario administra varias Páginas, se usa la que tiene Instagram vinculado (o la primera)

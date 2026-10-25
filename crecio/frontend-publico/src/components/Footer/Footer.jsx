@@ -144,6 +144,7 @@ function Footer() {
               </li>
               <li><a href="/privacidad" className="text-[#6B7280] hover:text-[#0D9488] text-sm transition-colors">Política de privacidad</a></li>
               <li><a href="/terminos" className="text-[#6B7280] hover:text-[#0D9488] text-sm transition-colors">Términos de servicio</a></li>
+              <li><a href="/eliminacion-datos" className="text-[#6B7280] hover:text-[#0D9488] text-sm transition-colors">Eliminación de datos</a></li>
             </ul>
           </div>
         </div>

@@ -25,6 +25,7 @@ function App() {
         <Route path="/recuperar"   element={<RecuperarPage />}    />
         <Route path="/privacidad"  element={<LegalPage tipo="privacidad" />} />
         <Route path="/terminos"    element={<LegalPage tipo="terminos" />}   />
+        <Route path="/eliminacion-datos" element={<LegalPage tipo="eliminacion" />} />
       </Routes>
     </BrowserRouter>
   )

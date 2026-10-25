@@ -163,15 +163,28 @@ export default function MarketingPage() {
     loadPosts()
     loadAccounts()
 
-    // Detectar retorno de autorización de Meta OAuth
+    // Vuelta desde Facebook después de "Conectar con Meta".
+    // La URL se limpia antes de usar el código: así no se usa dos veces (un código de Meta vale una sola vez)
     const urlParams = new URLSearchParams(window.location.search)
     const metaCode = urlParams.get('code')
-    if (metaCode) {
+    const metaError = urlParams.get('error')
+    if (metaCode || metaError) {
+      window.history.replaceState({}, document.title, window.location.pathname)
+      const stateEsperado = sessionStorage.getItem('crecio_meta_state')
+      sessionStorage.removeItem('crecio_meta_state')
+      if (metaError) {
+        alert('No se conectó con Facebook: cancelaste o no diste los permisos. Puedes intentarlo de nuevo.')
+        return
+      }
+      // state: confirma que esta conexión la empezó este mismo panel y no un enlace ajeno
+      if (!stateEsperado || urlParams.get('state') !== stateEsperado) {
+        alert('La conexión con Facebook no se pudo verificar. Vuelve a presionar «Conectar con Meta».')
+        return
+      }
       const redirectUri = window.location.origin + window.location.pathname
       enviarMetaCallback(metaCode, redirectUri)
         .then(() => {
-          alert('✅ ¡Meta API conectada exitosamente! Cuentas de Instagram y Facebook sincronizadas.')
-          window.history.replaceState({}, document.title, window.location.pathname)
+          alert('✅ ¡Listo! Tu Página de Facebook (y su Instagram, si está vinculado) quedó conectada.')
           loadAccounts()
         })
         .catch((err) => {
@@ -184,7 +197,9 @@ export default function MarketingPage() {
   const handleStartMetaAuth = async () => {
     try {
       const redirectUri = window.location.origin + '/marketing'
-      const res = await getMetaAuthUrl(redirectUri)
+      const state = crypto.randomUUID()
+      sessionStorage.setItem('crecio_meta_state', state)
+      const res = await getMetaAuthUrl(redirectUri, state)
       if (res?.url) {
         window.location.href = res.url
       }

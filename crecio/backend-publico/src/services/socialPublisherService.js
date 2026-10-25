@@ -116,7 +116,7 @@ async function publishToNetworks({ caption, mediaUrl, contentType, cuentas }) {
 /**
  * Genera la URL de inicio de sesión de Meta para vincular Instagram y Facebook
  */
-function getMetaAuthUrl(redirectUri) {
+function getMetaAuthUrl(redirectUri, state) {
   const appId = process.env.META_APP_ID
   if (!appId) throw new Error('META_APP_ID no configurado en .env')
 
@@ -135,7 +135,7 @@ function getMetaAuthUrl(redirectUri) {
     ? `config_id=${encodeURIComponent(process.env.META_CONFIG_ID)}`
     : `scope=${scopes}`
 
-  return `https://www.facebook.com/${process.env.META_GRAPH_VERSION || 'v23.0'}/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(redirectUri)}&${permisos}&response_type=code`
+  return `https://www.facebook.com/${process.env.META_GRAPH_VERSION || 'v23.0'}/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(redirectUri)}&${permisos}&response_type=code${state ? `&state=${encodeURIComponent(state)}` : ''}`
 }
 
 /**

@@ -125,6 +125,8 @@ de Render la API se duerme sin visitas, y dormida no revisa. Para evitarlo:
 - **Pagos:** Stripe no acepta cuentas de empresas peruanas en producción. Para la tesis se
   usa en **modo de prueba**; en un lanzamiento real la pasarela se reemplazaría por
   Culqi, Izipay o Mercado Pago.
-- **Facebook / Instagram:** si usas la publicación en redes, agrega la URL del panel
-  (`.../configuracion`) como URI de redirección válida en la app de Meta.
+- **Facebook / Instagram:** agrega `https://TU-PANEL.vercel.app/marketing` como URI de
+  redirección válida en la app de Meta (Inicio de sesión con Facebook → Configuración).
+  En la app de Meta usa también `https://TU-SITIO.vercel.app/privacidad`,
+  `/terminos` y `/eliminacion-datos` como URLs de política, condiciones y eliminación de datos.
 - **Cada cambio que subas a GitHub** se vuelve a publicar solo en Render y Vercel.
