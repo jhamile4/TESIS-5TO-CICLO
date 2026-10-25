@@ -1,15 +1,23 @@
+import { useRef, useState } from 'react'
 import { ImagePlus, Sparkles } from 'lucide-react'
 import MetaAccountsCard from './MetaAccountsCard'
 import './marketing.css'
 
-// El "id" es lo que recibe la IA; el "label" es lo que ve el dueño
+// El "id" es lo que recibe la IA; el "label" es lo que ve el dueño.
+// "idea" arma la indicación para la IA con un producto real del negocio (o uno de ejemplo)
 const tiposPublicacion = [
-  { id: 'Promoción / Oferta', label: 'Oferta', ejemplo: 'Ej: 2x1 en ramos de rosas este fin de semana' },
-  { id: 'Nuevo Producto', label: 'Producto nuevo', ejemplo: 'Ej: llegaron las macetas de cerámica pintadas a mano' },
-  { id: 'Testimonial', label: 'Opinión de cliente', ejemplo: 'Ej: una clienta nos agradeció por el arreglo de su boda' },
-  { id: 'Tip / Educativo', label: 'Consejo', ejemplo: 'Ej: cómo hacer que tus flores duren más días en casa' },
-  { id: 'Detrás de Cámaras', label: 'Detrás de cámaras', ejemplo: 'Ej: así preparamos los arreglos cada mañana' },
-  { id: 'Viral / Trending', label: 'Tendencia', ejemplo: 'Ej: el ramo más pedido de la semana' }
+  { id: 'Promoción / Oferta', label: 'Oferta',
+    idea: (p) => `Oferta especial de "${p.nombre}"${p.precio ? ` a S/ ${p.precio}` : ''}, solo por esta semana. Invitar a pedirlo por WhatsApp.` },
+  { id: 'Nuevo Producto', label: 'Producto nuevo',
+    idea: (p) => `Presentar "${p.nombre}" como novedad${p.precio ? ` a S/ ${p.precio}` : ''}. Contar qué lo hace especial e invitar a pedirlo.` },
+  { id: 'Testimonial', label: 'Opinión de cliente',
+    idea: (p) => `Un cliente quedó feliz con "${p.nombre}". Contar su experiencia de forma breve y cálida e invitar a probarlo.` },
+  { id: 'Tip / Educativo', label: 'Consejo',
+    idea: (p) => `Un consejo útil para aprovechar mejor "${p.nombre}", y recordar que lo tenemos en la tienda.` },
+  { id: 'Detrás de Cámaras', label: 'Detrás de cámaras',
+    idea: (p) => `Mostrar cómo preparamos o elegimos "${p.nombre}" con cuidado en nuestro negocio.` },
+  { id: 'Viral / Trending', label: 'Tendencia',
+    idea: (p) => `"${p.nombre}" es lo más pedido de la semana. Generar urgencia: quedan pocas unidades.` }
 ]
 
 const tonos = [
@@ -38,19 +46,38 @@ export default function MarketingEditorCol({
   accounts,
   toggleAccount,
   onStartMetaAuth,
-  onManualTokenConnect,
   onDisconnect,
   productos = []
 }) {
+  const [productoElegido, setProductoElegido] = useState(null)
+  // Última idea que puso CRECIO: si el dueño no la cambió, se puede reemplazar al cambiar de tipo
+  const ideaAutomatica = useRef('')
+
   const tipoActual = tiposPublicacion.find((t) => t.id === tipo) || tiposPublicacion[0]
   const tonoActual = tonos.find((t) => t.id === tono) || tonos[0]
   const esVideo = contentType === 'Video'
 
+  // Sugerencia con el producto elegido, o con el primero del catálogo como ejemplo
+  const productoEjemplo = productoElegido || productos[0] || { nombre: 'tu producto más vendido' }
+  const sugerencia = tipoActual.idea(productoEjemplo)
+
+  const ponerIdea = (texto) => {
+    ideaAutomatica.current = texto
+    setPrompt(texto)
+  }
+
+  const elegirTipo = (nuevoTipo) => {
+    setTipo(nuevoTipo.id)
+    // Solo se reemplaza lo que escribió CRECIO; lo que escribió el dueño no se toca
+    if (prompt && prompt === ideaAutomatica.current) ponerIdea(nuevoTipo.idea(productoEjemplo))
+  }
+
   const elegirProducto = (e) => {
-    const producto = productos.find((p) => String(p.id || p.pk_id) === e.target.value)
+    const producto = productos.find((p) => String(p.id || p.pk_id) === e.target.value) || null
+    setProductoElegido(producto)
     if (!producto) return
     // Es una instrucción para la IA (no el texto final): la IA redacta la publicación
-    setPrompt(`Promocionar "${producto.nombre}" a S/ ${producto.precio}.${producto.descripcion ? ` ${producto.descripcion}.` : ''} Invitar a pedirlo por WhatsApp.`)
+    if (!prompt || prompt === ideaAutomatica.current) ponerIdea(tipoActual.idea(producto))
     if (producto.imagen_url) setUploadedImage(producto.imagen_url)
   }
 
@@ -68,7 +95,7 @@ export default function MarketingEditorCol({
           <span className="mk-label">Tipo de publicación</span>
           <div className="mk-chips">
             {tiposPublicacion.map((t) => (
-              <button key={t.id} type="button" className={`mk-chip ${tipo === t.id ? 'is-active' : ''}`} onClick={() => setTipo(t.id)}>
+              <button key={t.id} type="button" className={`mk-chip ${tipo === t.id ? 'is-active' : ''}`} onClick={() => elegirTipo(t)}>
                 {t.label}
               </button>
             ))}
@@ -91,10 +118,17 @@ export default function MarketingEditorCol({
             className="mk-textarea"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder={tipoActual.ejemplo}
+            placeholder={`Ej: ${sugerencia}`}
             maxLength={500}
           />
-          <p className="mk-hint">Es una indicación para la IA; el texto final aparece en la vista previa y puedes editarlo.</p>
+          <div className="mk-idea-row">
+            <p className="mk-hint">Es una indicación para la IA; el texto final aparece en la vista previa y puedes editarlo.</p>
+            {prompt !== sugerencia && (
+              <button type="button" className="mk-link" onClick={() => ponerIdea(sugerencia)}>
+                {prompt ? 'Cambiar por la sugerencia' : 'Usar esta sugerencia'}
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="mk-section">
@@ -141,7 +175,6 @@ export default function MarketingEditorCol({
           accounts={accounts}
           toggleAccount={toggleAccount}
           onStartMetaAuth={onStartMetaAuth}
-          onManualTokenConnect={onManualTokenConnect}
           onDisconnect={onDisconnect}
         />
       </div>

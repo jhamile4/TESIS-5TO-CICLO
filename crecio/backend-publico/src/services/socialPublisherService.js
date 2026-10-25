@@ -151,18 +151,13 @@ async function exchangeMetaCode({ code, redirectUri }) {
     client_id: appId, redirect_uri: redirectUri, client_secret: appSecret, code,
   })
 
-  // 2. Canjear por Token de larga duración (60 días); los tokens de Página que se
-  //    obtienen con él no vencen mientras el usuario no cambie su contraseña o permisos
-  const longData = await graphGet('oauth/access_token', {
-    grant_type: 'fb_exchange_token', client_id: appId, client_secret: appSecret, fb_exchange_token: shortData.access_token,
-  }).catch(() => ({}))
-
-  return longData.access_token || shortData.access_token
+  // 2. Canjear por Token de larga duración (60 días)
+  return extendUserToken(shortData.access_token)
 }
 
 /**
- * Cambia un token de usuario de corta duración (por ejemplo, del Graph API Explorer, ~1 h)
- * por uno de 60 días. Así los tokens de Página que se obtienen con él no vencen.
+ * Cambia un token de usuario de corta duración (~1 h) por uno de 60 días. Los tokens de Página
+ * que se obtienen con él no vencen mientras el usuario no cambie su contraseña o permisos.
  */
 async function extendUserToken(userAccessToken) {
   const appId = process.env.META_APP_ID
@@ -224,6 +219,5 @@ module.exports = {
   publishToNetworks,
   getMetaAuthUrl,
   exchangeMetaCode,
-  extendUserToken,
   fetchMetaAccounts
 }

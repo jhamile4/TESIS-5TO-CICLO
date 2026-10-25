@@ -247,15 +247,6 @@ const handleMetaOAuthCallback = async (req, res, next) => {
   }
 }
 
-const connectMetaManualToken = async (req, res, next) => {
-  try {
-    const result = await adminService.connectMetaManualToken(req.user.id, req.body)
-    res.json(result)
-  } catch (error) {
-    next(error)
-  }
-}
-
 module.exports = {
   getResumen,
   getInventario,
@@ -288,7 +279,6 @@ module.exports = {
   deleteMarketingPost,
   getMetaAuthUrl,
   handleMetaOAuthCallback,
-  connectMetaManualToken,
 }
 
 

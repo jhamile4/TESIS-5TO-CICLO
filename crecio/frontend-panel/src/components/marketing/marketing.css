@@ -193,3 +193,8 @@
 .mk-plan-bloqueo { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px; border: 1px dashed #cbd5e1; border-radius: 12px; background: #f8fafc; color: #475569; font-size: 13px; }
 .mk-plan-bloqueo p { margin: 0; line-height: 1.5; }
 .mk-plan-bloqueo .mk-btn { text-decoration: none; }
+
+/* Sugerencia de idea según el tipo de publicación */
+.mk-idea-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.mk-link { flex-shrink: 0; margin-top: 6px; padding: 0; border: none; background: none; color: #0d9488; font-size: 12px; font-weight: 600; cursor: pointer; }
+.mk-link:hover { text-decoration: underline; }

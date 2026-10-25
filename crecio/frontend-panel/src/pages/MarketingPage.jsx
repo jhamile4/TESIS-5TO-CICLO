@@ -13,8 +13,7 @@ import {
   getRedesSociales,
   desconectarRedSocial,
   getMetaAuthUrl,
-  enviarMetaCallback,
-  conectarMetaToken
+  enviarMetaCallback
 } from '../services/apiAdmin'
 
 import { pagarProUrl } from '../config/env'
@@ -208,18 +207,6 @@ export default function MarketingPage() {
     }
   }
 
-  const handleManualTokenConnect = async () => {
-    const token = window.prompt('Pega un token de usuario de Meta (Graph API Explorer, con permisos pages_show_list, pages_manage_posts, instagram_basic e instagram_content_publish):')
-    if (!token) return
-    try {
-      await conectarMetaToken(token.trim())
-      alert('✅ ¡Cuentas vinculadas exitosamente con Meta API!')
-      await loadAccounts()
-    } catch (err) {
-      alert('Error al vincular token: ' + err.message)
-    }
-  }
-
   const handleDisconnect = async (acc) => {
     if (!window.confirm(`¿Desconectar ${acc.name}? Ya no se podrá publicar ahí hasta que vuelvas a conectar con Meta.`)) return
     try {
@@ -398,7 +385,6 @@ export default function MarketingPage() {
             accounts={accounts}
             toggleAccount={toggleAccount}
             onStartMetaAuth={handleStartMetaAuth}
-            onManualTokenConnect={handleManualTokenConnect}
             onDisconnect={handleDisconnect}
             business={business}
             productos={productos}

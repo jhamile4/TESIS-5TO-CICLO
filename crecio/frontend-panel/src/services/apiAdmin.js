@@ -112,8 +112,4 @@ export const enviarMetaCallback = (code, redirectUri) => request('/admin/marketi
   method: 'POST',
   body: JSON.stringify({ code, redirectUri }),
 })
-export const conectarMetaToken = (accessToken) => request('/admin/marketing/meta/connect-token', {
-  method: 'POST',
-  body: JSON.stringify({ accessToken }),
-})
 

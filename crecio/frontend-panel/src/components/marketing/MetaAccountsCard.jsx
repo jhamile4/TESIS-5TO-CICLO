@@ -1,11 +1,11 @@
-import { Check, KeyRound, Link2, Unplug } from 'lucide-react'
+import { Check, Link2, Unplug } from 'lucide-react'
 import { InstagramIcon, FacebookIcon } from '../common/SocialIcons'
 import './marketing.css'
 
 const ICONOS = { facebook: FacebookIcon, instagram: InstagramIcon }
 
 // Cuentas de Meta donde se puede publicar de verdad (vinculadas con token desde "Conectar con Meta")
-export default function MetaAccountsCard({ accounts, toggleAccount, onStartMetaAuth, onManualTokenConnect, onDisconnect }) {
+export default function MetaAccountsCard({ accounts, toggleAccount, onStartMetaAuth, onDisconnect }) {
   const conectadas = accounts.filter((acc) => acc.connected)
 
   return (
@@ -36,7 +36,7 @@ export default function MetaAccountsCard({ accounts, toggleAccount, onStartMetaA
                     {acc.id === 'facebook' ? 'Página de Facebook' : 'Instagram profesional'}
                   </strong>
                   <small style={{ display: 'block', fontSize: '11px', color: acc.connected ? '#64748b' : '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {acc.connected ? acc.handle : 'Sin conectar · usa los botones de abajo'}
+                    {acc.connected ? acc.handle : 'Sin conectar · usa el botón de abajo'}
                   </small>
                 </div>
               </div>
@@ -72,16 +72,6 @@ export default function MetaAccountsCard({ accounts, toggleAccount, onStartMetaA
       >
         <Link2 size={15} />
         {conectadas.length > 0 ? 'Volver a conectar con Meta' : 'Conectar con Meta (Facebook + Instagram)'}
-      </button>
-
-      <button
-        type="button"
-        onClick={onManualTokenConnect}
-        className="mk-btn mk-btn-block"
-        style={{ marginTop: '8px' }}
-      >
-        <KeyRound size={15} />
-        Pegar token de Meta (Graph API Explorer)
       </button>
 
       <div style={{ marginTop: '10px', padding: '8px 10px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #f1f5f9', fontSize: '11px', color: '#64748b', lineHeight: 1.5 }}>

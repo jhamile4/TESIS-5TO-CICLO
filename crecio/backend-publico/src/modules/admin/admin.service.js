@@ -918,24 +918,6 @@ const handleMetaOAuthCallback = async (clienteId, { code, redirectUri }) => {
   }
 }
 
-const connectMetaManualToken = async (clienteId, { accessToken }) => {
-  const negocioResult = await repository.findBusinessByOwner(clienteId)
-  if (negocioResult.rows.length === 0) throw { status: 403, message: 'Negocio no encontrado' }
-
-  if (!accessToken?.trim()) throw { status: 400, message: 'Pega el token de Meta' }
-  const tokenLargo = await socialPublisher.extendUserToken(accessToken.trim())
-  const accounts = await socialPublisher.fetchMetaAccounts(tokenLargo).catch((err) => {
-    throw { status: 400, message: `Meta rechazó el token: ${err.message}` }
-  })
-  const savedAccounts = await guardarCuentasMeta(negocioResult.rows[0].pk_id, accounts)
-
-  return {
-    success: true,
-    message: 'Cuentas de Meta vinculadas mediante token',
-    accounts: savedAccounts
-  }
-}
-
 module.exports = {
   getResumen,
   getPlan,
@@ -969,7 +951,6 @@ module.exports = {
   publicarProgramadasPendientes,
   getMetaAuthUrl,
   handleMetaOAuthCallback,
-  connectMetaManualToken,
 }
 
 
